@@ -1,0 +1,35 @@
+Source: pothos-gui
+Section: science
+Priority: optional
+Maintainer: Josh Blum <josh@pothosware.com>
+Build-Depends:
+    debhelper (>= 9.0.0),
+    cmake (>= 2.8.9),
+    libpothos-dev,
+    qtbase5-dev
+Standards-Version: 3.9.6
+Homepage: https://github.com/pothosware/pothos-gui/wiki
+Vcs-Git: https://github.com/pothosware/pothos-gui.git
+Vcs-Browser: https://github.com/pothosware/pothos-gui
+
+Package: pothos-gui
+Section: libs
+Architecture: any
+Pre-Depends: ${misc:Pre-Depends}
+Depends:
+    libpothosqtcolorpicker0 (= ${binary:Version}),
+    ${shlibs:Depends},
+    ${misc:Depends},
+    xdg-utils,
+    graphviz
+Description: graphical design tool
+ The Pothos data-flow software suite.
+
+Package: libpothosqtcolorpicker0
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: color picker widget library
+ The Pothos data-flow software suite.
