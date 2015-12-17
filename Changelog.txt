@@ -1,8 +1,9 @@
 This this the changelog file for the Pothos GUI toolkit.
 
-Release 0.3.0 (pending)
+Release 0.3.0 (2015-12-16)
 ==========================
 
+- Added debian packaging support for GUI designer
 - Support ghost blocks when description is missing
 - Save active edit tab in the block properties panel
 - Added clear button to log message window
