@@ -5,6 +5,7 @@ Maintainer: Josh Blum <josh@pothosware.com>
 Build-Depends:
     debhelper (>= 9.0.0),
     cmake (>= 2.8.9),
+    libpoco-dev (>= 1.6),
     libpothos-dev,
     qtbase5-dev
 Standards-Version: 3.9.6
