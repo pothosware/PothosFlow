@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.3.1 (pending)
 ==========================
 
+- Fix separators in makeIconPath() for setStyleSheet()
 - Added missing libpoco-dev to debian Build-Depends
 
 Release 0.3.0 (2015-12-16)

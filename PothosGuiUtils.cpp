@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp"
@@ -8,6 +8,7 @@
 #include <QSplashScreen>
 #include <QApplication>
 #include <QFormLayout>
+#include <QDir>
 
 QMap<QString, QAction *> &getActionMap(void)
 {
@@ -45,7 +46,7 @@ QString makeIconPath(const QString &name)
     Poco::Path path(Pothos::System::getDataPath());
     path.append("icons");
     if (not name.isEmpty()) path.append(name.toStdString());
-    return QString::fromStdString(path.toString());
+    return QDir::fromNativeSeparators(QString::fromStdString(path.toString()));
 }
 
 QIcon makeIconFromTheme(const QString &name)
