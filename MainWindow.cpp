@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow.hpp"
@@ -106,6 +106,8 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     this->restoreState(getSettings().value("MainWindow/state").toByteArray());
     _propertiesPanelDock->hide(); //hidden until used
     _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
+    _showGraphConnectionPointsAction->setChecked(getSettings().value("MainWindow/showGraphConnectionPoints", false).toBool());
+    _showGraphBoundingBoxesAction->setChecked(getSettings().value("MainWindow/showGraphBoundingBoxes", false).toBool());
 
     //create menus after docks and tool bars (view menu calls their toggleViewAction())
     postStatusMessage(tr("Creating menus..."));
@@ -123,6 +125,8 @@ PothosGuiMainWindow::~PothosGuiMainWindow(void)
     getSettings().setValue("MainWindow/geometry", this->saveGeometry());
     getSettings().setValue("MainWindow/state", this->saveState());
     getSettings().setValue("MainWindow/showPortNames", _showPortNamesAction->isChecked());
+    getSettings().setValue("MainWindow/showGraphConnectionPoints", _showGraphConnectionPointsAction->isChecked());
+    getSettings().setValue("MainWindow/showGraphBoundingBoxes", _showGraphBoundingBoxesAction->isChecked());
 }
 
 void PothosGuiMainWindow::handleNewTitleSubtext(const QString &s)
