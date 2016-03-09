@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
@@ -19,6 +19,8 @@
 #include <cassert>
 #include <algorithm> //min/max
 #include <Poco/Logger.h>
+
+static const bool NEW_SIGSLOTS = true;
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
@@ -358,6 +360,7 @@ QPainterPath GraphBlock::shape(void) const
     for (const auto &portRect : _impl->inputPortRects) path.addRect(portRect);
     for (const auto &portRect : _impl->outputPortRects) path.addRect(portRect);
     if (not this->getSignalPorts().empty()) path.addRect(_impl->signalPortRect);
+    if (not this->getSlotPorts().empty()) path.addRect(_impl->slotPortRect);
     path.addRect(_impl->mainBlockRect);
     return path;
 }
@@ -398,8 +401,8 @@ GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) cons
     }
     if (not this->getSlotPorts().empty())
     {
-        if (_impl->mainBlockRect.contains(pos))
-            return GraphConnectableKey("slots", GRAPH_CONN_SLOT);
+        const auto &rect = _impl->slotPortRect.isEmpty()?_impl->mainBlockRect:_impl->slotPortRect;
+        if (rect.contains(pos)) return GraphConnectableKey("slots", GRAPH_CONN_SLOT);
     }
     if (not this->getSignalPorts().empty())
     {
@@ -437,13 +440,13 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
     if (key.direction == GRAPH_CONN_SLOT and key.id == "slots")
     {
         attrs.point = _impl->slotPortPoint;
-        attrs.rotation += 270;
+        attrs.rotation += NEW_SIGSLOTS?180:270;
         return attrs;
     }
     if (key.direction == GRAPH_CONN_SIGNAL and key.id == "signals")
     {
         attrs.point = _impl->signalPortPoint;
-        attrs.rotation += 90;
+        attrs.rotation += NEW_SIGSLOTS?0:90;
         return attrs;
     }
     return attrs;
@@ -573,6 +576,7 @@ void GraphBlock::render(QPainter &painter)
     {
         inputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
+    if (not this->getSlotPorts().empty()) inputPortsMinHeight += GraphBlockSignalPortWidth;
 
     qreal outputPortsMinHeight = GraphBlockPortVOutterPad*2;
     if (_impl->outputPortsText.size() == 0) outputPortsMinHeight = 0;
@@ -581,6 +585,7 @@ void GraphBlock::render(QPainter &painter)
     {
         outputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
+    if (not this->getSignalPorts().empty()) outputPortsMinHeight += GraphBlockSignalPortWidth;
 
     qreal propertiesMinHeight = 0;
     qreal propertiesMaxWidth = 0;
@@ -665,10 +670,10 @@ void GraphBlock::render(QPainter &painter)
     //create signals port
     if (not this->getSignalPorts().empty())
     {
-        QSizeF rectSize(GraphBlockSignalPortWidth, GraphBlockSignalPortHeight+GraphBlockPortArc);
-        const qreal vOff = (portFlip)? 1-rectSize.height() : overallHeight;
+        QSizeF rectSize(GraphBlockSignalPortHeight+GraphBlockPortArc, GraphBlockSignalPortWidth);
+        const qreal hOff = (portFlip)? 1-rectSize.width() : overallWidth;
         const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
-        QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, vOff + arcFix), rectSize);
+        QRectF portRect(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
@@ -679,15 +684,29 @@ void GraphBlock::render(QPainter &painter)
         _impl->signalPortRect = trans.mapRect(portRect);
 
         //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?-GraphObjectBorderWidth:rectSize.height()+GraphObjectBorderWidth);
+        //center vertically on the midpoint between the top and the last output
+        const auto connPoint = portRect.topLeft() + QPointF(portFlip?-GraphObjectBorderWidth:rectSize.width()+GraphObjectBorderWidth, rectSize.height()/2);
         _impl->signalPortPoint = trans.map(connPoint);
     }
 
     //create slots port
     if (not this->getSlotPorts().empty())
     {
+        QSizeF rectSize(0, 0);
+        const qreal hOff = (portFlip)? overallWidth :  1-rectSize.width();
+        QRectF portRect(p+QPointF(hOff, inPortVdelta), rectSize);
+
+        painter.save();
+        painter.setBrush(QBrush(_impl->mainBlockColor));
+        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        //painter.drawRect(portRect);
+        painter.restore();
+
+        _impl->slotPortRect = trans.mapRect(portRect);
+
         //connection point logic
-        const auto connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height()+GraphObjectBorderWidth:-GraphObjectBorderWidth);
+        //center vertically on the midpoint between the top and the last input
+        const auto connPoint = portRect.topLeft() + QPointF(portFlip?rectSize.width()+GraphObjectBorderWidth:-GraphObjectBorderWidth, rectSize.height()/2);
         _impl->slotPortPoint = trans.map(connPoint);
     }
 
