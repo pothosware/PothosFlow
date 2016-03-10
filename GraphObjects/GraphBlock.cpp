@@ -354,6 +354,32 @@ void GraphBlock::setActiveEditTab(const std::string &name)
     _impl->activeEditTab = name;
 }
 
+void GraphBlock::registerEndpoint(const GraphConnectionEndpoint &ep)
+{
+    assert(ep.getObj().data() == this);
+    switch(ep.getKey().direction)
+    {
+    case GRAPH_CONN_INPUT: _impl->inputPortUseCount[ep.getKey().id]++; break;
+    case GRAPH_CONN_OUTPUT: _impl->outputPortUseCount[ep.getKey().id]++; break;
+    case GRAPH_CONN_SLOT: _impl->slotPortUseCount++; break;
+    case GRAPH_CONN_SIGNAL: _impl->signalPortUseCount++; break;
+    }
+    this->markChanged();
+}
+
+void GraphBlock::unregisterEndpoint(const GraphConnectionEndpoint &ep)
+{
+    assert(ep.getObj().data() == this);
+    switch(ep.getKey().direction)
+    {
+    case GRAPH_CONN_INPUT: _impl->inputPortUseCount[ep.getKey().id]--; break;
+    case GRAPH_CONN_OUTPUT: _impl->outputPortUseCount[ep.getKey().id]--; break;
+    case GRAPH_CONN_SLOT: _impl->slotPortUseCount--; break;
+    case GRAPH_CONN_SIGNAL: _impl->signalPortUseCount--; break;
+    }
+    this->markChanged();
+}
+
 QPainterPath GraphBlock::shape(void) const
 {
     QPainterPath path;
@@ -568,6 +594,10 @@ void GraphBlock::render(QPainter &painter)
     if (portFlip) painter.rotate(-180);
     if (portFlip) trans.rotate(-180);
 
+    //determine if we have connections to the slot port
+    //to allocate space for the connection to the port
+    const bool hasConnectedSlots = _impl->slotPortUseCount != 0;
+
     //calculate dimensions
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;
     if (_impl->inputPortsText.size() == 0) inputPortsMinHeight = 0;
@@ -576,7 +606,7 @@ void GraphBlock::render(QPainter &painter)
     {
         inputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
-    if (not this->getSlotPorts().empty()) inputPortsMinHeight += GraphBlockSignalPortWidth;
+    if (not this->getSlotPorts().empty() and hasConnectedSlots) inputPortsMinHeight += GraphBlockSignalPortWidth;
 
     qreal outputPortsMinHeight = GraphBlockPortVOutterPad*2;
     if (_impl->outputPortsText.size() == 0) outputPortsMinHeight = 0;

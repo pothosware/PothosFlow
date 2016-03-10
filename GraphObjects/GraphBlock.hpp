@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,6 +12,7 @@
 #include <vector>
 
 class QWidget;
+class GraphConnection;
 
 class GraphBlock : public GraphObject
 {
@@ -115,6 +116,10 @@ public:
     //! get current edit tab (empty for no selection)
     const std::string &getActiveEditTab(void) const;
     void setActiveEditTab(const std::string &name);
+
+    //!Called by Connection to track active graph connections
+    void registerEndpoint(const GraphConnectionEndpoint &ep);
+    void unregisterEndpoint(const GraphConnectionEndpoint &ep);
 
 signals:
 

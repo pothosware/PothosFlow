@@ -13,7 +13,9 @@
 
 struct GraphBlock::Impl
 {
-    Impl(void)
+    Impl(void):
+        signalPortUseCount(0),
+        slotPortUseCount(0)
     {
         return;
     }
@@ -45,6 +47,7 @@ struct GraphBlock::Impl
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
     std::map<QString, std::string> inputPortTypeStr;
+    std::map<QString, size_t> inputPortUseCount;
 
     std::map<QString, QString> outputPortsAliases;
     std::vector<QStaticText> outputPortsText;
@@ -52,11 +55,15 @@ struct GraphBlock::Impl
     std::vector<QPointF> outputPortPoints;
     std::vector<QColor> outputPortColors;
     std::map<QString, std::string> outputPortTypeStr;
+    std::map<QString, size_t> outputPortUseCount;
 
     QRectF signalPortRect;
     QPointF signalPortPoint;
+    size_t signalPortUseCount;
+
     QRectF slotPortRect;
     QPointF slotPortPoint;
+    size_t slotPortUseCount;
 
     QRectF mainBlockRect;
     QPointer<QWidget> graphWidget;

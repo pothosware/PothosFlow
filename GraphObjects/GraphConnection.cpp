@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphConnection.hpp"
@@ -54,6 +54,12 @@ GraphConnection::GraphConnection(QObject *parent):
     return;
 }
 
+GraphConnection::~GraphConnection(void)
+{
+    this->unregisterEndpoint(_impl->inputEp);
+    this->unregisterEndpoint(_impl->outputEp);
+}
+
 void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
 {
     assert(_impl);
@@ -69,12 +75,21 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
     connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
 
     //connect eval signal to check if the endpoint exists and delete this connection
-    if (dynamic_cast<GraphBlock *>(ep.getObj().data()) != nullptr)
+    auto graphBlock = dynamic_cast<GraphBlock *>(ep.getObj().data());
+    if (graphBlock != nullptr)
     {
         connect(ep.getObj(), SIGNAL(evalDoneEvent(void)), this, SLOT(handleEndPointEventRecheck(void)));
+        graphBlock->registerEndpoint(ep);
     }
 
     this->markChanged();
+}
+
+void GraphConnection::unregisterEndpoint(const GraphConnectionEndpoint &ep)
+{
+    if (not ep.isValid()) return;
+    auto graphBlockOut = dynamic_cast<GraphBlock *>(ep.getObj().data());
+    if (graphBlockOut != nullptr) graphBlockOut->unregisterEndpoint(ep);
 }
 
 const GraphConnectionEndpoint &GraphConnection::getOutputEndpoint(void) const
