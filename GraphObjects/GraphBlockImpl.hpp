@@ -61,7 +61,6 @@ struct GraphBlock::Impl
     QPointF signalPortPoint;
     size_t signalPortUseCount;
 
-    QRectF slotPortRect;
     QPointF slotPortPoint;
     size_t slotPortUseCount;
 
