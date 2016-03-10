@@ -20,7 +20,7 @@
 #include <algorithm> //min/max
 #include <Poco/Logger.h>
 
-static const bool NEW_SIGSLOTS = true;
+static const bool NEW_SIGSLOTS = false;
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
@@ -593,28 +593,34 @@ void GraphBlock::render(QPainter &painter)
     if (portFlip) painter.rotate(-180);
     if (portFlip) trans.rotate(-180);
 
-    //determine if we have connections to the slot port
-    //to allocate space for the connection to the port
-    const bool hasConnectedSlots = _impl->slotPortUseCount != 0;
+    //port totals for calculations below
+    //slots are only present when connected
+    const size_t numInputs = this->getInputPorts().size();
+    const size_t numOutputs = this->getOutputPorts().size();
+    const bool hasSignals = not this->getSignalPorts().empty();
+    const bool hasSlots = not this->getSlotPorts().empty() and _impl->slotPortUseCount != 0;
+    const size_t numLeftSideEndpoints = numInputs + ((NEW_SIGSLOTS and hasSlots)?1:0);
+    const size_t numRightSideEndpoints = numOutputs + ((NEW_SIGSLOTS and hasSignals)?1:0);
 
-    //calculate dimensions
+    //calculate dimensions for input side
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;
-    if (_impl->inputPortsText.size() == 0) inputPortsMinHeight = 0;
-    else inputPortsMinHeight += (_impl->inputPortsText.size()-1)*GraphBlockPortVGap;
+    if (numLeftSideEndpoints == 0) inputPortsMinHeight = 0;
+    else inputPortsMinHeight += (numLeftSideEndpoints-1)*GraphBlockPortVGap;
     for (const auto &text : _impl->inputPortsText)
     {
         inputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
-    if (not this->getSlotPorts().empty() and hasConnectedSlots) inputPortsMinHeight += GraphBlockSignalPortSpan;
+    if (hasSlots and NEW_SIGSLOTS) inputPortsMinHeight += GraphBlockSignalPortSpan;
 
+    //calculate dimensions for output side
     qreal outputPortsMinHeight = GraphBlockPortVOutterPad*2;
-    if (_impl->outputPortsText.size() == 0) outputPortsMinHeight = 0;
-    else outputPortsMinHeight += (_impl->outputPortsText.size()-1)*GraphBlockPortVGap;
+    if (numRightSideEndpoints == 0) outputPortsMinHeight = 0;
+    else outputPortsMinHeight += (numRightSideEndpoints-1)*GraphBlockPortVGap;
     for (const auto &text : _impl->outputPortsText)
     {
         outputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
-    if (not this->getSignalPorts().empty()) outputPortsMinHeight += GraphBlockSignalPortSpan;
+    if (hasSignals and NEW_SIGSLOTS) outputPortsMinHeight += GraphBlockSignalPortSpan;
 
     qreal propertiesMinHeight = 0;
     qreal propertiesMaxWidth = 0;
@@ -640,11 +646,10 @@ void GraphBlock::render(QPainter &painter)
     painter.setPen(pen);
 
     //create input ports
-    const auto numInputs = this->getInputPorts().size();
     _impl->inputPortRects.resize(numInputs);
     _impl->inputPortPoints.resize(numInputs);
     qreal inPortVdelta = (overallHeight - inputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (int i = 0; i < numInputs; i++)
+    for (size_t i = 0; i < numInputs; i++)
     {
         const auto &text = _impl->inputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2, GraphBlockPortTextVPad*2);
@@ -668,11 +673,10 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //create output ports
-    const auto numOutputs = this->getOutputPorts().size();
     _impl->outputPortRects.resize(numOutputs);
     _impl->outputPortPoints.resize(numOutputs);
     qreal outPortVdelta = (overallHeight - outputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (int i = 0; i < numOutputs; i++)
+    for (size_t i = 0; i < numOutputs; i++)
     {
         const auto &text = _impl->outputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2+GraphBlockPortArc, GraphBlockPortTextVPad*2);
@@ -697,12 +701,31 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //create signals port
-    if (not this->getSignalPorts().empty())
+    if (hasSignals)
     {
-        QSizeF rectSize(GraphBlockSignalPortLength+GraphBlockPortArc, GraphBlockSignalPortSpan);
-        const qreal hOff = (portFlip)? 1-rectSize.width() : overallWidth;
-        const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
-        QRectF portRect(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
+        QPointF connPoint;
+        QRectF portRect;
+
+        if (NEW_SIGSLOTS)
+        {
+            QSizeF rectSize(GraphBlockSignalPortLength+GraphBlockPortArc, GraphBlockSignalPortSpan);
+            const qreal hOff = (portFlip)? 1-rectSize.width() : overallWidth;
+            const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
+            portRect = QRectF(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
+
+            //center vertically on the midpoint between the top and the last output
+            connPoint = portRect.topLeft() + QPointF(portFlip?-GraphObjectBorderWidth:rectSize.width()+GraphObjectBorderWidth, rectSize.height()/2);
+        }
+        else
+        {
+            QSizeF rectSize(GraphBlockSignalPortSpan, GraphBlockSignalPortLength+GraphBlockPortArc);
+            const qreal vOff = (portFlip)? 1-rectSize.height() : overallHeight;
+            const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
+            portRect = QRectF(p+QPointF(mainRect.width()/2-rectSize.width()/2, vOff + arcFix), rectSize);
+
+            //center horizontally on the bottom of the main rect
+            connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?-GraphObjectBorderWidth:rectSize.height()+GraphObjectBorderWidth);
+        }
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
@@ -711,20 +734,25 @@ void GraphBlock::render(QPainter &painter)
         painter.restore();
 
         _impl->signalPortRect = trans.mapRect(portRect);
-
-        //connection point logic
-        //center vertically on the midpoint between the top and the last output
-        const auto connPoint = portRect.topLeft() + QPointF(portFlip?-GraphObjectBorderWidth:rectSize.width()+GraphObjectBorderWidth, rectSize.height()/2);
         _impl->signalPortPoint = trans.map(connPoint);
     }
 
     //create slots port
-    if (not this->getSlotPorts().empty())
+    if (hasSlots)
     {
-        //connection point logic
-        //center vertically on the midpoint between the top and the last input
-        const auto hpos = (numInputs == 0)? mainRect.height()/2: inPortVdelta;
-        const auto connPoint = mainRect.topLeft() + QPointF(portFlip?mainRect.width()+GraphObjectBorderWidth:-GraphObjectBorderWidth, hpos);
+        QPointF connPoint;
+
+        if (NEW_SIGSLOTS)
+        {
+            //center vertically on the midpoint between the top and the last input
+            const auto hpos = inPortVdelta + GraphBlockSignalPortSpan/2;
+            connPoint = mainRect.topLeft() + QPointF(portFlip?mainRect.width()+GraphObjectBorderWidth:-GraphObjectBorderWidth, hpos);
+        }
+        else
+        {
+            //center horizontally on the top of the main rect
+            connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height()+GraphObjectBorderWidth:-GraphObjectBorderWidth);
+        }
         _impl->slotPortPoint = trans.map(connPoint);
     }
 

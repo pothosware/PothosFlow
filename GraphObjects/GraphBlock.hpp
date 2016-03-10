@@ -12,7 +12,6 @@
 #include <vector>
 
 class QWidget;
-class GraphConnection;
 
 class GraphBlock : public GraphObject
 {
