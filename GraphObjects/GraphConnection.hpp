@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -18,6 +18,7 @@ class GraphConnection : public GraphObject
     Q_OBJECT
 public:
     GraphConnection(QObject *parent);
+    ~GraphConnection(void);
 
     void setupEndpoint(const GraphConnectionEndpoint &ep);
 
@@ -67,6 +68,10 @@ private slots:
     void handleEndPointEventRecheck(void);
 
 private:
+
+    //only called by the destructor
+    void unregisterEndpoint(const GraphConnectionEndpoint &ep);
+
     struct Impl;
     std::shared_ptr<Impl> _impl;
 };

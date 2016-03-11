@@ -1,9 +1,7 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBlockImpl.hpp"
-#include "GraphEditor/GraphDraw.hpp"
-#include "GraphEditor/GraphEditor.hpp"
 #include <QWidget>
 #include <Pothos/Proxy.hpp>
 #include <Poco/Logger.h>

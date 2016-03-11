@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //get object map
@@ -352,6 +352,32 @@ void GraphBlock::setActiveEditTab(const std::string &name)
     _impl->activeEditTab = name;
 }
 
+void GraphBlock::registerEndpoint(const GraphConnectionEndpoint &ep)
+{
+    assert(ep.getObj().data() == this);
+    switch(ep.getKey().direction)
+    {
+    case GRAPH_CONN_INPUT: _impl->inputPortUseCount[ep.getKey().id]++; break;
+    case GRAPH_CONN_OUTPUT: _impl->outputPortUseCount[ep.getKey().id]++; break;
+    case GRAPH_CONN_SLOT: _impl->slotPortUseCount++; break;
+    case GRAPH_CONN_SIGNAL: _impl->signalPortUseCount++; break;
+    }
+    this->markChanged();
+}
+
+void GraphBlock::unregisterEndpoint(const GraphConnectionEndpoint &ep)
+{
+    assert(ep.getObj().data() == this);
+    switch(ep.getKey().direction)
+    {
+    case GRAPH_CONN_INPUT: _impl->inputPortUseCount[ep.getKey().id]--; break;
+    case GRAPH_CONN_OUTPUT: _impl->outputPortUseCount[ep.getKey().id]--; break;
+    case GRAPH_CONN_SLOT: _impl->slotPortUseCount--; break;
+    case GRAPH_CONN_SIGNAL: _impl->signalPortUseCount--; break;
+    }
+    this->markChanged();
+}
+
 QPainterPath GraphBlock::shape(void) const
 {
     QPainterPath path;
@@ -437,13 +463,13 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
     if (key.direction == GRAPH_CONN_SLOT and key.id == "slots")
     {
         attrs.point = _impl->slotPortPoint;
-        attrs.rotation += 270;
+        attrs.rotation += _impl->eventPortsInline?180:270;
         return attrs;
     }
     if (key.direction == GRAPH_CONN_SIGNAL and key.id == "signals")
     {
         attrs.point = _impl->signalPortPoint;
-        attrs.rotation += 90;
+        attrs.rotation += _impl->eventPortsInline?0:90;
         return attrs;
     }
     return attrs;
@@ -508,7 +534,7 @@ void GraphBlock::renderStaticText(void)
             .arg(this->getOutputPortAlias(_outputPorts[i]).toHtmlEscaped()));
     }
 
-    if (not getActionMap()["showPortNames"]->isChecked())
+    if (not _impl->showPortNames)
     {
         _impl->inputPortsText.clear();
         _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
@@ -539,6 +565,9 @@ void GraphBlock::render(QPainter &painter)
     //render text
     if (this->isChanged())
     {
+        _impl->showPortNames = getActionMap()["showPortNames"]->isChecked();
+        _impl->eventPortsInline = getActionMap()["eventPortsInline"]->isChecked();
+
         this->update(); //call first because this will set changed again
         this->clearChanged();
 
@@ -565,22 +594,35 @@ void GraphBlock::render(QPainter &painter)
     if (portFlip) painter.rotate(-180);
     if (portFlip) trans.rotate(-180);
 
-    //calculate dimensions
+    //port totals for calculations below
+    //slots are only present when connected
+    const bool eventPortsInline = _impl->eventPortsInline;
+    const size_t numInputs = this->getInputPorts().size();
+    const size_t numOutputs = this->getOutputPorts().size();
+    const bool hasSignals = not this->getSignalPorts().empty();
+    const bool hasSlots = not this->getSlotPorts().empty() and _impl->slotPortUseCount != 0;
+    const size_t numLeftSideEndpoints = numInputs + ((eventPortsInline and hasSlots)?1:0);
+    const size_t numRightSideEndpoints = numOutputs + ((eventPortsInline and hasSignals)?1:0);
+
+    //calculate dimensions for input side
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;
-    if (_impl->inputPortsText.size() == 0) inputPortsMinHeight = 0;
-    else inputPortsMinHeight += (_impl->inputPortsText.size()-1)*GraphBlockPortVGap;
+    if (numLeftSideEndpoints == 0) inputPortsMinHeight = 0;
+    else inputPortsMinHeight += (numLeftSideEndpoints-1)*GraphBlockPortVGap;
     for (const auto &text : _impl->inputPortsText)
     {
         inputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
+    if (hasSlots and eventPortsInline) inputPortsMinHeight += GraphBlockSignalPortSpan;
 
+    //calculate dimensions for output side
     qreal outputPortsMinHeight = GraphBlockPortVOutterPad*2;
-    if (_impl->outputPortsText.size() == 0) outputPortsMinHeight = 0;
-    else outputPortsMinHeight += (_impl->outputPortsText.size()-1)*GraphBlockPortVGap;
+    if (numRightSideEndpoints == 0) outputPortsMinHeight = 0;
+    else outputPortsMinHeight += (numRightSideEndpoints-1)*GraphBlockPortVGap;
     for (const auto &text : _impl->outputPortsText)
     {
         outputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
+    if (hasSignals and eventPortsInline) outputPortsMinHeight += GraphBlockSignalPortSpan;
 
     qreal propertiesMinHeight = 0;
     qreal propertiesMaxWidth = 0;
@@ -606,11 +648,10 @@ void GraphBlock::render(QPainter &painter)
     painter.setPen(pen);
 
     //create input ports
-    const auto numInputs = this->getInputPorts().size();
     _impl->inputPortRects.resize(numInputs);
     _impl->inputPortPoints.resize(numInputs);
     qreal inPortVdelta = (overallHeight - inputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (int i = 0; i < numInputs; i++)
+    for (size_t i = 0; i < numInputs; i++)
     {
         const auto &text = _impl->inputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2, GraphBlockPortTextVPad*2);
@@ -634,11 +675,10 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //create output ports
-    const auto numOutputs = this->getOutputPorts().size();
     _impl->outputPortRects.resize(numOutputs);
     _impl->outputPortPoints.resize(numOutputs);
     qreal outPortVdelta = (overallHeight - outputPortsMinHeight)/2.0 + GraphBlockPortVOutterPad;
-    for (int i = 0; i < numOutputs; i++)
+    for (size_t i = 0; i < numOutputs; i++)
     {
         const auto &text = _impl->outputPortsText.at(i);
         QSizeF rectSize = text.size() + QSizeF(GraphBlockPortTextHPad*2+GraphBlockPortArc, GraphBlockPortTextVPad*2);
@@ -663,12 +703,31 @@ void GraphBlock::render(QPainter &painter)
     }
 
     //create signals port
-    if (not this->getSignalPorts().empty())
+    if (hasSignals)
     {
-        QSizeF rectSize(GraphBlockSignalPortWidth, GraphBlockSignalPortHeight+GraphBlockPortArc);
-        const qreal vOff = (portFlip)? 1-rectSize.height() : overallHeight;
-        const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
-        QRectF portRect(p+QPointF(mainRect.width()/2-rectSize.width()/2, vOff + arcFix), rectSize);
+        QPointF connPoint;
+        QRectF portRect;
+
+        if (eventPortsInline)
+        {
+            QSizeF rectSize(GraphBlockSignalPortLength+GraphBlockPortArc, GraphBlockSignalPortSpan);
+            const qreal hOff = (portFlip)? 1-rectSize.width() : overallWidth;
+            const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
+            portRect = QRectF(p+QPointF(hOff+arcFix, outPortVdelta), rectSize);
+
+            //center vertically on the midpoint between the top and the last output
+            connPoint = portRect.topLeft() + QPointF(portFlip?-GraphObjectBorderWidth:rectSize.width()+GraphObjectBorderWidth, rectSize.height()/2);
+        }
+        else
+        {
+            QSizeF rectSize(GraphBlockSignalPortSpan, GraphBlockSignalPortLength+GraphBlockPortArc);
+            const qreal vOff = (portFlip)? 1-rectSize.height() : overallHeight;
+            const qreal arcFix = (portFlip)? GraphBlockPortArc : -GraphBlockPortArc;
+            portRect = QRectF(p+QPointF(mainRect.width()/2-rectSize.width()/2, vOff + arcFix), rectSize);
+
+            //center horizontally on the bottom of the main rect
+            connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?-GraphObjectBorderWidth:rectSize.height()+GraphObjectBorderWidth);
+        }
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
@@ -677,19 +736,28 @@ void GraphBlock::render(QPainter &painter)
         painter.restore();
 
         _impl->signalPortRect = trans.mapRect(portRect);
-
-        //connection point logic
-        const auto connPoint = portRect.topLeft() + QPointF(rectSize.width()/2, portFlip?-GraphObjectBorderWidth:rectSize.height()+GraphObjectBorderWidth);
         _impl->signalPortPoint = trans.map(connPoint);
     }
 
     //create slots port
-    if (not this->getSlotPorts().empty())
+    if (hasSlots)
     {
-        //connection point logic
-        const auto connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height()+GraphObjectBorderWidth:-GraphObjectBorderWidth);
+        QPointF connPoint;
+
+        if (eventPortsInline)
+        {
+            //center vertically on the midpoint between the top and the last input
+            const auto hpos = inPortVdelta + GraphBlockSignalPortSpan/2;
+            connPoint = mainRect.topLeft() + QPointF(portFlip?mainRect.width()+GraphObjectBorderWidth:-GraphObjectBorderWidth, hpos);
+        }
+        else
+        {
+            //center horizontally on the top of the main rect
+            connPoint = mainRect.topLeft() + QPointF(mainRect.width()/2, portFlip?mainRect.height()+GraphObjectBorderWidth:-GraphObjectBorderWidth);
+        }
         _impl->slotPortPoint = trans.map(connPoint);
     }
+    else _impl->slotPortPoint = QPointF();
 
     //draw main body of the block
     painter.save();

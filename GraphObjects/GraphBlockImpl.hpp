@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -13,7 +13,11 @@
 
 struct GraphBlock::Impl
 {
-    Impl(void)
+    Impl(void):
+        signalPortUseCount(0),
+        slotPortUseCount(0),
+        showPortNames(false),
+        eventPortsInline(false)
     {
         return;
     }
@@ -45,6 +49,7 @@ struct GraphBlock::Impl
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
     std::map<QString, std::string> inputPortTypeStr;
+    std::map<QString, size_t> inputPortUseCount;
 
     std::map<QString, QString> outputPortsAliases;
     std::vector<QStaticText> outputPortsText;
@@ -52,10 +57,18 @@ struct GraphBlock::Impl
     std::vector<QPointF> outputPortPoints;
     std::vector<QColor> outputPortColors;
     std::map<QString, std::string> outputPortTypeStr;
+    std::map<QString, size_t> outputPortUseCount;
 
     QRectF signalPortRect;
     QPointF signalPortPoint;
+    size_t signalPortUseCount;
+
     QPointF slotPortPoint;
+    size_t slotPortUseCount;
+
+    //display modes
+    bool showPortNames;
+    bool eventPortsInline;
 
     QRectF mainBlockRect;
     QPointer<QWidget> graphWidget;

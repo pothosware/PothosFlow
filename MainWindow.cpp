@@ -106,6 +106,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     this->restoreState(getSettings().value("MainWindow/state").toByteArray());
     _propertiesPanelDock->hide(); //hidden until used
     _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
+    _eventPortsInlineAction->setChecked(getSettings().value("MainWindow/eventPortsInline", false).toBool());
     _showGraphConnectionPointsAction->setChecked(getSettings().value("MainWindow/showGraphConnectionPoints", false).toBool());
     _showGraphBoundingBoxesAction->setChecked(getSettings().value("MainWindow/showGraphBoundingBoxes", false).toBool());
 
@@ -125,6 +126,7 @@ PothosGuiMainWindow::~PothosGuiMainWindow(void)
     getSettings().setValue("MainWindow/geometry", this->saveGeometry());
     getSettings().setValue("MainWindow/state", this->saveState());
     getSettings().setValue("MainWindow/showPortNames", _showPortNamesAction->isChecked());
+    getSettings().setValue("MainWindow/eventPortsInline", _eventPortsInlineAction->isChecked());
     getSettings().setValue("MainWindow/showGraphConnectionPoints", _showGraphConnectionPointsAction->isChecked());
     getSettings().setValue("MainWindow/showGraphBoundingBoxes", _showGraphBoundingBoxesAction->isChecked());
 }
@@ -346,9 +348,15 @@ void PothosGuiMainWindow::createActions(void)
     _activateTopologyAction->setCheckable(true);
     _actionMap["activateTopology"] = _activateTopologyAction;
 
-    _showPortNamesAction = new QAction(tr("Show &port names"), this);
+    _showPortNamesAction = new QAction(tr("Show block port names"), this);
     _showPortNamesAction->setCheckable(true);
+    _showPortNamesAction->setStatusTip(tr("Show the names of block IO ports on the graph"));
     _actionMap["showPortNames"] = _showPortNamesAction;
+
+    _eventPortsInlineAction = new QAction(tr("Inline block event ports"), this);
+    _eventPortsInlineAction->setCheckable(true);
+    _eventPortsInlineAction->setStatusTip(tr("Show block event ports inline with IO ports"));
+    _actionMap["eventPortsInline"] = _eventPortsInlineAction;
 
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
@@ -453,6 +461,7 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_zoomOriginalAction);
     _viewMenu->addSeparator();
     _viewMenu->addAction(_showPortNamesAction);
+    _viewMenu->addAction(_eventPortsInlineAction);
     _viewMenu->addSeparator();
 
     _debugMenu = _viewMenu->addMenu(tr("&Debug"));

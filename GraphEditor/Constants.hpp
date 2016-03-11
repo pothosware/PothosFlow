@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -39,8 +39,8 @@ static const qreal GraphBlockTitleVPad = 5;
 static const qreal GraphBlockTitleHPad = 5;
 static const qreal GraphBlockPortArc = 3;
 static const qreal GraphBlockMainArc = 5;
-static const qreal GraphBlockSignalPortWidth = 15;
-static const qreal GraphBlockSignalPortHeight = GraphBlockSignalPortWidth/1.618;
+static const qreal GraphBlockSignalPortSpan = 15;
+static const qreal GraphBlockSignalPortLength = GraphBlockSignalPortSpan/1.618;
 static const int GraphBlockPropMaxWidthPx = 130;
 static const int GraphBlockPropPointWidth = 8;
 static const QString GraphBlockTitleFontSize = "9pt";
