@@ -421,8 +421,51 @@ void GraphConnection::render(QPainter &painter)
     {
         painter.save();
         const auto &text = _impl->lineText;
-        painter.translate((largestLine.p1() + largestLine.p2())/2.0);
-        painter.rotate(int(largestLine.angle())%180);
+        const auto boundingRect = path.boundingRect();
+
+        //determine text position: use the largest line by default
+        int textAngle = int(largestLine.angle())%180;
+        QPointF textPos = (largestLine.p1() + largestLine.p2())/2.0;
+
+        //move the text closer to the center when its out of bounds
+        if (textAngle == 0 and (
+            textPos.x()-text.size().width()/2 < boundingRect.left() or
+            textPos.x()+text.size().width()/2 > boundingRect.right()))
+        {
+            const int sign = (boundingRect.center().x() > textPos.x())?+1:-1;
+            const qreal delta = (text.size().width() - largestLine.length())/2;
+            textPos.setX(textPos.x() + sign*delta);
+        }
+        if (textAngle == 90 and (
+            textPos.y()-text.size().width()/2 < boundingRect.top() or
+            textPos.y()+text.size().width()/2 > boundingRect.bottom()))
+        {
+            const int sign = (boundingRect.center().y() > textPos.y())?+1:-1;
+            const qreal delta = (text.size().width() - largestLine.length())/2;
+            textPos.setY(textPos.y() + sign*delta);
+        }
+
+        //if the path is mostly strait, consider it a larger line to draw text in the center of
+        const bool sameDirection = outputAttrs.rotation == (inputAttrs.rotation + 180) % 360;
+        if (sameDirection and (outputAttrs.rotation % 180) == 0)
+        {
+            if (std::abs(op1.y() - ip1.y()) < text.size().height())
+            {
+                textAngle = 0;
+                textPos = QPointF((op1.x() + ip1.x())/2.0, std::min(op1.y(), ip1.y()));
+            }
+        }
+        if (sameDirection and (outputAttrs.rotation % 180) == 90)
+        {
+            if (std::abs(op1.x() - ip1.x()) < text.size().height())
+            {
+                textAngle = 90;
+                textPos = QPointF(std::max(op1.x(), ip1.x()), (op1.y() + ip1.y())/2.0);
+            }
+        }
+
+        painter.translate(textPos);
+        painter.rotate(textAngle);
         const auto hs = std::max(1.0, this->getSigSlotPairs().size()/std::ceil(this->getSigSlotPairs().size()/2.0));
         const QRectF textRect(QPointF(-text.size().width()/2, -text.size().height()/hs - GraphConnectionGirth), text.size());
         painter.drawStaticText(textRect.topLeft(), text);
