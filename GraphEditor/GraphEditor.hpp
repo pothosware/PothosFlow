@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -141,7 +141,7 @@ private slots:
     void handleShowRenderedGraphDialog(void);
     void handleShowTopologyStatsDialog(void);
     void handleToggleActivateTopology(bool);
-    void handleShowPortNames(void);
+    void handleBlockDisplayModeChange(void);
     void handleBlockIncrement(void);
     void handleBlockDecrement(void);
     void handleBlockXcrement(const int adj);

@@ -15,7 +15,9 @@ struct GraphBlock::Impl
 {
     Impl(void):
         signalPortUseCount(0),
-        slotPortUseCount(0)
+        slotPortUseCount(0),
+        showPortNames(false),
+        eventPortsInline(false)
     {
         return;
     }
@@ -63,6 +65,10 @@ struct GraphBlock::Impl
 
     QPointF slotPortPoint;
     size_t slotPortUseCount;
+
+    //display modes
+    bool showPortNames;
+    bool eventPortsInline;
 
     QRectF mainBlockRect;
     QPointer<QWidget> graphWidget;

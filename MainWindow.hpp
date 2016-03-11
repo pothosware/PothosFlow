@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -81,6 +81,7 @@ private:
     QAction *_showTopologyStatsAction;
     QAction *_activateTopologyAction;
     QAction *_showPortNamesAction;
+    QAction *_eventPortsInlineAction;
     QAction *_showColorsDialogAction;
     QAction *_incrementAction;
     QAction *_decrementAction;

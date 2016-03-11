@@ -20,8 +20,6 @@
 #include <algorithm> //min/max
 #include <Poco/Logger.h>
 
-static const bool NEW_SIGSLOTS = false;
-
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
     _impl(new Impl())
@@ -465,13 +463,13 @@ GraphConnectableAttrs GraphBlock::getConnectableAttrs(const GraphConnectableKey 
     if (key.direction == GRAPH_CONN_SLOT and key.id == "slots")
     {
         attrs.point = _impl->slotPortPoint;
-        attrs.rotation += NEW_SIGSLOTS?180:270;
+        attrs.rotation += _impl->eventPortsInline?180:270;
         return attrs;
     }
     if (key.direction == GRAPH_CONN_SIGNAL and key.id == "signals")
     {
         attrs.point = _impl->signalPortPoint;
-        attrs.rotation += NEW_SIGSLOTS?0:90;
+        attrs.rotation += _impl->eventPortsInline?0:90;
         return attrs;
     }
     return attrs;
@@ -536,7 +534,7 @@ void GraphBlock::renderStaticText(void)
             .arg(this->getOutputPortAlias(_outputPorts[i]).toHtmlEscaped()));
     }
 
-    if (not getActionMap()["showPortNames"]->isChecked())
+    if (not _impl->showPortNames)
     {
         _impl->inputPortsText.clear();
         _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
@@ -567,6 +565,9 @@ void GraphBlock::render(QPainter &painter)
     //render text
     if (this->isChanged())
     {
+        _impl->showPortNames = getActionMap()["showPortNames"]->isChecked();
+        _impl->eventPortsInline = getActionMap()["eventPortsInline"]->isChecked();
+
         this->update(); //call first because this will set changed again
         this->clearChanged();
 
@@ -595,12 +596,13 @@ void GraphBlock::render(QPainter &painter)
 
     //port totals for calculations below
     //slots are only present when connected
+    const bool eventPortsInline = _impl->eventPortsInline;
     const size_t numInputs = this->getInputPorts().size();
     const size_t numOutputs = this->getOutputPorts().size();
     const bool hasSignals = not this->getSignalPorts().empty();
     const bool hasSlots = not this->getSlotPorts().empty() and _impl->slotPortUseCount != 0;
-    const size_t numLeftSideEndpoints = numInputs + ((NEW_SIGSLOTS and hasSlots)?1:0);
-    const size_t numRightSideEndpoints = numOutputs + ((NEW_SIGSLOTS and hasSignals)?1:0);
+    const size_t numLeftSideEndpoints = numInputs + ((eventPortsInline and hasSlots)?1:0);
+    const size_t numRightSideEndpoints = numOutputs + ((eventPortsInline and hasSignals)?1:0);
 
     //calculate dimensions for input side
     qreal inputPortsMinHeight = GraphBlockPortVOutterPad*2;
@@ -610,7 +612,7 @@ void GraphBlock::render(QPainter &painter)
     {
         inputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
-    if (hasSlots and NEW_SIGSLOTS) inputPortsMinHeight += GraphBlockSignalPortSpan;
+    if (hasSlots and eventPortsInline) inputPortsMinHeight += GraphBlockSignalPortSpan;
 
     //calculate dimensions for output side
     qreal outputPortsMinHeight = GraphBlockPortVOutterPad*2;
@@ -620,7 +622,7 @@ void GraphBlock::render(QPainter &painter)
     {
         outputPortsMinHeight += text.size().height() + GraphBlockPortTextVPad*2;
     }
-    if (hasSignals and NEW_SIGSLOTS) outputPortsMinHeight += GraphBlockSignalPortSpan;
+    if (hasSignals and eventPortsInline) outputPortsMinHeight += GraphBlockSignalPortSpan;
 
     qreal propertiesMinHeight = 0;
     qreal propertiesMaxWidth = 0;
@@ -706,7 +708,7 @@ void GraphBlock::render(QPainter &painter)
         QPointF connPoint;
         QRectF portRect;
 
-        if (NEW_SIGSLOTS)
+        if (eventPortsInline)
         {
             QSizeF rectSize(GraphBlockSignalPortLength+GraphBlockPortArc, GraphBlockSignalPortSpan);
             const qreal hOff = (portFlip)? 1-rectSize.width() : overallWidth;
@@ -742,7 +744,7 @@ void GraphBlock::render(QPainter &painter)
     {
         QPointF connPoint;
 
-        if (NEW_SIGSLOTS)
+        if (eventPortsInline)
         {
             //center vertically on the midpoint between the top and the last input
             const auto hpos = inPortVdelta + GraphBlockSignalPortSpan/2;
@@ -755,6 +757,7 @@ void GraphBlock::render(QPainter &painter)
         }
         _impl->slotPortPoint = trans.map(connPoint);
     }
+    else _impl->slotPortPoint = QPointF();
 
     //draw main body of the block
     painter.save();

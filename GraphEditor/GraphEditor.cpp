@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action map
@@ -83,7 +83,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["showRenderedGraph"], SIGNAL(triggered(void)), this, SLOT(handleShowRenderedGraphDialog(void)));
     connect(getActionMap()["showTopologyStats"], SIGNAL(triggered(void)), this, SLOT(handleShowTopologyStatsDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
-    connect(getActionMap()["showPortNames"], SIGNAL(changed(void)), this, SLOT(handleShowPortNames(void)));
+    connect(getActionMap()["showPortNames"], SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
+    connect(getActionMap()["eventPortsInline"], SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
     connect(getActionMap()["increment"], SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
     connect(getActionMap()["decrement"], SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
@@ -867,7 +868,7 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     _isTopologyActive = enable;
 }
 
-void GraphEditor::handleShowPortNames(void)
+void GraphEditor::handleBlockDisplayModeChange(void)
 {
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
