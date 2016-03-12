@@ -258,6 +258,13 @@ void GraphDraw::doClickSelection(const QPointF &point)
         {
             _lastClickSelectEp = thisEp;
         }
+
+        //if this is a signal or slot connection
+        //open the properties panel for configuration
+        if (conn and conn->isSignalOrSlot())
+        {
+            emit this->modifyProperties(conn);
+        }
     }
 }
 
