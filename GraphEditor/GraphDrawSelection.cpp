@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action maps
@@ -88,6 +88,15 @@ static void handleAutoScroll(QScrollBar *bar, const qreal length, const qreal of
 void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseMoveEvent(event);
+
+    //implement mouse tracking for blocks
+    const auto scenePos = this->mapToScene(event->pos());
+    for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
+    {
+        const auto pos = obj->mapFromParent(scenePos);
+        auto block = dynamic_cast<GraphBlock *>(obj);
+        block->updateMouseTracking(pos);
+    }
 
     //handle the first move event transition from a press event
     if (_selectionState == SELECTION_STATE_PRESS)

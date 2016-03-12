@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //action and object map
@@ -47,6 +47,7 @@ GraphDraw::GraphDraw(QWidget *parent):
 
     //init settings
     assert(this->getGraphEditor() != nullptr);
+    this->setMouseTracking(true);
     this->setAcceptDrops(true);
     this->setZoomScale(1.0);
     this->clearSelectionState();

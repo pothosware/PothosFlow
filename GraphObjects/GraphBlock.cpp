@@ -378,6 +378,28 @@ void GraphBlock::unregisterEndpoint(const GraphConnectionEndpoint &ep)
     this->markChanged();
 }
 
+void GraphBlock::updateMouseTracking(const QPointF &pos)
+{
+    const auto newKey = this->isPointingToConnectable(pos);
+    if (newKey == _impl->trackedKey) return;
+    _impl->trackedKey = newKey;
+
+    //cause re-rendering of the text because we force show hovered port text
+    this->markChanged();
+    this->update();
+}
+
+QVariant GraphBlock::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+    //cause re-rendering of the text because we force show all port text
+    if (change == QGraphicsItem::ItemSelectedHasChanged)
+    {
+        this->markChanged();
+        this->update();
+    }
+    return QGraphicsItem::itemChange(change, value);
+}
+
 QPainterPath GraphBlock::shape(void) const
 {
     QPainterPath path;
@@ -516,30 +538,29 @@ void GraphBlock::renderStaticText(void)
         _impl->propertiesText.push_back(text);
     }
 
-    _impl->inputPortsText.resize(_inputPorts.size());
+    const bool forceShowPortNames = _impl->showPortNames or this->isSelected();
+    _impl->inputPortsText.clear();
+    _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
     for (int i = 0; i < _inputPorts.size(); i++)
     {
+        const GraphConnectableKey thisKey(_inputPorts[i], GRAPH_CONN_INPUT);
+        if (not forceShowPortNames and not (_impl->trackedKey == thisKey)) continue;
         _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->inputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(this->getInputPortAlias(_inputPorts[i]).toHtmlEscaped()));
     }
 
-    _impl->outputPortsText.resize(_outputPorts.size());
+    _impl->outputPortsText.clear();
+    _impl->outputPortsText.resize(_outputPorts.size(), QStaticText(" "));
     for (int i = 0; i < _outputPorts.size(); i++)
     {
+        const GraphConnectableKey thisKey(_outputPorts[i], GRAPH_CONN_OUTPUT);
+        if (not forceShowPortNames and not (_impl->trackedKey == thisKey)) continue;
         _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(this->getOutputPortAlias(_outputPorts[i]).toHtmlEscaped()));
-    }
-
-    if (not _impl->showPortNames)
-    {
-        _impl->inputPortsText.clear();
-        _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
-        _impl->outputPortsText.clear();
-        _impl->outputPortsText.resize(_outputPorts.size(), QStaticText(" "));
     }
 }
 

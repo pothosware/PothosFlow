@@ -116,9 +116,12 @@ public:
     const std::string &getActiveEditTab(void) const;
     void setActiveEditTab(const std::string &name);
 
-    //!Called by Connection to track active graph connections
+    //! Called by Connection to track active graph connections
     void registerEndpoint(const GraphConnectionEndpoint &ep);
     void unregisterEndpoint(const GraphConnectionEndpoint &ep);
+
+    //! Called by the graph draw to handle mouse tracking
+    void updateMouseTracking(const QPointF &pos);
 
 signals:
 
@@ -127,6 +130,10 @@ signals:
 
     //! Called externally to trigger individual eval
     void triggerEvalEvent(void);
+
+protected:
+
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 private:
     void renderStaticText(void);

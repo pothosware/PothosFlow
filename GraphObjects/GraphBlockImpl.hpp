@@ -72,4 +72,5 @@ struct GraphBlock::Impl
 
     QRectF mainBlockRect;
     QPointer<QWidget> graphWidget;
+    GraphConnectableKey trackedKey;
 };
