@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -85,6 +85,15 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
+    /*!
+     * Called by the graph draw class to handle mouse tracking.
+     * The position is relative to this graph object's reference.
+     * This is a manual replacement for mouseMoveEvent(),
+     * which was not being called in the graph objects.
+     */
+    virtual void updateMouseTracking(const QPointF &pos);
+
+    friend class GraphDraw;
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;

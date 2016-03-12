@@ -91,11 +91,9 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 
     //implement mouse tracking for blocks
     const auto scenePos = this->mapToScene(event->pos());
-    for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
+    for (auto obj : this->getGraphObjects())
     {
-        const auto pos = obj->mapFromParent(scenePos);
-        auto block = dynamic_cast<GraphBlock *>(obj);
-        block->updateMouseTracking(pos);
+        obj->updateMouseTracking(obj->mapFromParent(scenePos));
     }
 
     //handle the first move event transition from a press event

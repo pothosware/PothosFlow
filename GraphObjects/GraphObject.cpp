@@ -210,6 +210,11 @@ void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
+void GraphObject::updateMouseTracking(const QPointF &)
+{
+    return;
+}
+
 Poco::JSON::Object::Ptr GraphObject::serialize(void) const
 {
     Poco::JSON::Object::Ptr obj(new Poco::JSON::Object());
