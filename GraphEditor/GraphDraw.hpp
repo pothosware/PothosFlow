@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -11,6 +11,7 @@
 class GraphEditor;
 class QGraphicsItem;
 class QGraphicsPixmapItem;
+class QGraphicsLineItem;
 
 class GraphDraw : public QGraphicsView
 {
@@ -104,4 +105,5 @@ private:
 
     std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
     std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
+    QGraphicsLineItem *_connectLineItem;
 };

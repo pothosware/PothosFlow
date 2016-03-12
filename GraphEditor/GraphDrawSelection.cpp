@@ -12,6 +12,7 @@
 #include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
 #include <QApplication> //control modifier
+#include <QGraphicsLineItem>
 #include <QMouseEvent>
 #include <QAction>
 #include <QMenu>
@@ -22,10 +23,16 @@
 static const int SELECTION_STATE_NONE = 0;
 static const int SELECTION_STATE_PRESS = 1;
 static const int SELECTION_STATE_MOVE = 2;
+static const int SELECTION_STATE_CONNECT = 3;
 
 void GraphDraw::clearSelectionState(void)
 {
     _selectionState = SELECTION_STATE_NONE;
+    if (_connectLineItem != nullptr)
+    {
+        delete _connectLineItem;
+        _connectLineItem = nullptr;
+    }
 }
 
 void GraphDraw::contextMenuEvent(QContextMenuEvent *event)
@@ -49,15 +56,24 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
 void GraphDraw::mousePressEvent(QMouseEvent *event)
 {
     QGraphicsView::mousePressEvent(event);
+    const auto scenePos = this->mapToScene(event->pos());
     const auto objs = this->getObjectsAtPos(event->pos());
 
     //record the conditions of this press event, nothing is changed
     if (not objs.empty() and event->button() == Qt::LeftButton)
     {
-        _selectionState = SELECTION_STATE_PRESS;
+        auto topObj = objs.front();
+        auto key = topObj->isPointingToConnectable(topObj->mapFromParent(scenePos));
+        if (not key.id.isEmpty() and (key.direction == GRAPH_CONN_OUTPUT or key.direction == GRAPH_CONN_SIGNAL))
+        {
+            topObj->updateMouseTracking(topObj->mapFromParent(scenePos), SELECTION_STATE_CONNECT);
+            _selectionState = SELECTION_STATE_CONNECT;
+            this->doClickSelection(scenePos);
+        }
+        else _selectionState = SELECTION_STATE_PRESS;
 
         //make the clicked object topmost
-        objs.front()->setZValue(this->getMaxZValue()+1);
+        topObj->setZValue(this->getMaxZValue()+1);
     }
 
     this->render();
@@ -91,9 +107,41 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 
     //implement mouse tracking for blocks
     const auto scenePos = this->mapToScene(event->pos());
+    int trackingFlags = 0;
+
+    if (_selectionState == SELECTION_STATE_CONNECT)
+    {
+        trackingFlags |= MOUSE_TRACKING_CONNECT_MODE;
+        assert(_connectLineItem != nullptr);
+        if (_lastClickSelectEp.isValid())
+        {
+            switch (_lastClickSelectEp.getKey().direction)
+            {
+            case GRAPH_CONN_SLOT:
+            case GRAPH_CONN_INPUT:
+                trackingFlags |= MOUSE_TRACKING_CONNECT_INPUT; break;
+            case GRAPH_CONN_SIGNAL:
+            case GRAPH_CONN_OUTPUT:
+                trackingFlags |= MOUSE_TRACKING_CONNECT_OUTPUT; break;
+            }
+
+            const auto topObj = _lastClickSelectEp.getObj();
+            if (_connectLineItem == nullptr)
+            {
+                _connectLineItem = new QGraphicsLineItem(topObj);
+                auto pen = QPen(QColor(GraphObjectDefaultPenColor));
+                pen.setWidthF(ConnectModeLineWidth);
+                _connectLineItem->setPen(pen);
+            }
+            const auto attrs = topObj->getConnectableAttrs(_lastClickSelectEp.getKey());
+            const auto newPos = topObj->mapFromParent(scenePos);
+            _connectLineItem->setLine(QLineF(attrs.point, newPos));
+        }
+    }
+
     for (auto obj : this->getGraphObjects())
     {
-        obj->updateMouseTracking(obj->mapFromParent(scenePos));
+        obj->updateMouseTracking(obj->mapFromParent(scenePos), trackingFlags);
     }
 
     //handle the first move event transition from a press event
@@ -123,11 +171,12 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseReleaseEvent(event);
+    const auto scenePos = this->mapToScene(event->pos());
 
     //mouse released from a pressed state - alter selections at point
-    if (_selectionState == SELECTION_STATE_PRESS)
+    if (_selectionState == SELECTION_STATE_PRESS or _selectionState == SELECTION_STATE_CONNECT)
     {
-        this->doClickSelection(this->mapToScene(event->pos()));
+        this->doClickSelection(scenePos);
     }
 
     //emit the move event up to the graph editor
@@ -206,7 +255,8 @@ bool GraphDraw::graphWidgetHasFocus(void)
 void GraphDraw::doClickSelection(const QPointF &point)
 {
     const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
-    const auto objs = this->items(this->mapFromScene(point));
+    auto objs = this->items(this->mapFromScene(point));
+    if (_connectLineItem != nullptr) objs.removeOne(_connectLineItem);
 
     //nothing selected, clear the last selected endpoint
     if (objs.empty()) _lastClickSelectEp = GraphConnectionEndpoint();

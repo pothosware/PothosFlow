@@ -18,6 +18,11 @@ class QPainter;
 class GraphObject;
 class GraphDraw;
 
+//! Flags used with the mouse tracking hooks
+#define MOUSE_TRACKING_CONNECT_MODE (1 << 0)
+#define MOUSE_TRACKING_CONNECT_OUTPUT (1 << 1)
+#define MOUSE_TRACKING_CONNECT_INPUT (1 << 2)
+
 //! Represent a list of graph objects
 typedef QList<GraphObject *> GraphObjectList;
 
@@ -90,8 +95,9 @@ protected:
      * The position is relative to this graph object's reference.
      * This is a manual replacement for mouseMoveEvent(),
      * which was not being called in the graph objects.
+     * The flags indicate something about the state of the mouse.
      */
-    virtual void updateMouseTracking(const QPointF &pos);
+    virtual void updateMouseTracking(const QPointF &pos, const int flags = 0);
 
     friend class GraphDraw;
 private:

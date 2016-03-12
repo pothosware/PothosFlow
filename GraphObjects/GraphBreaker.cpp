@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBreaker.hpp"
@@ -16,7 +16,8 @@ struct GraphBreaker::Impl
 {
     Impl(void):
         isInput(true),
-        changed(true)
+        changed(true),
+        trackedFlags(0)
     {
         return;
     }
@@ -26,6 +27,8 @@ struct GraphBreaker::Impl
     QStaticText titleText;
     QPolygonF polygon;
     QPointF connectPoint;
+    GraphConnectableKey trackedKey;
+    int trackedFlags;
 };
 
 GraphBreaker::GraphBreaker(QObject *parent):
@@ -93,6 +96,20 @@ GraphConnectableAttrs GraphBreaker::getConnectableAttrs(const GraphConnectableKe
     return attrs;
 }
 
+void GraphBreaker::updateMouseTracking(const QPointF &pos, const int flags)
+{
+    const auto newKey = this->isPointingToConnectable(pos);
+    if (newKey == _impl->trackedKey and _impl->trackedFlags == flags) return;
+    _impl->trackedKey = newKey;
+    _impl->trackedFlags = flags;
+
+    this->setFlag(QGraphicsItem::ItemIsMovable, (flags & MOUSE_TRACKING_CONNECT_MODE) == 0);
+
+    //cause re-rendering of the text because we force show hovered port text
+    this->markChanged();
+    this->update();
+}
+
 void GraphBreaker::renderStaticText(void)
 {
     assert(_impl);
@@ -157,6 +174,13 @@ void GraphBreaker::render(QPainter &painter)
     polygon.translate(p);
     painter.save();
     if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+    if (not _impl->trackedKey.id.isEmpty())
+    {
+        const bool connectToInput = (_impl->trackedFlags & MOUSE_TRACKING_CONNECT_OUTPUT) != 0;
+        const bool connectToOutput = (_impl->trackedFlags & MOUSE_TRACKING_CONNECT_INPUT) != 0;
+        if ((this->isInput() and connectToInput) or (not this->isInput() and connectToOutput))
+            painter.setPen(QColor(ConnectModeHighlightPenColor));
+    }
     painter.drawPolygon(polygon);
     painter.restore();
     _impl->polygon = trans.map(polygon);

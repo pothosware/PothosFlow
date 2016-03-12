@@ -131,7 +131,7 @@ signals:
 protected:
 
     //! Called by the graph draw to handle mouse tracking
-    void updateMouseTracking(const QPointF &pos);
+    void updateMouseTracking(const QPointF &pos, const int flags);
 
     //! Block uses this to respond to selection changes
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);

@@ -210,7 +210,7 @@ void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void GraphObject::updateMouseTracking(const QPointF &)
+void GraphObject::updateMouseTracking(const QPointF &, const int)
 {
     return;
 }

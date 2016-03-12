@@ -13,9 +13,11 @@ static const int GRAPH_CONNECTION = (1 << 2);
 static const int GRAPH_WIDGET = (1 << 3);
 
 static const QString GraphObjectHighlightPenColor = "#33FFFF";
+static const QString ConnectModeHighlightPenColor = "#FFFF00";
 static const QString GraphObjectDefaultPenColor = "#000000";
 static const QString GraphObjectDefaultFillColor = "#E8E8E8";
 static const qreal GraphObjectBorderWidth = 0.5;
+static const qreal ConnectModeLineWidth = 1.5;
 
 static const QString GraphObjectConnPointColor = "#FF85C2";
 static const QString GraphObjectConnLineColor = "#000000";
