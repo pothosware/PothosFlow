@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphObject.hpp"
@@ -24,7 +24,8 @@ struct GraphObject::Impl
         deleteFlag(false),
         uid(getUIDAtomic()++),
         enabled(true),
-        changed(true)
+        changed(true),
+        trackedFlags(0)
     {
         return;
     }
@@ -33,6 +34,8 @@ struct GraphObject::Impl
     size_t uid;
     bool enabled;
     bool changed;
+    GraphConnectableKey trackedKey;
+    int trackedFlags;
 };
 
 GraphObject::GraphObject(QObject *parent):
@@ -210,9 +213,24 @@ void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void GraphObject::updateMouseTracking(const QPointF &, const int)
+void GraphObject::updateMouseTracking(const QPointF &pos, const int flags)
 {
-    return;
+    const auto newKey = this->isPointingToConnectable(pos);
+    if (newKey == _impl->trackedKey and _impl->trackedFlags == flags) return;
+    _impl->trackedKey = newKey;
+    _impl->trackedFlags = flags;
+
+    this->setFlag(QGraphicsItem::ItemIsMovable, (flags & MOUSE_TRACKING_CONNECT_MODE) == 0);
+
+    //cause re-rendering of the text because we force show hovered port text
+    this->markChanged();
+    this->update();
+}
+
+const GraphConnectableKey &GraphObject::currentTrackedConnectable(int &flags) const
+{
+    flags = _impl->trackedFlags;
+    return _impl->trackedKey;
 }
 
 Poco::JSON::Object::Ptr GraphObject::serialize(void) const

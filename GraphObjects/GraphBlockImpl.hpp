@@ -5,6 +5,7 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphBlock.hpp"
 #include <QColor>
+#include <QPen>
 #include <QRectF>
 #include <QPointF>
 #include <QStaticText>
@@ -17,8 +18,7 @@ struct GraphBlock::Impl
         signalPortUseCount(0),
         slotPortUseCount(0),
         showPortNames(false),
-        eventPortsInline(false),
-        trackedFlags(0)
+        eventPortsInline(false)
     {
         return;
     }
@@ -46,7 +46,7 @@ struct GraphBlock::Impl
 
     std::map<QString, QString> inputPortsAliases;
     std::vector<QStaticText> inputPortsText;
-    std::vector<QColor> inputPortsBorder;
+    std::vector<QPen> inputPortsBorder;
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
@@ -55,7 +55,7 @@ struct GraphBlock::Impl
 
     std::map<QString, QString> outputPortsAliases;
     std::vector<QStaticText> outputPortsText;
-    std::vector<QColor> outputPortsBorder;
+    std::vector<QPen> outputPortsBorder;
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;
     std::vector<QColor> outputPortColors;
@@ -65,11 +65,11 @@ struct GraphBlock::Impl
     QRectF signalPortRect;
     QPointF signalPortPoint;
     size_t signalPortUseCount;
-    QColor signalPortBorder;
+    QPen signalPortBorder;
 
     QPointF slotPortPoint;
     size_t slotPortUseCount;
-    QColor mainRectBorder;
+    QPen mainRectBorder;
 
     //display modes
     bool showPortNames;
@@ -77,6 +77,4 @@ struct GraphBlock::Impl
 
     QRectF mainBlockRect;
     QPointer<QWidget> graphWidget;
-    GraphConnectableKey trackedKey;
-    int trackedFlags;
 };

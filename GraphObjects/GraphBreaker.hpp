@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2014 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -43,11 +43,6 @@ public:
     Poco::JSON::Object::Ptr serialize(void) const;
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
-
-protected:
-
-    //! Called by the graph draw to handle mouse tracking
-    void updateMouseTracking(const QPointF &pos, const int flags);
 
 private:
     void renderStaticText(void);

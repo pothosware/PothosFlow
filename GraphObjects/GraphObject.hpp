@@ -76,6 +76,9 @@ public:
     virtual GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;
     virtual void renderConnectablePoints(QPainter &painter);
 
+    //! Get the current key tracked by the mouse and its respective flags
+    virtual const GraphConnectableKey &currentTrackedConnectable(int &flags) const;
+
     bool isFlaggedForDelete(void) const;
     void flagForDelete(void);
 
