@@ -512,6 +512,7 @@ void GraphBlock::renderStaticText(void)
 
     //default rendering
     const QPen defaultPen(QColor(GraphObjectDefaultPenColor), GraphObjectBorderWidth);
+    const QPen connectPen(QColor(ConnectModeHighlightPenColor), ConnectModeHighlightWidth);
     _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
     _impl->inputPortsBorder.resize(_inputPorts.size(), defaultPen);
     _impl->outputPortsText.resize(_outputPorts.size(), QStaticText(" "));
@@ -553,7 +554,7 @@ void GraphBlock::renderStaticText(void)
     {
         const bool tracked = (trackedKey == GraphConnectableKey(_inputPorts[i], GRAPH_CONN_INPUT));
         if (this->isSelected()) _impl->inputPortsBorder[i] = QPen(GraphObjectHighlightPenColor);
-        if (tracked and connectToInput) _impl->inputPortsBorder[i] = QPen(ConnectModeHighlightPenColor);
+        if (tracked and connectToInput) _impl->inputPortsBorder[i] = connectPen;
 
         if (not forceShowPortNames and not tracked) continue;
         _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
@@ -567,7 +568,7 @@ void GraphBlock::renderStaticText(void)
     {
         const bool tracked = (trackedKey == GraphConnectableKey(_outputPorts[i], GRAPH_CONN_OUTPUT));
         if (this->isSelected()) _impl->outputPortsBorder[i] = QPen(GraphObjectHighlightPenColor);
-        if (tracked and connectToOutput) _impl->outputPortsBorder[i] = QPen(ConnectModeHighlightPenColor);
+        if (tracked and connectToOutput) _impl->outputPortsBorder[i] = connectPen;
 
         if (not forceShowPortNames and not tracked) continue;
         _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
@@ -580,14 +581,14 @@ void GraphBlock::renderStaticText(void)
     {
         const bool tracked = (trackedKey == GraphConnectableKey("signals", GRAPH_CONN_SIGNAL));
         if (this->isSelected()) _impl->signalPortBorder = QPen(GraphObjectHighlightPenColor);
-        if (tracked and connectToOutput) _impl->signalPortBorder = QPen(ConnectModeHighlightPenColor);
+        if (tracked and connectToOutput) _impl->signalPortBorder = connectPen;
     }
 
     //slot port/main rect setup
     {
         const bool tracked = (trackedKey == GraphConnectableKey("slots", GRAPH_CONN_SLOT));
         if (this->isSelected()) _impl->mainRectBorder = QPen(GraphObjectHighlightPenColor);
-        if (tracked and connectToInput) _impl->mainRectBorder = QPen(ConnectModeHighlightPenColor);
+        if (tracked and connectToInput) _impl->mainRectBorder = connectPen;
     }
 }
 

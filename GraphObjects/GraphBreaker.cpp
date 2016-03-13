@@ -163,7 +163,7 @@ void GraphBreaker::render(QPainter &painter)
         const bool connectToInput = (trackedFlags & MOUSE_TRACKING_CONNECT_OUTPUT) != 0;
         const bool connectToOutput = (trackedFlags & MOUSE_TRACKING_CONNECT_INPUT) != 0;
         if ((this->isInput() and connectToInput) or (not this->isInput() and connectToOutput))
-            painter.setPen(QColor(ConnectModeHighlightPenColor));
+            painter.setPen(QPen(QColor(ConnectModeHighlightPenColor), ConnectModeHighlightWidth));
     }
     painter.drawPolygon(polygon);
     painter.restore();
