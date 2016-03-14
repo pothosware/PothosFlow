@@ -96,7 +96,7 @@ public:
     void resetTo(const int index)
     {
         assert(index >= 0);
-        assert(index < _states.size());
+        assert(index < int(_states.size()));
         _currentIndex = index;
         this->change();
     }
