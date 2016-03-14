@@ -73,20 +73,14 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
         }
 
         //handle click selection for connections
-        const auto &lastEp = _lastClickSelectEp;
         const auto thisEp = this->mousedEndpoint(event->pos());
 
-        //enter the connect drag mode and object immobilization when
-        //the endpoint is a nubbin when its a block (not a slot)
-        //or the endpoint is an already selected breaker
+        //enter the connect drag mode and object immobilization
+        //slots are exempt because they are the block's body
         if (thisEp.isValid())
         {
             auto topObj = thisEp.getObj();
-            const bool isBlock = dynamic_cast<GraphBlock *>(topObj.data()) != nullptr;
-            const bool isBreaker = dynamic_cast<GraphBreaker *>(topObj.data()) != nullptr;
-            if (
-                (isBreaker and topObj == lastEp.getObj()) or
-                (isBlock and thisEp.getKey().direction != GRAPH_CONN_SLOT))
+            if (thisEp.getKey().direction != GRAPH_CONN_SLOT)
             {
                 _connectLineItem.reset(new QGraphicsLineItem(topObj));
                 _connectLineItem->setPen(QPen(QColor(GraphObjectDefaultPenColor), ConnectModeLineWidth));
