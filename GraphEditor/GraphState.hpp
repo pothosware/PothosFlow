@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -83,7 +83,7 @@ public:
     //! is there a subsequent state available?
     bool isSubsequentAvailable(void) const
     {
-        return this->numStates() > _currentIndex+1;
+        return int(this->numStates()) > _currentIndex+1;
     }
 
     //! is there a previous state available?
