@@ -71,6 +71,15 @@ public:
     //! Get a list of graph objects at the given point
     GraphObjectList getObjectsAtPos(const QPoint &pos);
 
+    /*!
+     * Get the last endpoint that was clicked.
+     * This is used by the blocks to determine connect mode highlighting.
+     */
+    const GraphConnectionEndpoint &lastClickedEndpoint(void) const
+    {
+        return _lastClickSelectEp;
+    }
+
 protected:
     void contextMenuEvent(QContextMenuEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
@@ -94,7 +103,8 @@ signals:
 
 private:
 
-    void doClickSelection(const QPointF &point);
+    GraphConnectionEndpoint mousedEndpoint(const QPoint &);
+    bool tryToMakeConnection(const GraphConnectionEndpoint &thisEp);
 
     GraphEditor *_graphEditor;
     qreal _zoomScale;
@@ -105,5 +115,6 @@ private:
 
     std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
     std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
-    QGraphicsLineItem *_connectLineItem;
+    std::shared_ptr<QGraphicsLineItem> _connectLineItem;
+    std::unique_ptr<GraphObjectImmobilizer> _connectModeImmobilizer;
 };

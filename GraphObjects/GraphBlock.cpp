@@ -4,6 +4,7 @@
 #include "PothosGuiUtils.hpp" //get object map
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "ColorUtils/ColorUtils.hpp"
@@ -520,9 +521,10 @@ void GraphBlock::renderStaticText(void)
     _impl->signalPortBorder = defaultPen;
     _impl->mainRectBorder = defaultPen;
     const bool forceShowPortNames = _impl->showPortNames or this->isSelected();
-    int trackedFlags = 0; const auto &trackedKey = this->currentTrackedConnectable(trackedFlags);
-    const bool connectToInput = (trackedFlags & MOUSE_TRACKING_CONNECT_OUTPUT) != 0;
-    const bool connectToOutput = (trackedFlags & MOUSE_TRACKING_CONNECT_INPUT) != 0;
+    const auto &trackedKey = this->currentTrackedConnectable();
+    const auto &clickedEp = this->draw()->lastClickedEndpoint();
+    const bool connectToInput = clickedEp.isValid() and not clickedEp.getKey().isInput();
+    const bool connectToOutput = clickedEp.isValid() and clickedEp.getKey().isInput();
 
     //load the title text
     _impl->titleText = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3</b></span>")

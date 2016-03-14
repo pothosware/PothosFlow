@@ -23,16 +23,12 @@
 static const int SELECTION_STATE_NONE = 0;
 static const int SELECTION_STATE_PRESS = 1;
 static const int SELECTION_STATE_MOVE = 2;
-static const int SELECTION_STATE_CONNECT = 3;
 
 void GraphDraw::clearSelectionState(void)
 {
     _selectionState = SELECTION_STATE_NONE;
-    if (_connectLineItem != nullptr)
-    {
-        delete _connectLineItem;
-        _connectLineItem = nullptr;
-    }
+    _connectLineItem.reset();
+    _connectModeImmobilizer.reset();
 }
 
 void GraphDraw::contextMenuEvent(QContextMenuEvent *event)
@@ -56,24 +52,52 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
 void GraphDraw::mousePressEvent(QMouseEvent *event)
 {
     QGraphicsView::mousePressEvent(event);
-    const auto scenePos = this->mapToScene(event->pos());
-    const auto objs = this->getObjectsAtPos(event->pos());
+    if (QApplication::keyboardModifiers() & Qt::ControlModifier) return;
 
     //record the conditions of this press event, nothing is changed
-    if (not objs.empty() and event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton)
     {
-        auto topObj = objs.front();
-        auto key = topObj->isPointingToConnectable(topObj->mapFromParent(scenePos));
-        if (not key.id.isEmpty() and (key.direction == GRAPH_CONN_OUTPUT or key.direction == GRAPH_CONN_SIGNAL))
-        {
-            topObj->updateMouseTracking(topObj->mapFromParent(scenePos), SELECTION_STATE_CONNECT);
-            _selectionState = SELECTION_STATE_CONNECT;
-            this->doClickSelection(scenePos);
-        }
-        else _selectionState = SELECTION_STATE_PRESS;
+        _selectionState = SELECTION_STATE_PRESS;
 
-        //make the clicked object topmost
-        topObj->setZValue(this->getMaxZValue()+1);
+        const auto objs = this->getObjectsAtPos(event->pos());
+        if (objs.empty())
+        {
+            //perform deselect when background is clicked
+            _lastClickSelectEp = GraphConnectionEndpoint();
+            this->deselectAllObjs();
+        }
+        else
+        {
+            //make the clicked object topmost
+            objs.front()->setZValue(this->getMaxZValue()+1);
+        }
+
+        //handle click selection for connections
+        const auto &lastEp = _lastClickSelectEp;
+        const auto thisEp = this->mousedEndpoint(event->pos());
+
+        //enter the connect drag mode and object immobilization when
+        //the endpoint is a nubbin when its a block (not a slot)
+        //or the endpoint is an already selected breaker
+        if (thisEp.isValid())
+        {
+            auto topObj = thisEp.getObj();
+            const bool isBlock = dynamic_cast<GraphBlock *>(topObj.data()) != nullptr;
+            const bool isBreaker = dynamic_cast<GraphBreaker *>(topObj.data()) != nullptr;
+            if (
+                (isBreaker and topObj == lastEp.getObj()) or
+                (isBlock and thisEp.getKey().direction != GRAPH_CONN_SLOT))
+            {
+                _connectLineItem.reset(new QGraphicsLineItem(topObj));
+                _connectLineItem->setPen(QPen(QColor(GraphObjectDefaultPenColor), ConnectModeLineWidth));
+                _connectModeImmobilizer.reset(new GraphObjectImmobilizer(topObj));
+            }
+            if (not this->tryToMakeConnection(thisEp))
+            {
+                //stash this endpoint for click-selection
+                _lastClickSelectEp = thisEp;
+            }
+        }
     }
 
     this->render();
@@ -107,41 +131,18 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 
     //implement mouse tracking for blocks
     const auto scenePos = this->mapToScene(event->pos());
-    int trackingFlags = 0;
-
-    if (_selectionState == SELECTION_STATE_CONNECT)
-    {
-        trackingFlags |= MOUSE_TRACKING_CONNECT_MODE;
-        assert(_connectLineItem != nullptr);
-        if (_lastClickSelectEp.isValid())
-        {
-            switch (_lastClickSelectEp.getKey().direction)
-            {
-            case GRAPH_CONN_SLOT:
-            case GRAPH_CONN_INPUT:
-                trackingFlags |= MOUSE_TRACKING_CONNECT_INPUT; break;
-            case GRAPH_CONN_SIGNAL:
-            case GRAPH_CONN_OUTPUT:
-                trackingFlags |= MOUSE_TRACKING_CONNECT_OUTPUT; break;
-            }
-
-            const auto topObj = _lastClickSelectEp.getObj();
-            if (_connectLineItem == nullptr)
-            {
-                _connectLineItem = new QGraphicsLineItem(topObj);
-                auto pen = QPen(QColor(GraphObjectDefaultPenColor));
-                pen.setWidthF(ConnectModeLineWidth);
-                _connectLineItem->setPen(pen);
-            }
-            const auto attrs = topObj->getConnectableAttrs(_lastClickSelectEp.getKey());
-            const auto newPos = topObj->mapFromParent(scenePos);
-            _connectLineItem->setLine(QLineF(attrs.point, newPos));
-        }
-    }
-
     for (auto obj : this->getGraphObjects())
     {
-        obj->updateMouseTracking(obj->mapFromParent(scenePos), trackingFlags);
+        obj->updateMouseTracking(obj->mapFromParent(scenePos));
+    }
+
+    //handle drawing in the click, drag, connect mode
+    if (_connectLineItem)
+    {
+        const auto topObj = _lastClickSelectEp.getObj();
+        const auto attrs = topObj->getConnectableAttrs(_lastClickSelectEp.getKey());
+        const auto newPos = topObj->mapFromParent(scenePos);
+        _connectLineItem->setLine(QLineF(attrs.point, newPos));
     }
 
     //handle the first move event transition from a press event
@@ -171,12 +172,13 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
 void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
 {
     QGraphicsView::mouseReleaseEvent(event);
-    const auto scenePos = this->mapToScene(event->pos());
+    if (QApplication::keyboardModifiers() & Qt::ControlModifier) return;
 
-    //mouse released from a pressed state - alter selections at point
-    if (_selectionState == SELECTION_STATE_PRESS or _selectionState == SELECTION_STATE_CONNECT)
+    //releasing the connection line to create
+    if (_connectLineItem)
     {
-        this->doClickSelection(scenePos);
+        const auto thisEp = this->mousedEndpoint(event->pos());
+        this->tryToMakeConnection(thisEp);
     }
 
     //emit the move event up to the graph editor
@@ -252,68 +254,58 @@ bool GraphDraw::graphWidgetHasFocus(void)
     return false;
 }
 
-void GraphDraw::doClickSelection(const QPointF &point)
+GraphConnectionEndpoint GraphDraw::mousedEndpoint(const QPoint &pos)
 {
-    const bool ctrlDown = QApplication::keyboardModifiers() & Qt::ControlModifier;
-    auto objs = this->items(this->mapFromScene(point));
-    if (_connectLineItem != nullptr) objs.removeOne(_connectLineItem);
+    auto objs = this->items(pos);
+    if (_connectLineItem) objs.removeOne(_connectLineItem.get());
+    if (objs.empty()) return GraphConnectionEndpoint();
+    auto topObj = dynamic_cast<GraphObject *>(objs.front());
+    const auto point = topObj->mapFromParent(this->mapToScene(pos));
+    return GraphConnectionEndpoint(topObj, topObj->isPointingToConnectable(point));
+}
 
-    //nothing selected, clear the last selected endpoint
-    if (objs.empty()) _lastClickSelectEp = GraphConnectionEndpoint();
+bool GraphDraw::tryToMakeConnection(const GraphConnectionEndpoint &thisEp)
+{
+    QPointer<GraphConnection> conn;
+    const auto &lastEp = _lastClickSelectEp;
 
-    //connection creation logic
-    if (not ctrlDown and not objs.empty())
+    //valid keys, attempt to make a connection when the endpoints differ in direction
+    if (thisEp.isValid() and lastEp.isValid() and //both are valid
+        lastEp.getKey().isInput() != thisEp.getKey().isInput()) //directions differ
     {
-        auto topObj = dynamic_cast<GraphObject *>(objs.front());
-        if (topObj == nullptr) return;
-        GraphConnectionEndpoint thisEp(topObj, topObj->isPointingToConnectable(topObj->mapFromParent(point)));
-
-        //valid keys, attempt to make a connection
-        QPointer<GraphConnection> conn;
-        if (thisEp.isValid() and _lastClickSelectEp.isValid() and not (thisEp == _lastClickSelectEp) and //end points valid
-            (_lastClickSelectEp.getConnectableAttrs().direction == GRAPH_CONN_OUTPUT or _lastClickSelectEp.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL) and //last endpoint is output
-            (thisEp.getConnectableAttrs().direction == GRAPH_CONN_INPUT or thisEp.getConnectableAttrs().direction == GRAPH_CONN_SLOT)) //this click endpoint is input
+        try
         {
-            try
-            {
-                conn = this->getGraphEditor()->makeConnection(thisEp, _lastClickSelectEp);
-                this->getGraphEditor()->handleStateChange(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
-                    conn->getOutputEndpoint().getObj()->getId(),
-                    conn->getOutputEndpoint().getKey().id,
-                    conn->getInputEndpoint().getObj()->getId(),
-                    conn->getInputEndpoint().getKey().id
-                )));
-            }
-            catch (const Pothos::Exception &ex)
-            {
-                poco_warning(Poco::Logger::get("PothosGui.GraphDraw.connect"), Poco::format("Cannot connect port %s[%s] to port %s[%s]: %s",
-                    _lastClickSelectEp.getObj()->getId().toStdString(),
-                    _lastClickSelectEp.getKey().id.toStdString(),
-                    thisEp.getObj()->getId().toStdString(),
-                    thisEp.getKey().id.toStdString(),
-                    ex.message()));
-            }
+            conn = this->getGraphEditor()->makeConnection(thisEp, _lastClickSelectEp);
+            this->getGraphEditor()->handleStateChange(GraphState("connect-arrow", tr("Connect %1[%2] to %3[%4]").arg(
+                conn->getOutputEndpoint().getObj()->getId(),
+                conn->getOutputEndpoint().getKey().id,
+                conn->getInputEndpoint().getObj()->getId(),
+                conn->getInputEndpoint().getKey().id
+            )));
+        }
+        catch (const Pothos::Exception &ex)
+        {
+            poco_warning(Poco::Logger::get("PothosGui.GraphDraw.connect"), Poco::format("Cannot connect port %s[%s] to port %s[%s]: %s",
+                _lastClickSelectEp.getObj()->getId().toStdString(),
+                _lastClickSelectEp.getKey().id.toStdString(),
+                thisEp.getObj()->getId().toStdString(),
+                thisEp.getKey().id.toStdString(),
+                ex.message()));
         }
 
-        //cleanup after new connection
-        if (not conn.isNull())
-        {
-            _lastClickSelectEp = GraphConnectionEndpoint();
-            this->deselectAllObjs();
-        }
-        //otherwise save the click select
-        else
-        {
-            _lastClickSelectEp = thisEp;
-        }
-
-        //if this is a signal or slot connection
-        //open the properties panel for configuration
-        if (conn and conn->isSignalOrSlot())
-        {
-            emit this->modifyProperties(conn);
-        }
+        //cleanup regardless of failure
+        _lastClickSelectEp = GraphConnectionEndpoint();
+        this->deselectAllObjs();
     }
+
+    //if this is a signal or slot connection
+    //open the properties panel for configuration
+    if (conn and conn->isSignalOrSlot())
+    {
+        emit this->modifyProperties(conn);
+    }
+
+    return bool(conn);
 }
 
 GraphObjectList GraphDraw::getObjectsAtPos(const QPoint &pos)

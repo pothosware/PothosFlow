@@ -3,6 +3,7 @@
 
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -157,14 +158,15 @@ void GraphBreaker::render(QPainter &painter)
     polygon.translate(p);
     painter.save();
     if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
-    int trackedFlags = 0; const auto &trackedKey = this->currentTrackedConnectable(trackedFlags);
-    if (not trackedKey.id.isEmpty())
+
+    //connection mode when the tracked endpoint is the oposing direction of the last clicked endpoint
+    const auto &trackedKey = this->currentTrackedConnectable();
+    const auto &clickedEp = this->draw()->lastClickedEndpoint();
+    if (trackedKey.isValid() and clickedEp.isValid() and this->isInput() != clickedEp.getKey().isInput())
     {
-        const bool connectToInput = (trackedFlags & MOUSE_TRACKING_CONNECT_OUTPUT) != 0;
-        const bool connectToOutput = (trackedFlags & MOUSE_TRACKING_CONNECT_INPUT) != 0;
-        if ((this->isInput() and connectToInput) or (not this->isInput() and connectToOutput))
-            painter.setPen(QPen(QColor(ConnectModeHighlightPenColor), ConnectModeHighlightWidth));
+        painter.setPen(QPen(QColor(ConnectModeHighlightPenColor), ConnectModeHighlightWidth));
     }
+
     painter.drawPolygon(polygon);
     painter.restore();
     _impl->polygon = trans.map(polygon);

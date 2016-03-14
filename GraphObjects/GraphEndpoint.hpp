@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -32,6 +32,16 @@ struct GraphConnectableKey
     explicit GraphConnectableKey(const QString &id = "", const GraphConnectableDirection direction = GRAPH_CONN_OUTPUT);
     QString id;
     GraphConnectableDirection direction;
+
+    /*!
+     * Is this key in the input direction?
+     * True for regular inputs and slots.
+     * False for regular outputs and signals.
+     */
+    bool isInput(void) const;
+
+    //! Valid when the ID is non-empty
+    bool isValid(void) const;
 };
 
 extern bool operator==(const GraphConnectableKey &key0, const GraphConnectableKey &key1);

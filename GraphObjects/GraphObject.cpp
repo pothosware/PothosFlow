@@ -24,8 +24,7 @@ struct GraphObject::Impl
         deleteFlag(false),
         uid(getUIDAtomic()++),
         enabled(true),
-        changed(true),
-        trackedFlags(0)
+        changed(true)
     {
         return;
     }
@@ -35,7 +34,6 @@ struct GraphObject::Impl
     bool enabled;
     bool changed;
     GraphConnectableKey trackedKey;
-    int trackedFlags;
 };
 
 GraphObject::GraphObject(QObject *parent):
@@ -213,23 +211,19 @@ void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void GraphObject::updateMouseTracking(const QPointF &pos, const int flags)
+void GraphObject::updateMouseTracking(const QPointF &pos)
 {
     const auto newKey = this->isPointingToConnectable(pos);
-    if (newKey == _impl->trackedKey and _impl->trackedFlags == flags) return;
+    if (newKey == _impl->trackedKey) return;
     _impl->trackedKey = newKey;
-    _impl->trackedFlags = flags;
-
-    this->setFlag(QGraphicsItem::ItemIsMovable, (flags & MOUSE_TRACKING_CONNECT_MODE) == 0);
 
     //cause re-rendering of the text because we force show hovered port text
     this->markChanged();
     this->update();
 }
 
-const GraphConnectableKey &GraphObject::currentTrackedConnectable(int &flags) const
+const GraphConnectableKey &GraphObject::currentTrackedConnectable(void) const
 {
-    flags = _impl->trackedFlags;
     return _impl->trackedKey;
 }
 

@@ -18,11 +18,6 @@ class QPainter;
 class GraphObject;
 class GraphDraw;
 
-//! Flags used with the mouse tracking hooks
-#define MOUSE_TRACKING_CONNECT_MODE (1 << 0)
-#define MOUSE_TRACKING_CONNECT_OUTPUT (1 << 1)
-#define MOUSE_TRACKING_CONNECT_INPUT (1 << 2)
-
 //! Represent a list of graph objects
 typedef QList<GraphObject *> GraphObjectList;
 
@@ -76,8 +71,8 @@ public:
     virtual GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;
     virtual void renderConnectablePoints(QPainter &painter);
 
-    //! Get the current key tracked by the mouse and its respective flags
-    virtual const GraphConnectableKey &currentTrackedConnectable(int &flags) const;
+    //! Get the current key tracked by the mouse
+    virtual const GraphConnectableKey &currentTrackedConnectable(void) const;
 
     bool isFlaggedForDelete(void) const;
     void flagForDelete(void);
@@ -98,12 +93,34 @@ protected:
      * The position is relative to this graph object's reference.
      * This is a manual replacement for mouseMoveEvent(),
      * which was not being called in the graph objects.
-     * The flags indicate something about the state of the mouse.
      */
-    virtual void updateMouseTracking(const QPointF &pos, const int flags = 0);
+    virtual void updateMouseTracking(const QPointF &pos);
 
     friend class GraphDraw;
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
+};
+
+/*!
+ * Immobilize a graph object on construction.
+ * And automatically restore on deletion.
+ */
+struct GraphObjectImmobilizer
+{
+    template<typename ObjectType>
+    GraphObjectImmobilizer(const ObjectType &obj):
+        obj(obj),
+        flags(obj->flags())
+    {
+        obj->setFlag(QGraphicsItem::ItemIsMovable, false);
+    }
+
+    ~GraphObjectImmobilizer(void)
+    {
+        if (obj) obj->setFlags(flags);
+    }
+
+    QPointer<QGraphicsObject> obj;
+    QGraphicsItem::GraphicsItemFlags flags;
 };

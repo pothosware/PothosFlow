@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphEndpoint.hpp"
@@ -9,6 +9,16 @@ GraphConnectableKey::GraphConnectableKey(const QString &id, const GraphConnectab
     direction(direction)
 {
     return;
+}
+
+bool GraphConnectableKey::isInput(void) const
+{
+    return direction == GRAPH_CONN_INPUT or direction == GRAPH_CONN_SLOT;
+}
+
+bool GraphConnectableKey::isValid(void) const
+{
+    return not id.isEmpty();
 }
 
 bool operator==(const GraphConnectableKey &key0, const GraphConnectableKey &key1)
@@ -39,7 +49,7 @@ GraphConnectableAttrs GraphConnectionEndpoint::getConnectableAttrs(void) const
 
 bool GraphConnectionEndpoint::isValid(void) const
 {
-    return not _obj.isNull() and not _key.id.isEmpty();
+    return not _obj.isNull() and _key.isValid();
 }
 
 bool operator==(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1)
