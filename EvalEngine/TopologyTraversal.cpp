@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "TopologyEval.hpp"
@@ -9,9 +9,19 @@
 /*!
  * Given an input endpoint, discover all of the "resolved" input endpoints by traversing breakers of the same node name.
  */
-static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnectionEndpoint &inputEp, const GraphObjectList &graphObjects)
+static std::vector<GraphConnectionEndpoint> traverseInputEps(
+    const GraphConnectionEndpoint &inputEp,
+    const GraphObjectList &graphObjects,
+    std::vector<GraphConnectionEndpoint> traversed = std::vector<GraphConnectionEndpoint>()
+)
 {
     std::vector<GraphConnectionEndpoint> inputEndpoints;
+
+    //avoid recursive loops by keeping track of traversed endpoints
+    auto it = std::find(traversed.begin(), traversed.end(), inputEp);
+    if (it != traversed.end()) return inputEndpoints;
+    traversed.push_back(inputEp);
+
     auto inputBlock = dynamic_cast<GraphBlock *>(inputEp.getObj().data());
     auto inputBreaker = dynamic_cast<GraphBreaker *>(inputEp.getObj().data());
 
@@ -41,7 +51,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(const GraphConnecti
                 for (const auto &epPair : connection->getEndpointPairs())
                 {
                     const auto &inputEp = epPair.second;
-                    for (const auto &subEp : traverseInputEps(inputEp, graphObjects))
+                    for (const auto &subEp : traverseInputEps(inputEp, graphObjects, traversed))
                     {
                         inputEndpoints.push_back(subEp);
                     }
