@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon path and object/action maps
@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QCloseEvent>
 #include <QAction>
+#include <QDir>
 #include <QStandardPaths>
 #include <Poco/Logger.h>
 #include <iostream>
@@ -88,8 +89,9 @@ void GraphEditorTabs::handleOpen(void)
                         lastPath,
                         "Pothos Topologies (*.pth)");
 
-    for (const auto &filePath : filePaths)
+    for (const auto &file : filePaths)
     {
+        const auto filePath = QDir(file).absolutePath();
         getSettings().setValue("GraphEditorTabs/lastFile", filePath);
         this->handleOpen(filePath);
     }
@@ -157,6 +159,7 @@ void GraphEditorTabs::handleSaveAs(void)
                         tr("Pothos Topologies (*.pth)"));
     if (filePath.isEmpty()) return;
     if (not filePath.endsWith(".pth")) filePath += ".pth";
+    filePath = QDir(filePath).absolutePath();
     getSettings().setValue("GraphEditorTabs/lastFile", filePath);
     editor->setCurrentFilePath(filePath);
     editor->save();
