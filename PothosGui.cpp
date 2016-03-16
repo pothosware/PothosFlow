@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow.hpp"
@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QSplashScreen>
+#include <QDir>
 #include <stdexcept>
 #include <cstdlib> //EXIT_FAILURE
 #include <memory>
@@ -39,7 +40,7 @@ int main(int argc, char **argv)
     {
         QString file(argv[i]);
         if (file.isEmpty()) continue;
-        files.push_back(file);
+        files.push_back(QDir(file).absolutePath());
     }
     if (not files.isEmpty()) getSettings().setValue("GraphEditorTabs/files", files);
 
