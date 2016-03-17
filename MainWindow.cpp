@@ -107,6 +107,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     _propertiesPanelDock->hide(); //hidden until used
     _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
     _eventPortsInlineAction->setChecked(getSettings().value("MainWindow/eventPortsInline", false).toBool());
+    _clickConnectModeAction->setChecked(getSettings().value("MainWindow/clickConnectMode", true).toBool());
     _showGraphConnectionPointsAction->setChecked(getSettings().value("MainWindow/showGraphConnectionPoints", false).toBool());
     _showGraphBoundingBoxesAction->setChecked(getSettings().value("MainWindow/showGraphBoundingBoxes", false).toBool());
 
@@ -127,6 +128,7 @@ PothosGuiMainWindow::~PothosGuiMainWindow(void)
     getSettings().setValue("MainWindow/state", this->saveState());
     getSettings().setValue("MainWindow/showPortNames", _showPortNamesAction->isChecked());
     getSettings().setValue("MainWindow/eventPortsInline", _eventPortsInlineAction->isChecked());
+    getSettings().setValue("MainWindow/clickConnectMode", _clickConnectModeAction->isChecked());
     getSettings().setValue("MainWindow/showGraphConnectionPoints", _showGraphConnectionPointsAction->isChecked());
     getSettings().setValue("MainWindow/showGraphBoundingBoxes", _showGraphBoundingBoxesAction->isChecked());
 }
@@ -358,6 +360,11 @@ void PothosGuiMainWindow::createActions(void)
     _eventPortsInlineAction->setStatusTip(tr("Show block event ports inline with IO ports"));
     _actionMap["eventPortsInline"] = _eventPortsInlineAction;
 
+    _clickConnectModeAction = new QAction(tr("Click-connect create mode"), this);
+    _clickConnectModeAction->setCheckable(true);
+    _clickConnectModeAction->setStatusTip(tr("Connect ports using subsequent mouse clicks"));
+    _actionMap["clickConnectMode"] = _clickConnectModeAction;
+
     _showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     _showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
     connect(_showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
@@ -462,6 +469,7 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addSeparator();
     _viewMenu->addAction(_showPortNamesAction);
     _viewMenu->addAction(_eventPortsInlineAction);
+    _viewMenu->addAction(_clickConnectModeAction);
     _viewMenu->addSeparator();
 
     _debugMenu = _viewMenu->addMenu(tr("&Debug"));

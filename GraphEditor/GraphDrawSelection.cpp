@@ -86,11 +86,19 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
                 _connectLineItem->setPen(QPen(QColor(GraphObjectDefaultPenColor), ConnectModeLineWidth));
                 _connectModeImmobilizer.reset(new GraphObjectImmobilizer(topObj));
             }
-            if (not this->tryToMakeConnection(thisEp))
+
+            //if separate clicks to connect when try to make connection
+            if (getActionMap()["clickConnectMode"]->isChecked())
             {
-                //stash this endpoint for click-selection
-                _lastClickSelectEp = thisEp;
+                if (not this->tryToMakeConnection(thisEp))
+                {
+                    //stash this endpoint when connection is not made
+                    _lastClickSelectEp = thisEp;
+                }
             }
+
+            //stash the connection endpoint for a drag+release connection
+            else _lastClickSelectEp = thisEp;
         }
     }
 

@@ -82,6 +82,7 @@ private:
     QAction *_activateTopologyAction;
     QAction *_showPortNamesAction;
     QAction *_eventPortsInlineAction;
+    QAction *_clickConnectModeAction;
     QAction *_showColorsDialogAction;
     QAction *_incrementAction;
     QAction *_decrementAction;
