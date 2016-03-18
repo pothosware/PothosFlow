@@ -262,6 +262,7 @@ GraphConnectionEndpoint GraphDraw::mousedEndpoint(const QPoint &pos)
     if (_connectLineItem) objs.removeOne(_connectLineItem.get());
     if (objs.empty()) return GraphConnectionEndpoint();
     auto topObj = dynamic_cast<GraphObject *>(objs.front());
+    if (topObj == nullptr) return GraphConnectionEndpoint();
     const auto point = topObj->mapFromParent(this->mapToScene(pos));
     return GraphConnectionEndpoint(topObj, topObj->isPointingToConnectable(point));
 }
