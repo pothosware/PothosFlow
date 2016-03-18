@@ -120,9 +120,6 @@ public:
     void registerEndpoint(const GraphConnectionEndpoint &ep);
     void unregisterEndpoint(const GraphConnectionEndpoint &ep);
 
-    //! Called by the graph draw to handle mouse tracking
-    void updateMouseTracking(const QPointF &pos);
-
 signals:
 
     //! Called by the evaluator when eval completed
@@ -133,6 +130,7 @@ signals:
 
 protected:
 
+    //! Block uses this to respond to selection changes
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 private:

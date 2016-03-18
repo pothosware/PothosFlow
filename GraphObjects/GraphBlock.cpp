@@ -4,6 +4,7 @@
 #include "PothosGuiUtils.hpp" //get object map
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "ColorUtils/ColorUtils.hpp"
@@ -378,17 +379,6 @@ void GraphBlock::unregisterEndpoint(const GraphConnectionEndpoint &ep)
     this->markChanged();
 }
 
-void GraphBlock::updateMouseTracking(const QPointF &pos)
-{
-    const auto newKey = this->isPointingToConnectable(pos);
-    if (newKey == _impl->trackedKey) return;
-    _impl->trackedKey = newKey;
-
-    //cause re-rendering of the text because we force show hovered port text
-    this->markChanged();
-    this->update();
-}
-
 QVariant GraphBlock::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     //cause re-rendering of the text because we force show all port text
@@ -514,12 +504,35 @@ static QString getTextColor(const bool isOk, const QColor &bg)
 
 void GraphBlock::renderStaticText(void)
 {
+    //clear current state
+    _impl->propertiesText.clear();
+    _impl->inputPortsText.clear();
+    _impl->inputPortsBorder.clear();
+    _impl->outputPortsText.clear();
+    _impl->outputPortsBorder.clear();
+
+    //default rendering
+    const QPen defaultPen(QColor(GraphObjectDefaultPenColor), GraphObjectBorderWidth);
+    const QPen connectPen(QColor(ConnectModeHighlightPenColor), ConnectModeHighlightWidth);
+    _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
+    _impl->inputPortsBorder.resize(_inputPorts.size(), defaultPen);
+    _impl->outputPortsText.resize(_outputPorts.size(), QStaticText(" "));
+    _impl->outputPortsBorder.resize(_outputPorts.size(), defaultPen);
+    _impl->signalPortBorder = defaultPen;
+    _impl->mainRectBorder = defaultPen;
+    const bool forceShowPortNames = _impl->showPortNames or this->isSelected();
+    const auto &trackedKey = this->currentTrackedConnectable();
+    const auto &clickedEp = this->draw()->lastClickedEndpoint();
+    const bool connectToInput = clickedEp.isValid() and not clickedEp.getKey().isInput();
+    const bool connectToOutput = clickedEp.isValid() and clickedEp.getKey().isInput();
+
+    //load the title text
     _impl->titleText = makeQStaticText(QString("<span style='color:%1;font-size:%2;'><b>%3</b></span>")
         .arg(getTextColor(this->getBlockErrorMsgs().isEmpty(), _impl->mainBlockColor))
         .arg(GraphBlockTitleFontSize)
         .arg(_impl->title.toHtmlEscaped()));
 
-    _impl->propertiesText.clear();
+    //load the properties text
     for (int i = 0; i < _properties.size(); i++)
     {
         if (not this->getPropertyPreview(_properties[i])) continue;
@@ -538,29 +551,46 @@ void GraphBlock::renderStaticText(void)
         _impl->propertiesText.push_back(text);
     }
 
-    const bool forceShowPortNames = _impl->showPortNames or this->isSelected();
-    _impl->inputPortsText.clear();
-    _impl->inputPortsText.resize(_inputPorts.size(), QStaticText(" "));
+    //load the inputs text
     for (int i = 0; i < _inputPorts.size(); i++)
     {
-        const GraphConnectableKey thisKey(_inputPorts[i], GRAPH_CONN_INPUT);
-        if (not forceShowPortNames and not (_impl->trackedKey == thisKey)) continue;
+        const bool tracked = (trackedKey == GraphConnectableKey(_inputPorts[i], GRAPH_CONN_INPUT));
+        if (this->isSelected()) _impl->inputPortsBorder[i] = QPen(GraphObjectHighlightPenColor);
+        if (tracked and connectToInput) _impl->inputPortsBorder[i] = connectPen;
+
+        if (not forceShowPortNames and not tracked) continue;
         _impl->inputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->inputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(this->getInputPortAlias(_inputPorts[i]).toHtmlEscaped()));
     }
 
-    _impl->outputPortsText.clear();
-    _impl->outputPortsText.resize(_outputPorts.size(), QStaticText(" "));
+    //load the outputs text
     for (int i = 0; i < _outputPorts.size(); i++)
     {
-        const GraphConnectableKey thisKey(_outputPorts[i], GRAPH_CONN_OUTPUT);
-        if (not forceShowPortNames and not (_impl->trackedKey == thisKey)) continue;
+        const bool tracked = (trackedKey == GraphConnectableKey(_outputPorts[i], GRAPH_CONN_OUTPUT));
+        if (this->isSelected()) _impl->outputPortsBorder[i] = QPen(GraphObjectHighlightPenColor);
+        if (tracked and connectToOutput) _impl->outputPortsBorder[i] = connectPen;
+
+        if (not forceShowPortNames and not tracked) continue;
         _impl->outputPortsText[i] = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
             .arg(getTextColor(true, _impl->outputPortColors.at(i)))
             .arg(GraphBlockPortFontSize)
             .arg(this->getOutputPortAlias(_outputPorts[i]).toHtmlEscaped()));
+    }
+
+    //signal port setup
+    {
+        const bool tracked = (trackedKey == GraphConnectableKey("signals", GRAPH_CONN_SIGNAL));
+        if (this->isSelected()) _impl->signalPortBorder = QPen(GraphObjectHighlightPenColor);
+        if (tracked and connectToOutput) _impl->signalPortBorder = connectPen;
+    }
+
+    //slot port/main rect setup
+    {
+        const bool tracked = (trackedKey == GraphConnectableKey("slots", GRAPH_CONN_SLOT));
+        if (this->isSelected()) _impl->mainRectBorder = QPen(GraphObjectHighlightPenColor);
+        if (tracked and connectToInput) _impl->mainRectBorder = connectPen;
     }
 }
 
@@ -681,7 +711,7 @@ void GraphBlock::render(QPainter &painter)
         inPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
         painter.setBrush(QBrush(_impl->inputPortColors.at(i)));
-        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        painter.setPen(_impl->inputPortsBorder[i]);
         painter.drawRect(portRect);
         painter.restore();
         _impl->inputPortRects[i] = trans.mapRect(portRect);
@@ -709,7 +739,7 @@ void GraphBlock::render(QPainter &painter)
         outPortVdelta += rectSize.height() + GraphBlockPortVGap;
         painter.save();
         painter.setBrush(QBrush(_impl->outputPortColors.at(i)));
-        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        painter.setPen(_impl->outputPortsBorder[i]);
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
         _impl->outputPortRects[i] = trans.mapRect(portRect);
@@ -752,7 +782,7 @@ void GraphBlock::render(QPainter &painter)
 
         painter.save();
         painter.setBrush(QBrush(_impl->mainBlockColor));
-        if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+        painter.setPen(_impl->signalPortBorder);
         painter.drawRoundedRect(portRect, GraphBlockPortArc, GraphBlockPortArc);
         painter.restore();
 
@@ -783,7 +813,7 @@ void GraphBlock::render(QPainter &painter)
     //draw main body of the block
     painter.save();
     painter.setBrush(QBrush(_impl->mainBlockColor));
-    if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+    painter.setPen(_impl->mainRectBorder);
     painter.drawRoundedRect(mainRect, GraphBlockMainArc, GraphBlockMainArc);
     painter.restore();
 

@@ -1,8 +1,9 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 #include <QPainter>
 #include <QPen>
 #include <QBrush>
@@ -25,6 +26,7 @@ struct GraphBreaker::Impl
     QString nodeName;
     QStaticText titleText;
     QPolygonF polygon;
+    QRectF connectRect;
     QPointF connectPoint;
 };
 
@@ -78,7 +80,7 @@ GraphConnectableKey GraphBreaker::isPointingToConnectable(const QPointF &pos) co
 {
     assert(_impl);
     GraphConnectableKey key("", this->isInput()?GRAPH_CONN_INPUT:GRAPH_CONN_OUTPUT);
-    if (_impl->polygon.containsPoint(pos, Qt::OddEvenFill)) key.id = "0";
+    if (_impl->connectRect.contains(pos)) key.id = "0";
     return key;
 }
 
@@ -157,12 +159,27 @@ void GraphBreaker::render(QPainter &painter)
     polygon.translate(p);
     painter.save();
     if (isSelected()) painter.setPen(QColor(GraphObjectHighlightPenColor));
+
+    //connection mode when the tracked endpoint is the oposing direction of the last clicked endpoint
+    const auto &trackedKey = this->currentTrackedConnectable();
+    const auto &clickedEp = this->draw()->lastClickedEndpoint();
+    if (trackedKey.isValid() and clickedEp.isValid() and this->isInput() != clickedEp.getKey().isInput())
+    {
+        painter.setPen(QPen(QColor(ConnectModeHighlightPenColor), ConnectModeHighlightWidth));
+    }
+
     painter.drawPolygon(polygon);
     painter.restore();
     _impl->polygon = trans.map(polygon);
 
     const auto textOff = QPointF(GraphBreakerTitleHPad, GraphBreakerTitleVPad);
     painter.drawStaticText(p+textOff, _impl->titleText);
+
+    //connectable region (the first third)
+    const QRectF connectRect(
+        QPointF(flipStyle?0:w, 0) + p,
+        QPointF(flipStyle?w/3:(2*w)/3, h) + p);
+    _impl->connectRect = trans.mapRect(connectRect);
 
     //connection point
     const auto connectionPoint = QPointF(flipStyle?-GraphObjectBorderWidth:w+GraphObjectBorderWidth, h/2) + p;

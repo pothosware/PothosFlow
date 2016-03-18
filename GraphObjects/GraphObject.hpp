@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -71,6 +71,9 @@ public:
     virtual GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;
     virtual void renderConnectablePoints(QPainter &painter);
 
+    //! Get the current key tracked by the mouse
+    virtual const GraphConnectableKey &currentTrackedConnectable(void) const;
+
     bool isFlaggedForDelete(void) const;
     void flagForDelete(void);
 
@@ -85,7 +88,39 @@ protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
 
+    /*!
+     * Called by the graph draw class to handle mouse tracking.
+     * The position is relative to this graph object's reference.
+     * This is a manual replacement for mouseMoveEvent(),
+     * which was not being called in the graph objects.
+     */
+    virtual void updateMouseTracking(const QPointF &pos);
+
+    friend class GraphDraw;
 private:
     struct Impl;
     std::shared_ptr<Impl> _impl;
+};
+
+/*!
+ * Immobilize a graph object on construction.
+ * And automatically restore on deletion.
+ */
+struct GraphObjectImmobilizer
+{
+    template<typename ObjectType>
+    GraphObjectImmobilizer(const ObjectType &obj):
+        obj(obj),
+        flags(obj->flags())
+    {
+        obj->setFlag(QGraphicsItem::ItemIsMovable, false);
+    }
+
+    ~GraphObjectImmobilizer(void)
+    {
+        if (obj) obj->setFlags(flags);
+    }
+
+    QPointer<QGraphicsObject> obj;
+    QGraphicsItem::GraphicsItemFlags flags;
 };
