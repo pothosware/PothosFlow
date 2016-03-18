@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.3.2 (pending)
 ==========================
 
+- Support click, drag, and release connection creation mode
 - Avoid possible recursive loops in topology traversal code
 - Always use the absolute path for saved topology files
 - Open the properties panel after making a signal/slots connection
