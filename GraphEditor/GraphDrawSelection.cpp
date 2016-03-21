@@ -181,6 +181,8 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     {
         const auto thisEp = this->mousedEndpoint(event->pos());
         this->tryToMakeConnection(thisEp);
+        if (not getActionMap()["clickConnectMode"]->isChecked())
+            _lastClickSelectEp = GraphConnectionEndpoint();
     }
 
     //emit the move event up to the graph editor
