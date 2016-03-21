@@ -139,9 +139,9 @@ void GraphDraw::mouseMoveEvent(QMouseEvent *event)
     }
 
     //handle drawing in the click, drag, connect mode
-    if (_connectLineItem)
+    const auto topObj = _lastClickSelectEp.getObj();
+    if (_connectLineItem and topObj)
     {
-        const auto topObj = _lastClickSelectEp.getObj();
         const auto attrs = topObj->getConnectableAttrs(_lastClickSelectEp.getKey());
         const auto newPos = topObj->mapFromParent(scenePos);
         _connectLineItem->setLine(QLineF(attrs.point, newPos));
