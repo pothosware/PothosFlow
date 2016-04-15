@@ -106,8 +106,8 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     this->restoreState(getSettings().value("MainWindow/state").toByteArray());
     _propertiesPanelDock->hide(); //hidden until used
     _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
-    _eventPortsInlineAction->setChecked(getSettings().value("MainWindow/eventPortsInline", false).toBool());
-    _clickConnectModeAction->setChecked(getSettings().value("MainWindow/clickConnectMode", true).toBool());
+    _eventPortsInlineAction->setChecked(getSettings().value("MainWindow/eventPortsInline", true).toBool());
+    _clickConnectModeAction->setChecked(getSettings().value("MainWindow/clickConnectMode", false).toBool());
     _showGraphConnectionPointsAction->setChecked(getSettings().value("MainWindow/showGraphConnectionPoints", false).toBool());
     _showGraphBoundingBoxesAction->setChecked(getSettings().value("MainWindow/showGraphBoundingBoxes", false).toBool());
 
