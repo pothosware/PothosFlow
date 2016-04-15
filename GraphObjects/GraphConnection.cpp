@@ -230,9 +230,11 @@ QPainterPath GraphConnection::shape(void) const
     //individual line segments
     for (int i = 1; i < _impl->points.size(); i++)
     {
-        const QLineF line(_impl->points[i-1], _impl->points[i]);
-        QLineF norm = line.normalVector(); norm.setLength(GraphConnectionSelectPad);
-        path.addRect(QRectF(line.p2(), norm.p2()));
+        const QLineF line0(_impl->points[i-1], _impl->points[i]);
+        const QLineF line1(_impl->points[i], _impl->points[i-1]);
+        QLineF norm0 = line0.normalVector(); norm0.setLength(GraphConnectionSelectPad);
+        QLineF norm1 = line1.normalVector(); norm1.setLength(GraphConnectionSelectPad);
+        path.addRect(QRectF(norm0.p2(), norm1.p2()));
     }
 
     //arrow head

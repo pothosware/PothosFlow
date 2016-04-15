@@ -2,6 +2,7 @@ This this the changelog file for the Pothos GUI toolkit.
 
 Release 0.4.0 (pending)
 ==========================
+
 - Support click, drag, and release connection creation mode
 - Open the properties panel after making a signal/slots connection
 - Implement block mouse tracking for dynamic port text rendering
@@ -10,6 +11,8 @@ Release 0.4.0 (pending)
 
 Release 0.3.2 (pending)
 ==========================
+
+- Fix connection shape() method padding in both directions
 - Avoid possible recursive loops in topology traversal code
 - Always use the absolute path for saved topology files
 
