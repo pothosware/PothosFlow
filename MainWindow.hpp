@@ -94,7 +94,9 @@ private:
     QMenu *_editMenu;
     QMenu *_executeMenu;
     QMenu *_viewMenu;
+    QMenu *_toolsMenu;
     QMenu *_debugMenu;
+    QMenu *_configMenu;
     QMenu *_helpMenu;
     QMap<QString, QMenu *> &_menuMap;
 

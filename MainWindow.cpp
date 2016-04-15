@@ -467,12 +467,18 @@ void PothosGuiMainWindow::createMenus(void)
     _viewMenu->addAction(_zoomOutAction);
     _viewMenu->addAction(_zoomOriginalAction);
     _viewMenu->addSeparator();
-    _viewMenu->addAction(_showPortNamesAction);
-    _viewMenu->addAction(_eventPortsInlineAction);
-    _viewMenu->addAction(_clickConnectModeAction);
-    _viewMenu->addSeparator();
 
-    _debugMenu = _viewMenu->addMenu(tr("&Debug"));
+    _toolsMenu = menuBar()->addMenu(tr("&Tools"));
+    _menuMap["tools"] = _toolsMenu;
+
+    _configMenu = _toolsMenu->addMenu(tr("&Config"));
+    _menuMap["config"] = _configMenu;
+    _configMenu->addAction(_showPortNamesAction);
+    _configMenu->addAction(_eventPortsInlineAction);
+    _configMenu->addAction(_clickConnectModeAction);
+
+    _debugMenu = _toolsMenu->addMenu(tr("&Debug"));
+    _menuMap["debug"] = _debugMenu;
     _debugMenu->addAction(_showGraphConnectionPointsAction);
     _debugMenu->addAction(_showGraphBoundingBoxesAction);
 
