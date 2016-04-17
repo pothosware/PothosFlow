@@ -3,6 +3,7 @@
 ########################################################################
 set(SOURCES
     ComboBox.cpp
+    DTypeChooser.cpp
     DoubleSpinBox.cpp
     FileEntry.cpp
     LineEdit.cpp
