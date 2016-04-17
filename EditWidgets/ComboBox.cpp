@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -7,7 +7,7 @@
 #include <QComboBox>
 
 /***********************************************************************
- * ComboBox for common data type entry
+ * ComboBox for drop-down entry
  **********************************************************************/
 class ComboBox : public QComboBox
 {
@@ -76,34 +76,9 @@ static QWidget *makeComboBox(const Poco::JSON::Object::Ptr &paramDesc, QWidget *
     return comboBox;
 }
 
-static QWidget *makeDTypeChooser(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
-{
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
-
-    auto comboBox = new ComboBox(parent);
-    for (int mode = 0; mode <= 1; mode++)
-    {
-        const std::string keyPrefix((mode == 0)? "c":"");
-        const QString namePrefix((mode == 0)? "Complex ":"");
-        const QString aliasPrefix((mode == 0)? "complex_":"");
-        for (int bytes = 64; bytes >= 32; bytes /= 2)
-        {
-            if (widgetKwargs->has(keyPrefix+"float")) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
-        }
-        for (int bytes = 64; bytes >= 8; bytes /= 2)
-        {
-            if (widgetKwargs->has(keyPrefix+"int")) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
-            if (widgetKwargs->has(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
-        }
-    }
-    return comboBox;
-}
-
 pothos_static_block(registerComboBox)
 {
     Pothos::PluginRegistry::add("/gui/EntryWidgets/ComboBox", Pothos::Callable(&makeComboBox));
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/DTypeChooser", Pothos::Callable(&makeDTypeChooser));
 }
 
 #include "ComboBox.moc"
