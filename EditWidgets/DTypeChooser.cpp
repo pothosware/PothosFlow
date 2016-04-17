@@ -33,6 +33,9 @@ public:
         {
             _spinBox = new QSpinBox(this);
             layout->addWidget(_spinBox);
+            _spinBox->setMaximumSize(40, _spinBox->height());
+            _spinBox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            _spinBox->setPrefix("x");
             _spinBox->setMinimum(1);
             _spinBox->setMaximum(std::numeric_limits<int>::max());
             connect(_spinBox, SIGNAL(editingFinished(void)), this, SIGNAL(widgetChanged(void)));
@@ -70,11 +73,13 @@ public slots:
 
     void setValue(const QString &value)
     {
-        //remove quotes
-        QString s = unQuote(value);
-
         //parse to data type
-        const Pothos::DType dtype(s.toStdString());
+        Pothos::DType dtype;
+        try
+        {
+            dtype = Pothos::DType(unQuote(value).toStdString());
+        }
+        catch(...){}
         const auto name = QString("\"%1\"").arg(QString::fromStdString(dtype.name()));
 
         //set combo box with type name
