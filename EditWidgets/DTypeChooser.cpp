@@ -17,7 +17,7 @@ class DTypeChooser : public QWidget
 {
     Q_OBJECT
 public:
-    DTypeChooser(QWidget *parent, const bool enableVector):
+    DTypeChooser(QWidget *parent, const bool editDimension):
         QWidget(parent),
         _comboBox(new QComboBox(this)),
         _spinBox(nullptr)
@@ -29,11 +29,11 @@ public:
         connect(_comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         connect(_comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
 
-        if (enableVector)
+        if (editDimension)
         {
             _spinBox = new QSpinBox(this);
             layout->addWidget(_spinBox);
-            _spinBox->setMaximumSize(40, _spinBox->height());
+            _spinBox->setMaximumSize(50, _spinBox->height());
             _spinBox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             _spinBox->setPrefix("x");
             _spinBox->setMinimum(1);
@@ -42,7 +42,8 @@ public:
             connect(_spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         }
 
-        this->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
+        _comboBox->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
+        _comboBox->view()->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
     }
 
     QComboBox *comboBox(void) const
@@ -135,9 +136,9 @@ static QWidget *makeDTypeChooser(const Poco::JSON::Object::Ptr &paramDesc, QWidg
     Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
     if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
 
-    const bool enableVector = widgetKwargs->optValue<bool>("vector", false);
+    const bool editDimension = widgetKwargs->optValue<bool>("dim", false);
 
-    auto dtypeChooser = new DTypeChooser(parent, enableVector);
+    auto dtypeChooser = new DTypeChooser(parent, editDimension);
     auto comboBox = dtypeChooser->comboBox();
     for (int mode = 0; mode <= 1; mode++)
     {
