@@ -13,6 +13,7 @@ Release 0.4.0 (pending)
 Release 0.3.2 (pending)
 ==========================
 
+- Fix topology traversal when graph object is disabled
 - Fix connection shape() method padding in both directions
 - Avoid possible recursive loops in topology traversal code
 - Always use the absolute path for saved topology files

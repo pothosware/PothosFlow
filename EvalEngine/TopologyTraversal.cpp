@@ -16,6 +16,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(
 )
 {
     std::vector<GraphConnectionEndpoint> inputEndpoints;
+    if (not inputEp.getObj()->isEnabled()) return inputEndpoints;
 
     //avoid recursive loops by keeping track of traversed endpoints
     auto it = std::find(traversed.begin(), traversed.end(), inputEp);
