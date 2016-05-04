@@ -10,7 +10,7 @@ Release 0.4.0 (pending)
 - Configurable block render mode for displaying event ports inline
 - Save state for debug graphics (connection points & bounding boxes)
 
-Release 0.3.2 (pending)
+Release 0.3.2 (2016-05-03)
 ==========================
 
 - Fix topology traversal when graph object is disabled
