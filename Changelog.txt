@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos GUI toolkit.
 
-Release 0.3.2 (pending)
+Release 0.3.2 (2016-05-03)
 ==========================
 
 - Fix topology traversal when graph object is disabled
