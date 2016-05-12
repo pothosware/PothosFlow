@@ -5,8 +5,10 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo -n "Install Pothos GUI icon resources...	"
 if [ -x /usr/bin/xdg-icon-resource ] ; then
     for theme in hicolor gnome; do
-        xdg-icon-resource install --noupdate --context mimetypes --theme ${theme} --size 128 ${DIR}/../icons/PothosGui.png application-pothos-gui || true
-        xdg-icon-resource install --noupdate --context apps --theme ${theme} --size 128 ${DIR}/../icons/PothosGui.png pothos-gui || true
+        for size in 16 22 32 48 64 128; do
+            xdg-icon-resource install --noupdate --context mimetypes --theme ${theme} --size ${size} ${DIR}/pothos-gui-${size}.png application-pothos-gui || true
+            xdg-icon-resource install --noupdate --context apps --theme ${theme} --size ${size} ${DIR}/pothos-gui-${size}.png pothos-gui || true
+        done
     done
     xdg-icon-resource forceupdate || true
     echo "OK"
