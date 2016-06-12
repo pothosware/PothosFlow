@@ -14,7 +14,6 @@
 #include <QDir>
 #include <stdexcept>
 #include <cstdlib> //EXIT_FAILURE
-#include <memory>
 
 struct MyScopedSyslogListener
 {
@@ -86,13 +85,18 @@ int main(int argc, char **argv)
         Pothos::ScopedInit init;
 
         //create the main window for the GUI
-        std::unique_ptr<QWidget> mainWindow(new PothosGuiMainWindow(nullptr));
+        auto mainWindow = new PothosGuiMainWindow(nullptr);
         mainWindow->show();
-        getSplashScreen()->finish(mainWindow.get());
-        getSettings().setParent(mainWindow.get());
+        getSplashScreen()->finish(mainWindow);
+        getSettings().setParent(mainWindow);
 
         //begin application execution
-        return app.exec();
+        int ret = app.exec();
+
+        //handle application shutdown
+        delete mainWindow;
+        server = Pothos::RemoteServer();
+        return ret;
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
     {

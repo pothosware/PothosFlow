@@ -95,6 +95,12 @@ GraphEditor::GraphEditor(QWidget *parent):
 
 GraphEditor::~GraphEditor(void)
 {
+    //cleanup all graph objects, blocks may hold widgets
+    for (auto obj : this->getGraphObjects()) delete obj;
+
+    //stop the eval engine and its evaluator thread
+    delete _evalEngine;
+
     //the actions dock owns state manager for display purposes,
     //so delete it here when the graph editor is actually done with it
     delete _stateManager;
