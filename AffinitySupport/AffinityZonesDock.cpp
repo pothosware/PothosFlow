@@ -7,6 +7,7 @@
 #include "AffinitySupport/AffinityZonesComboBox.hpp"
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include "ColorUtils/ColorUtils.hpp"
+#include "MainWindow/MainSettings.hpp"
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -141,12 +142,13 @@ void AffinityZonesDock::handleCreateZone(void)
 
 AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneName)
 {
+    auto settings = PothosGuiMainSettings::global();
     auto editor = new AffinityZoneEditor(this, _hostExplorerDock);
     _editorsTabs->addTab(editor, zoneName);
-    if (zoneName == getSettings().value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
+    if (zoneName == settings->value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
 
     //restore the settings from save -- even if this is a new panel with the same name as a previous one
-    auto json = getSettings().value("AffinityZones/zones/"+zoneName).toString();
+    auto json = settings->value("AffinityZones/zones/"+zoneName).toString();
     if (not json.isEmpty()) try
     {
         Poco::JSON::Parser p; p.parse(json.toStdString());
@@ -177,7 +179,8 @@ void AffinityZonesDock::ensureDefault(void)
 
 void AffinityZonesDock::initAffinityZoneEditors(void)
 {
-    auto names = getSettings().value("AffinityZones/zoneNames").toStringList();
+    auto settings = PothosGuiMainSettings::global();
+    auto names = settings->value("AffinityZones/zoneNames").toStringList();
     for (const auto &name : names) this->createZoneFromName(name);
     this->ensureDefault();
     connect(_editorsTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequested(int)));
@@ -195,12 +198,14 @@ void AffinityZonesDock::updateTabColors(void)
 
 void AffinityZonesDock::handleTabSelectionChanged(const int index)
 {
-    getSettings().setValue("AffinityZones/currentZone", _editorsTabs->tabText(index));
+    auto settings = PothosGuiMainSettings::global();
+    settings->setValue("AffinityZones/currentZone", _editorsTabs->tabText(index));
 }
 
 void AffinityZonesDock::saveAffinityZoneEditorsState(void)
 {
-    getSettings().setValue("AffinityZones/zoneNames", this->zones());
+    auto settings = PothosGuiMainSettings::global();
+    settings->setValue("AffinityZones/zoneNames", this->zones());
 
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
@@ -208,7 +213,7 @@ void AffinityZonesDock::saveAffinityZoneEditorsState(void)
         assert(editor != nullptr);
         auto dataObj = editor->getCurrentConfig();
         std::stringstream ss; dataObj->stringify(ss);
-        getSettings().setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
+        settings->setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
     }
 
     emit this->zonesChanged();

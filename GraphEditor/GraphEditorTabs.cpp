@@ -5,6 +5,7 @@
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "MainWindow/MainActions.hpp"
+#include "MainWindow/MainSettings.hpp"
 #include <QTabWidget>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -79,7 +80,8 @@ void GraphEditorTabs::doReloadDialog(GraphEditor *editor)
 
 void GraphEditorTabs::handleOpen(void)
 {
-    auto lastPath = getSettings().value("GraphEditorTabs/lastFile").toString();
+    auto settings = PothosGuiMainSettings::global();
+    auto lastPath = settings->value("GraphEditorTabs/lastFile").toString();
     if(lastPath.isEmpty()) {
         lastPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
@@ -92,7 +94,7 @@ void GraphEditorTabs::handleOpen(void)
     for (const auto &file : filePaths)
     {
         const auto filePath = QDir(file).absolutePath();
-        getSettings().setValue("GraphEditorTabs/lastFile", filePath);
+        settings->setValue("GraphEditorTabs/lastFile", filePath);
         this->handleOpen(filePath);
     }
 }
@@ -160,7 +162,8 @@ void GraphEditorTabs::handleSaveAs(void)
     if (filePath.isEmpty()) return;
     if (not filePath.endsWith(".pth")) filePath += ".pth";
     filePath = QDir(filePath).absolutePath();
-    getSettings().setValue("GraphEditorTabs/lastFile", filePath);
+    auto settings = PothosGuiMainSettings::global();
+    settings->setValue("GraphEditorTabs/lastFile", filePath);
     editor->setCurrentFilePath(filePath);
     editor->save();
     this->saveState();
@@ -220,7 +223,8 @@ void GraphEditorTabs::handleClose(GraphEditor *editor)
 void GraphEditorTabs::handleExit(QCloseEvent *event)
 {
     //save the currently selected editor tab
-    getSettings().setValue("GraphEditorTabs/activeIndex", this->currentIndex());
+    auto settings = PothosGuiMainSettings::global();
+    settings->setValue("GraphEditorTabs/activeIndex", this->currentIndex());
 
     //exit logic -- save changes dialogs
     for (int i = 0; i < this->count(); i++)
@@ -251,7 +255,8 @@ void GraphEditorTabs::handleExit(QCloseEvent *event)
 void GraphEditorTabs::loadState(void)
 {
     //load option topologies from file list
-    auto files = getSettings().value("GraphEditorTabs/files").toStringList();
+    auto settings = PothosGuiMainSettings::global();
+    auto files = settings->value("GraphEditorTabs/files").toStringList();
     for (int i = 0; i < files.size(); i++)
     {
         if (files.at(i).isEmpty()) continue; //skip empty files
@@ -270,7 +275,7 @@ void GraphEditorTabs::loadState(void)
     this->ensureOneEditor();
 
     //restore the active index setting
-    this->setCurrentIndex(getSettings().value("GraphEditorTabs/activeIndex").toInt());
+    this->setCurrentIndex(settings->value("GraphEditorTabs/activeIndex").toInt());
 }
 
 void GraphEditorTabs::ensureOneEditor(void)
@@ -290,5 +295,6 @@ void GraphEditorTabs::saveState(void)
         assert(editor != nullptr);
         files.push_back(editor->getCurrentFilePath());
     }
-    getSettings().setValue("GraphEditorTabs/files", files);
+    auto settings = PothosGuiMainSettings::global();
+    settings->setValue("GraphEditorTabs/files", files);
 }

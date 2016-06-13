@@ -101,6 +101,7 @@ list(APPEND SOURCES
     MainWindow/MainActions.cpp
     MainWindow/MainMenu.cpp
     MainWindow/MainToolBar.cpp
+    MainWindow/MainSettings.cpp
 
     ColorUtils/ColorUtils.cpp
     ColorUtils/ColorsDialog.cpp

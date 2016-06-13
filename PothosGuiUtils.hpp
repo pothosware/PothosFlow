@@ -4,7 +4,6 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QString>
-#include <QSettings>
 #include <QMap>
 #include <QIcon>
 
@@ -13,9 +12,6 @@ class QAction;
 class QMenu;
 class QSplashScreen;
 class QFormLayout;
-
-//! global settings
-QSettings &getSettings(void);
 
 //! icon utils
 QString makeIconPath(const QString &name);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
+#include "MainWindow/MainSettings.hpp"
 #include "PothosGuiUtils.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>
@@ -41,7 +42,12 @@ int main(int argc, char **argv)
         if (file.isEmpty()) continue;
         files.push_back(QDir(file).absolutePath());
     }
-    if (not files.isEmpty()) getSettings().setValue("GraphEditorTabs/files", files);
+    if (not files.isEmpty())
+    {
+        auto settings = new PothosGuiMainSettings(nullptr);
+        settings->setValue("GraphEditorTabs/files", files);
+        delete settings;
+    }
 
     //create the entry point to the GUI
     QApplication app(argc, argv);
@@ -88,7 +94,6 @@ int main(int argc, char **argv)
         auto mainWindow = new PothosGuiMainWindow(nullptr);
         mainWindow->show();
         getSplashScreen()->finish(mainWindow);
-        getSettings().setParent(mainWindow);
 
         //begin application execution
         int ret = app.exec();

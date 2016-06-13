@@ -9,6 +9,7 @@
 
 class QCloseEvent;
 class QShowEvent;
+class PothosGuiMainSettings;
 class PothosGuiMainActions;
 
 class PothosGuiMainWindow : public QMainWindow
@@ -38,6 +39,7 @@ protected:
     void showEvent(QShowEvent *event);
 
 private:
+    PothosGuiMainSettings *_settings;
     PothosGuiMainActions *_actions;
 
     //restoring from full screen

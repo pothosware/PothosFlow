@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
-#include "PothosGuiUtils.hpp" //get settings
+#include "PothosGuiUtils.hpp" //post status
 #include <Pothos/System.hpp>
 #include "BlockTree/BlockCache.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
@@ -16,6 +16,7 @@
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainToolBar.hpp"
+#include "MainWindow/MainSettings.hpp"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QSettings>
@@ -31,6 +32,7 @@
 
 PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     QMainWindow(parent),
+    _settings(nullptr),
     _actions(nullptr)
 {
     #ifdef __APPLE__
@@ -41,7 +43,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     #endif //__APPLE__
 
     postStatusMessage(tr("Creating main window..."));
-
+    _settings = new PothosGuiMainSettings(this);
     this->setMinimumSize(800, 600);
     this->setWindowTitle("Pothos GUI");
 
@@ -99,14 +101,14 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     //restore main window settings from file
     postStatusMessage(tr("Restoring configuration..."));
-    this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
-    this->restoreState(getSettings().value("MainWindow/state").toByteArray());
+    this->restoreGeometry(_settings->value("MainWindow/geometry").toByteArray());
+    this->restoreState(_settings->value("MainWindow/state").toByteArray());
     propertiesPanelDock->hide(); //hidden until used
-    _actions->showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
-    _actions->eventPortsInlineAction->setChecked(getSettings().value("MainWindow/eventPortsInline", true).toBool());
-    _actions->clickConnectModeAction->setChecked(getSettings().value("MainWindow/clickConnectMode", false).toBool());
-    _actions->showGraphConnectionPointsAction->setChecked(getSettings().value("MainWindow/showGraphConnectionPoints", false).toBool());
-    _actions->showGraphBoundingBoxesAction->setChecked(getSettings().value("MainWindow/showGraphBoundingBoxes", false).toBool());
+    _actions->showPortNamesAction->setChecked(_settings->value("MainWindow/showPortNames", true).toBool());
+    _actions->eventPortsInlineAction->setChecked(_settings->value("MainWindow/eventPortsInline", true).toBool());
+    _actions->clickConnectModeAction->setChecked(_settings->value("MainWindow/clickConnectMode", false).toBool());
+    _actions->showGraphConnectionPointsAction->setChecked(_settings->value("MainWindow/showGraphConnectionPoints", false).toBool());
+    _actions->showGraphBoundingBoxesAction->setChecked(_settings->value("MainWindow/showGraphBoundingBoxes", false).toBool());
 
     //finish view menu after docks and tool bars (view menu calls their toggleViewAction())
     auto viewMenu = mainMenu->viewMenu;
@@ -126,13 +128,13 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 PothosGuiMainWindow::~PothosGuiMainWindow(void)
 {
     this->handleFullScreenViewAction(false); //undo if set -- so we dont save full mode below
-    getSettings().setValue("MainWindow/geometry", this->saveGeometry());
-    getSettings().setValue("MainWindow/state", this->saveState());
-    getSettings().setValue("MainWindow/showPortNames", _actions->showPortNamesAction->isChecked());
-    getSettings().setValue("MainWindow/eventPortsInline", _actions->eventPortsInlineAction->isChecked());
-    getSettings().setValue("MainWindow/clickConnectMode", _actions->clickConnectModeAction->isChecked());
-    getSettings().setValue("MainWindow/showGraphConnectionPoints", _actions->showGraphConnectionPointsAction->isChecked());
-    getSettings().setValue("MainWindow/showGraphBoundingBoxes", _actions->showGraphBoundingBoxesAction->isChecked());
+    _settings->setValue("MainWindow/geometry", this->saveGeometry());
+    _settings->setValue("MainWindow/state", this->saveState());
+    _settings->setValue("MainWindow/showPortNames", _actions->showPortNamesAction->isChecked());
+    _settings->setValue("MainWindow/eventPortsInline", _actions->eventPortsInlineAction->isChecked());
+    _settings->setValue("MainWindow/clickConnectMode", _actions->clickConnectModeAction->isChecked());
+    _settings->setValue("MainWindow/showGraphConnectionPoints", _actions->showGraphConnectionPointsAction->isChecked());
+    _settings->setValue("MainWindow/showGraphBoundingBoxes", _actions->showGraphBoundingBoxesAction->isChecked());
 }
 
 void PothosGuiMainWindow::handleNewTitleSubtext(const QString &s)

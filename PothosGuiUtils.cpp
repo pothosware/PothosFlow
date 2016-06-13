@@ -10,19 +10,6 @@
 #include <QFormLayout>
 #include <QDir>
 
-QSettings &getSettings(void)
-{
-    static QSettings *settings = nullptr;
-    if (settings == nullptr)
-    {
-        Poco::Path path(Pothos::System::getUserConfigPath());
-        path.append("PothosGui.conf");
-        const auto settingsPath = QString::fromStdString(path.toString());
-        settings = new QSettings(settingsPath, QSettings::IniFormat);
-    }
-    return *settings;
-}
-
 QString makeIconPath(const QString &name)
 {
     Poco::Path path(Pothos::System::getDataPath());
