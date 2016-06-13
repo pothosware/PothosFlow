@@ -75,6 +75,9 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     postStatusMessage(tr("Creating affinity panel..."));
     auto affinityZonesDock = new AffinityZonesDock(this, hostExplorerDock);
     this->tabifyDockWidget(hostExplorerDock, affinityZonesDock);
+    auto editMenu = mainMenu->editMenu;
+    mainMenu->affinityZoneMenu = AffinityZonesDock::global()->makeMenu(editMenu);
+    editMenu->addMenu(mainMenu->affinityZoneMenu);
 
     //block cache (make before block tree)
     postStatusMessage(tr("Creating block cache..."));

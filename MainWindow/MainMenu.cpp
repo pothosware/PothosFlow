@@ -4,7 +4,6 @@
 #include "PothosGuiUtils.hpp" //makeIconFromTheme
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainActions.hpp"
-#include "AffinitySupport/AffinityZonesDock.hpp"
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QMenu>
@@ -65,8 +64,6 @@ PothosGuiMainMenu::PothosGuiMainMenu(QMainWindow *parent, PothosGuiMainActions *
     pageMenu->addAction(actions->inputBreakerAction);
     pageMenu->addAction(actions->outputBreakerAction);
     moveGraphObjectsMenu = editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move graph objects..."));
-    affinityZoneMenu = AffinityZonesDock::global()->makeMenu(editMenu);
-    editMenu->addMenu(affinityZoneMenu);
     insertGraphWidgetsMenu = editMenu->addMenu(makeIconFromTheme("insert-image"), tr("Insert graph widgets..."));
 
     executeMenu = parent->menuBar()->addMenu(tr("&Execute"));
