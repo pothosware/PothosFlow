@@ -11,6 +11,7 @@
 #include <string>
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
+#include <Poco/RWLock.h>
 
 class HostExplorerDock;
 
@@ -45,5 +46,7 @@ private:
     QFutureWatcher<Poco::JSON::Array::Ptr> *_watcher;
 
     //storage structures
+    Poco::RWLock _mapMutex;
     std::map<QString, Poco::JSON::Array::Ptr> _uriToBlockDescs;
+    std::map<std::string, Poco::JSON::Object::Ptr> _pathToBlockDesc;
 };
