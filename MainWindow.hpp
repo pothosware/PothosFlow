@@ -22,26 +22,7 @@ public:
 
     ~PothosGuiMainWindow(void);
 
-signals:
-    void initDone(void);
-    void exitBegin(QCloseEvent *);
-
-private slots:
-
-    void handleNewTitleSubtext(const QString &s);
-    void handleShowAbout(void);
-    void handleShowAboutQt(void);
-    void handleColorsDialogAction(void);
-    void handleFullScreenViewAction(const bool);
-
-protected:
-    void closeEvent(QCloseEvent *event);
-
-    void showEvent(QShowEvent *event);
-
-private:
-
-    void createActions(void);
+    //global actions
     QAction *_newAction;
     QAction *_openAction;
     QAction *_saveAction;
@@ -87,9 +68,8 @@ private:
     QAction *_incrementAction;
     QAction *_decrementAction;
     QAction *_fullScreenViewAction;
-    QMap<QString, QAction *> &_actionMap;
 
-    void createMenus(void);
+    //global menus
     QMenu *_fileMenu;
     QMenu *_editMenu;
     QMenu *_executeMenu;
@@ -98,9 +78,8 @@ private:
     QMenu *_debugMenu;
     QMenu *_configMenu;
     QMenu *_helpMenu;
-    QMap<QString, QMenu *> &_menuMap;
 
-    void createMainToolBar(void);
+    //global widgets
     QToolBar *_mainToolBar;
     QDockWidget *_hostExplorerDock;
     QDockWidget *_messageWindowDock;
@@ -108,6 +87,33 @@ private:
     QDockWidget *_blockTreeDock;
     QDockWidget *_propertiesPanelDock;
     QDockWidget *_affinityZonesDock;
+
+signals:
+    void initDone(void);
+    void exitBegin(QCloseEvent *);
+
+private slots:
+
+    void handleNewTitleSubtext(const QString &s);
+    void handleShowAbout(void);
+    void handleShowAboutQt(void);
+    void handleColorsDialogAction(void);
+    void handleFullScreenViewAction(const bool);
+
+protected:
+    void closeEvent(QCloseEvent *event);
+
+    void showEvent(QShowEvent *event);
+
+private:
+
+    void createActions(void);
+    QMap<QString, QAction *> &_actionMap;
+
+    void createMenus(void);
+    QMap<QString, QMenu *> &_menuMap;
+
+    void createMainToolBar(void);
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;
