@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //node uris
@@ -19,9 +19,9 @@
 
 static const int ARBITRARY_MAX_THREADS = 4096;
 
-AffinityZoneEditor::AffinityZoneEditor(QWidget *parent):
+AffinityZoneEditor::AffinityZoneEditor(QWidget *parent, HostExplorerDock *hostExplorer):
     QWidget(parent),
-    _hostExplorerDock(dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"])),
+    _hostExplorerDock(hostExplorer),
     _colorPicker(new QtColorPicker(this)),
     _hostsBox(new QComboBox(this)),
     _processNameEdit(new QLineEdit(this)),

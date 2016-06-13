@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -9,13 +9,15 @@
 class QPushButton;
 class QLineEdit;
 class BlockTreeWidget;
+class BlockCache;
+class GraphEditorTabs;
 
 //! A top level dock widget with a block tree top window
 class BlockTreeDock : public QDockWidget
 {
     Q_OBJECT
 public:
-    BlockTreeDock(QWidget *parent);
+    BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEditorTabs *editorTabs);
 
 signals:
     void addBlockEvent(const Poco::JSON::Object::Ptr &);

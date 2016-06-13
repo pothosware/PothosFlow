@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
@@ -19,8 +19,9 @@
 #include <cassert>
 #include <sstream>
 
-AffinityZonesDock::AffinityZonesDock(QWidget *parent):
+AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExplorer):
     QDockWidget(parent),
+    _hostExplorerDock(hostExplorer),
     _mapper(new QSignalMapper(this)),
     _zoneEntry(new QLineEdit(this)),
     _createButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create zone"), this)),
@@ -132,7 +133,7 @@ void AffinityZonesDock::handleCreateZone(void)
 
 AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneName)
 {
-    auto editor = new AffinityZoneEditor(this);
+    auto editor = new AffinityZoneEditor(this, _hostExplorerDock);
     _editorsTabs->addTab(editor, zoneName);
     if (zoneName == getSettings().value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
 

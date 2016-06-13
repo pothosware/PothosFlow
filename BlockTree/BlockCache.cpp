@@ -1,7 +1,6 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get object map
 #include "BlockTree/BlockCache.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
@@ -33,7 +32,7 @@ static Poco::RWLock &getMapMutex(void)
     return *sh.get();
 }
 
-Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
+Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path)
 {
     //look in the cache
     {
@@ -43,8 +42,7 @@ Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
     }
 
     //search all of the nodes
-    auto dock = dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"]);
-    if (dock != nullptr) for (const auto &uri : dock->hostUriList())
+    for (const auto &uri : _hostExplorerDock->hostUriList())
     {
         try
         {
@@ -84,9 +82,9 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
 /***********************************************************************
  * Block Cache impl
  **********************************************************************/
-BlockCache::BlockCache(QObject *parent):
+BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     QObject(parent),
-    _hostExplorerDock(dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"])),
+    _hostExplorerDock(hostExplorer),
     _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this))
 {
     assert(_hostExplorerDock != nullptr);

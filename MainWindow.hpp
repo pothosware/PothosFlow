@@ -12,6 +12,7 @@ class QDockWidget;
 class QAction;
 class QCloseEvent;
 class QShowEvent;
+class HostExplorerDock;
 
 class PothosGuiMainWindow : public QMainWindow
 {
@@ -81,7 +82,7 @@ public:
 
     //global widgets
     QToolBar *_mainToolBar;
-    QDockWidget *_hostExplorerDock;
+    HostExplorerDock *_hostExplorerDock;
     QDockWidget *_messageWindowDock;
     QDockWidget *_graphActionsDock;
     QDockWidget *_blockTreeDock;

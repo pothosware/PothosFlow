@@ -862,7 +862,8 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto properties = obj->getArray("properties");
 
     //init the block with the description
-    auto blockDesc = getBlockDescFromPath(path);
+    auto blockCache = dynamic_cast<BlockCache *>(getObjectMap()["blockCache"]);
+    auto blockDesc = blockCache->getBlockDescFromPath(path);
 
     //Can't find the block description?
     //Generate a pseudo description so that the block will appear

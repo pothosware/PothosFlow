@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -25,7 +25,7 @@ class AffinityZoneEditor : public QWidget
 {
     Q_OBJECT
 public:
-    AffinityZoneEditor(QWidget *parent);
+    AffinityZoneEditor(QWidget *parent, HostExplorerDock *hostExplorer);
 
     //! load the settings from a JSON object
     void loadFromConfig(const Poco::JSON::Object::Ptr &config);

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -13,6 +13,7 @@
 class QTimer;
 class QMimeData;
 class BlockTreeWidgetItem;
+class GraphEditorTabs;
 
 //! The tree widget part of the block tree top window
 class BlockTreeWidget : public QTreeWidget
@@ -20,7 +21,7 @@ class BlockTreeWidget : public QTreeWidget
     Q_OBJECT
 public:
 
-    BlockTreeWidget(QWidget *parent);
+    BlockTreeWidget(QWidget *parent, GraphEditorTabs *editorTabs);
 
 signals:
     void blockDescEvent(const Poco::JSON::Object::Ptr &, bool);
@@ -49,6 +50,7 @@ private:
 
     QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const;
 
+    GraphEditorTabs *_editorTabs;
     QString _filter;
     QTimer *_filttimer;
     QPoint _dragStartPos;

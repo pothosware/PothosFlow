@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon path and object/action maps
+#include "PothosGuiUtils.hpp" //make icon path and action maps
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <QTabWidget>
@@ -28,8 +28,6 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
         QString("QTabBar::close-button:hover {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-hover-16.png"))+
         QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
 
-    connect(getObjectMap()["mainWindow"], SIGNAL(initDone(void)), this, SLOT(handleInit(void)));
-    connect(getObjectMap()["mainWindow"], SIGNAL(exitBegin(QCloseEvent *)), this, SLOT(handleExit(QCloseEvent *)));
     connect(getActionMap()["new"], SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
     connect(getActionMap()["open"], SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
     connect(getActionMap()["save"], SIGNAL(triggered(void)), this, SLOT(handleSave(void)));
@@ -60,7 +58,7 @@ void GraphEditorTabs::handleNew(void)
     auto editor = new GraphEditor(this);
     this->addTab(editor, "");
     this->setCurrentWidget(editor);
-    dynamic_cast<GraphEditor *>(editor)->load();
+    editor->load();
     this->saveState();
 }
 
@@ -291,9 +289,4 @@ void GraphEditorTabs::saveState(void)
         files.push_back(editor->getCurrentFilePath());
     }
     getSettings().setValue("GraphEditorTabs/files", files);
-}
-
-QWidget *makeGraphEditorTabs(QWidget *parent)
-{
-    return new GraphEditorTabs(parent);
 }

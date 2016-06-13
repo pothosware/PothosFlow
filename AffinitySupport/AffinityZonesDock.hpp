@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -16,13 +16,14 @@ class QPushButton;
 class QTabWidget;
 class QSignalMapper;
 class AffinityZoneEditor;
+class HostExplorerDock;
 
 //! Top level dock widget for affinity designer
 class AffinityZonesDock : public QDockWidget
 {
     Q_OBJECT
 public:
-    AffinityZonesDock(QWidget *parent);
+    AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExplorer);
 
     //! Make a new affinity selection menu that updates with this panel's configuration
     QMenu *makeMenu(QWidget *parent);
@@ -68,6 +69,7 @@ private:
 
     void handleErrorMessage(const QString &errMsg);
 
+    HostExplorerDock *_hostExplorerDock;
     QSignalMapper *_mapper;
     QLineEdit *_zoneEntry;
     QPushButton *_createButton;

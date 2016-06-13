@@ -71,13 +71,13 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     //create affinity panel
     postStatusMessage(tr("Creating affinity panel..."));
-    _affinityZonesDock = new AffinityZonesDock(this);
+    _affinityZonesDock = new AffinityZonesDock(this, _hostExplorerDock);
     getObjectMap()["affinityZonesDock"] = _affinityZonesDock;
     this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
 
     //block cache (make before block tree)
     postStatusMessage(tr("Creating block cache..."));
-    auto blockCache = new BlockCache(this);
+    auto blockCache = new BlockCache(this, _hostExplorerDock);
     getObjectMap()["blockCache"] = blockCache;
     connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
@@ -86,10 +86,12 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     auto editorTabs = new GraphEditorTabs(this);
     this->setCentralWidget(editorTabs);
     getObjectMap()["editorTabs"] = editorTabs;
+    connect(this, SIGNAL(initDone(void)), editorTabs, SLOT(handleInit(void)));
+    connect(this, SIGNAL(exitBegin(QCloseEvent *)), editorTabs, SLOT(handleExit(QCloseEvent *)));
 
     //create block tree (after the block cache)
     postStatusMessage(tr("Creating block tree..."));
-    _blockTreeDock = new BlockTreeDock(this);
+    _blockTreeDock = new BlockTreeDock(this, blockCache, editorTabs);
     connect(getActionMap()["find"], SIGNAL(triggered(void)), _blockTreeDock, SLOT(activateFind(void)));
     getObjectMap()["blockTreeDock"] = _blockTreeDock;
     this->tabifyDockWidget(_affinityZonesDock, _blockTreeDock);

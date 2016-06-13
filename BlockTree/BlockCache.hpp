@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,9 +12,6 @@
 #include <Poco/JSON/Object.h>
 #include <Poco/JSON/Array.h>
 
-//! Get a block description given the block registry path
-Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path);
-
 class HostExplorerDock;
 
 class BlockCache : public QObject
@@ -22,7 +19,10 @@ class BlockCache : public QObject
     Q_OBJECT
 public:
 
-    BlockCache(QObject *parent);
+    BlockCache(QObject *parent, HostExplorerDock *hostExplorer);
+
+    //! Get a block description given the block registry path
+    Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path);
 
 signals:
     void blockDescUpdate(const Poco::JSON::Array::Ptr &);
