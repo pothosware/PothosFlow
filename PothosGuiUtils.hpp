@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -20,7 +20,6 @@ QSettings &getSettings(void);
 //! global widget maps
 QMap<QString, QAction *> &getActionMap(void);
 QMap<QString, QMenu *> &getMenuMap(void);
-QMap<QString, QObject *> &getObjectMap(void);
 
 //! icon utils
 QString makeIconPath(const QString &name);

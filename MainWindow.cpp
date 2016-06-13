@@ -39,7 +39,6 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     #endif //__APPLE__
 
     postStatusMessage(tr("Creating main window..."));
-    getObjectMap()["mainWindow"] = this;
 
     this->setMinimumSize(800, 600);
     this->setWindowTitle("Pothos GUI");
@@ -54,38 +53,32 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     postStatusMessage(tr("Creating message window..."));
     _messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
-    getObjectMap()["messageWindowDock"] = _messageWindowDock;
     poco_information_f1(Poco::Logger::get("PothosGui.MainWindow"), "Welcome to Pothos v%s", Pothos::System::getApiVersion());
 
     //create graph actions dock
     postStatusMessage(tr("Creating actions dock..."));
     _graphActionsDock = new GraphActionsDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
-    getObjectMap()["graphActionsDock"] = _graphActionsDock;
 
     //create host explorer dock
     postStatusMessage(tr("Creating host explorer..."));
     _hostExplorerDock = new HostExplorerDock(this);
-    getObjectMap()["hostExplorerDock"] = _hostExplorerDock;
     this->addDockWidget(Qt::RightDockWidgetArea, _hostExplorerDock);
 
     //create affinity panel
     postStatusMessage(tr("Creating affinity panel..."));
     _affinityZonesDock = new AffinityZonesDock(this, _hostExplorerDock);
-    getObjectMap()["affinityZonesDock"] = _affinityZonesDock;
     this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
 
     //block cache (make before block tree)
     postStatusMessage(tr("Creating block cache..."));
     auto blockCache = new BlockCache(this, _hostExplorerDock);
-    getObjectMap()["blockCache"] = blockCache;
     connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
     //create topology editor tabbed widget
     postStatusMessage(tr("Creating graph editor..."));
     auto editorTabs = new GraphEditorTabs(this);
     this->setCentralWidget(editorTabs);
-    getObjectMap()["editorTabs"] = editorTabs;
     connect(this, SIGNAL(initDone(void)), editorTabs, SLOT(handleInit(void)));
     connect(this, SIGNAL(exitBegin(QCloseEvent *)), editorTabs, SLOT(handleExit(QCloseEvent *)));
 
@@ -93,13 +86,11 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     postStatusMessage(tr("Creating block tree..."));
     _blockTreeDock = new BlockTreeDock(this, blockCache, editorTabs);
     connect(getActionMap()["find"], SIGNAL(triggered(void)), _blockTreeDock, SLOT(activateFind(void)));
-    getObjectMap()["blockTreeDock"] = _blockTreeDock;
     this->tabifyDockWidget(_affinityZonesDock, _blockTreeDock);
 
     //create properties panel (make after block cache)
     postStatusMessage(tr("Creating properties panel..."));
     _propertiesPanelDock = new PropertiesPanelDock(this);
-    getObjectMap()["propertiesPanel"] = _propertiesPanelDock;
     this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
 
     //restore main window settings from file

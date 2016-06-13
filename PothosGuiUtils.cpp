@@ -22,12 +22,6 @@ QMap<QString, QMenu *> &getMenuMap(void)
     return *sh.get();
 }
 
-QMap<QString, QObject *> &getObjectMap(void)
-{
-    static Poco::SingletonHolder<QMap<QString, QObject *>> sh;
-    return *sh.get();
-}
-
 QSettings &getSettings(void)
 {
     static QSettings *settings = nullptr;
