@@ -17,10 +17,6 @@ class QFormLayout;
 //! global settings
 QSettings &getSettings(void);
 
-//! global widget maps
-QMap<QString, QAction *> &getActionMap(void);
-QMap<QString, QMenu *> &getMenuMap(void);
-
 //! icon utils
 QString makeIconPath(const QString &name);
 QIcon makeIconFromTheme(const QString &name);

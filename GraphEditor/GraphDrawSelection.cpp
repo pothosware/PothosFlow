@@ -1,7 +1,6 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //action maps
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/Constants.hpp"
@@ -9,6 +8,7 @@
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphWidget.hpp"
+#include "MainWindow/MainActions.hpp"
 #include <Pothos/Exception.hpp>
 #include <Poco/Logger.h>
 #include <QApplication> //control modifier
@@ -45,8 +45,9 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
     if (not ctrlDown) return QGraphicsView::wheelEvent(event);
 
     //ctrl was down, wheel event means zoom in or out:
-    if (event->delta() > 0) getActionMap()["zoomIn"]->activate(QAction::Trigger);
-    if (event->delta() < 0) getActionMap()["zoomOut"]->activate(QAction::Trigger);
+    auto actions = PothosGuiMainActions::global();
+    if (event->delta() > 0) actions->zoomInAction->activate(QAction::Trigger);
+    if (event->delta() < 0) actions->zoomOutAction->activate(QAction::Trigger);
 }
 
 void GraphDraw::mousePressEvent(QMouseEvent *event)
@@ -88,7 +89,8 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
             }
 
             //if separate clicks to connect when try to make connection
-            if (getActionMap()["clickConnectMode"]->isChecked())
+            auto actions = PothosGuiMainActions::global();
+            if (actions->clickConnectModeAction->isChecked())
             {
                 if (not this->tryToMakeConnection(thisEp))
                 {
@@ -181,7 +183,8 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     {
         const auto thisEp = this->mousedEndpoint(event->pos());
         this->tryToMakeConnection(thisEp);
-        if (not getActionMap()["clickConnectMode"]->isChecked())
+        auto actions = PothosGuiMainActions::global();
+        if (not actions->clickConnectModeAction->isChecked())
             _lastClickSelectEp = GraphConnectionEndpoint();
     }
 

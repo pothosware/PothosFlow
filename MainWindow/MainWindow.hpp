@@ -7,17 +7,9 @@
 #include <QString>
 #include <QMap>
 
-class QToolBar;
-class QMenu;
-class QAction;
 class QCloseEvent;
 class QShowEvent;
-class HostExplorerDock;
-class MessageWindowDock;
-class GraphActionsDock;
-class BlockTreeDock;
-class PropertiesPanelDock;
-class AffinityZonesDock;
+class PothosGuiMainActions;
 
 class PothosGuiMainWindow : public QMainWindow
 {
@@ -46,76 +38,7 @@ protected:
     void showEvent(QShowEvent *event);
 
 private:
-
-    void createActions(void);
-    QAction *_newAction;
-    QAction *_openAction;
-    QAction *_saveAction;
-    QAction *_saveAsAction;
-    QAction *_saveAllAction;
-    QAction *_reloadAction;
-    QAction *_closeAction;
-    QAction *_exitAction;
-    QAction *_undoAction;
-    QAction *_redoAction;
-    QAction *_enableAction;
-    QAction *_disableAction;
-    QAction *_reevalAction;
-    QAction *_cutAction;
-    QAction *_copyAction;
-    QAction *_pasteAction;
-    QAction *_deleteAction;
-    QAction *_selectAllAction;
-    QAction *_objectPropertiesAction;
-    QAction *_graphPropertiesAction;
-    QAction *_createGraphPageAction;
-    QAction *_renameGraphPageAction;
-    QAction *_deleteGraphPageAction;
-    QAction *_inputBreakerAction;
-    QAction *_outputBreakerAction;
-    QAction *_rotateLeftAction;
-    QAction *_rotateRightAction;
-    QAction *_zoomInAction;
-    QAction *_zoomOutAction;
-    QAction *_zoomOriginalAction;
-    QAction *_showAboutAction;
-    QAction *_showAboutQtAction;
-    QAction *_findAction;
-    QAction *_showGraphConnectionPointsAction;
-    QAction *_showGraphBoundingBoxesAction;
-    QAction *_showRenderedGraphAction;
-    QAction *_showTopologyStatsAction;
-    QAction *_activateTopologyAction;
-    QAction *_showPortNamesAction;
-    QAction *_eventPortsInlineAction;
-    QAction *_clickConnectModeAction;
-    QAction *_showColorsDialogAction;
-    QAction *_incrementAction;
-    QAction *_decrementAction;
-    QAction *_fullScreenViewAction;
-    QMap<QString, QAction *> &_actionMap;
-
-    void createMenus(void);
-    QMenu *_fileMenu;
-    QMenu *_editMenu;
-    QMenu *_executeMenu;
-    QMenu *_viewMenu;
-    QMenu *_toolsMenu;
-    QMenu *_debugMenu;
-    QMenu *_configMenu;
-    QMenu *_helpMenu;
-    QMap<QString, QMenu *> &_menuMap;
-
-    void createMainToolBar(void);
-    QToolBar *_mainToolBar;
-    /*
-    HostExplorerDock *_hostExplorerDock;
-    MessageWindowDock *_messageWindowDock;
-    GraphActionsDock *_graphActionsDock;
-    BlockTreeDock *_blockTreeDock;
-    PropertiesPanelDock *_propertiesPanelDock;
-    AffinityZonesDock *_affinityZonesDock;
-    */
+    PothosGuiMainActions *_actions;
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;

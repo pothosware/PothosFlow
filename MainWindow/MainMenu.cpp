@@ -64,9 +64,10 @@ PothosGuiMainMenu::PothosGuiMainMenu(QMainWindow *parent, PothosGuiMainActions *
     pageMenu->addSeparator();
     pageMenu->addAction(actions->inputBreakerAction);
     pageMenu->addAction(actions->outputBreakerAction);
-    editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move graph objects..."));
-    editMenu->addMenu(AffinityZonesDock::global()->makeMenu(editMenu));
-    editMenu->addMenu(makeIconFromTheme("insert-image"), tr("Insert graph widgets..."));
+    moveGraphObjectsMenu = editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move graph objects..."));
+    affinityZoneMenu = AffinityZonesDock::global()->makeMenu(editMenu);
+    editMenu->addMenu(affinityZoneMenu);
+    insertGraphWidgetsMenu = editMenu->addMenu(makeIconFromTheme("insert-image"), tr("Insert graph widgets..."));
 
     executeMenu = parent->menuBar()->addMenu(tr("&Execute"));
     executeMenu->addSeparator();
@@ -75,15 +76,6 @@ PothosGuiMainMenu::PothosGuiMainMenu(QMainWindow *parent, PothosGuiMainActions *
     executeMenu->addAction(actions->showTopologyStatsAction);
 
     viewMenu = parent->menuBar()->addMenu(tr("&View"));
-    /*
-     * //FIXME do it in window
-    viewMenu->addAction(actions->hostExplorerDock->toggleViewAction());
-    viewMenu->addAction(actions->messageWindowDock->toggleViewAction());
-    viewMenu->addAction(actions->graphActionsDock->toggleViewAction());
-    viewMenu->addAction(actions->blockTreeDock->toggleViewAction());
-    viewMenu->addAction(actions->affinityZonesDock->toggleViewAction());
-    viewMenu->addAction(actions->mainToolBar->toggleViewAction());
-    */
     viewMenu->addAction(actions->zoomInAction);
     viewMenu->addAction(actions->zoomOutAction);
     viewMenu->addAction(actions->zoomOriginalAction);

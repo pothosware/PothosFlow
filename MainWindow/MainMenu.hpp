@@ -24,6 +24,9 @@ public:
 
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *affinityZoneMenu;
+    QMenu *moveGraphObjectsMenu;
+    QMenu *insertGraphWidgetsMenu;
     QMenu *executeMenu;
     QMenu *viewMenu;
     QMenu *toolsMenu;

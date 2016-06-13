@@ -10,18 +10,6 @@
 #include <QFormLayout>
 #include <QDir>
 
-QMap<QString, QAction *> &getActionMap(void)
-{
-    static Poco::SingletonHolder<QMap<QString, QAction *>> sh;
-    return *sh.get();
-}
-
-QMap<QString, QMenu *> &getMenuMap(void)
-{
-    static Poco::SingletonHolder<QMap<QString, QMenu *>> sh;
-    return *sh.get();
-}
-
 QSettings &getSettings(void)
 {
     static QSettings *settings = nullptr;

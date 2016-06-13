@@ -1,9 +1,10 @@
 // Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon path and action maps
+#include "PothosGuiUtils.hpp" //make icon path
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphEditor.hpp"
+#include "MainWindow/MainActions.hpp"
 #include <QTabWidget>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -28,13 +29,14 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
         QString("QTabBar::close-button:hover {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-hover-16.png"))+
         QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
 
-    connect(getActionMap()["new"], SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
-    connect(getActionMap()["open"], SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
-    connect(getActionMap()["save"], SIGNAL(triggered(void)), this, SLOT(handleSave(void)));
-    connect(getActionMap()["saveAs"], SIGNAL(triggered(void)), this, SLOT(handleSaveAs(void)));
-    connect(getActionMap()["saveAll"], SIGNAL(triggered(void)), this, SLOT(handleSaveAll(void)));
-    connect(getActionMap()["reload"], SIGNAL(triggered(void)), this, SLOT(handleReload(void)));
-    connect(getActionMap()["close"], SIGNAL(triggered(void)), this, SLOT(handleClose(void)));
+    auto actions = PothosGuiMainActions::global();
+    connect(actions->newAction, SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
+    connect(actions->openAction, SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
+    connect(actions->saveAction, SIGNAL(triggered(void)), this, SLOT(handleSave(void)));
+    connect(actions->saveAsAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAs(void)));
+    connect(actions->saveAllAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAll(void)));
+    connect(actions->reloadAction, SIGNAL(triggered(void)), this, SLOT(handleReload(void)));
+    connect(actions->closeAction, SIGNAL(triggered(void)), this, SLOT(handleClose(void)));
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(handleClose(int)));
 }
 
