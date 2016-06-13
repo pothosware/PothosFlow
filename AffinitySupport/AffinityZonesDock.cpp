@@ -19,6 +19,13 @@
 #include <cassert>
 #include <sstream>
 
+static AffinityZonesDock *globalAffinityZonesDock = nullptr;
+
+AffinityZonesDock *AffinityZonesDock::global(void)
+{
+    return globalAffinityZonesDock;
+}
+
 AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExplorer):
     QDockWidget(parent),
     _hostExplorerDock(hostExplorer),
@@ -27,6 +34,7 @@ AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExpl
     _createButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create zone"), this)),
     _editorsTabs(new QTabWidget(this))
 {
+    globalAffinityZonesDock = this;
     this->setObjectName("AffinityZonesDock");
     this->setWindowTitle(tr("Affinity Zones"));
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);

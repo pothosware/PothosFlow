@@ -12,10 +12,18 @@
 #include <cassert>
 #include <QAction>
 
+static BlockTreeDock *globalBlockTreeDock = nullptr;
+
+BlockTreeDock *BlockTreeDock::global(void)
+{
+    return globalBlockTreeDock;
+}
+
 BlockTreeDock::BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEditorTabs *editorTabs):
     QDockWidget(parent),
     _searchBox(new QLineEdit(this))
 {
+    globalBlockTreeDock = this;
     this->setObjectName("BlockTreeDock");
     this->setWindowTitle(tr("Block Tree"));
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);

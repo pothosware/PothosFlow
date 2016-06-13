@@ -19,6 +19,9 @@ class BlockCache : public QObject
     Q_OBJECT
 public:
 
+    //! Get access to the global block cache
+    static BlockCache *global(void);
+
     BlockCache(QObject *parent, HostExplorerDock *hostExplorer);
 
     //! Get a block description given the block registry path

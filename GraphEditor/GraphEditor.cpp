@@ -11,6 +11,8 @@
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphWidget.hpp"
+#include "BlockTree/BlockTreeDock.hpp"
+#include "AffinitySupport/AffinityZonesDock.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
@@ -63,7 +65,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(getObjectMap()["blockTreeDock"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
+    connect(BlockTreeDock::global(), SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
     connect(getActionMap()["selectAll"], SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
     connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
@@ -79,7 +81,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(getActionMap()["disable"], SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
     connect(getActionMap()["reeval"], SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
     connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
-    connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
+    connect(AffinityZonesDock::global(), SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     connect(getActionMap()["showRenderedGraph"], SIGNAL(triggered(void)), this, SLOT(handleShowRenderedGraphDialog(void)));
     connect(getActionMap()["showTopologyStats"], SIGNAL(triggered(void)), this, SLOT(handleShowTopologyStatsDialog(void)));
     connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
@@ -90,7 +92,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(_evalEngine, SIGNAL(deactivateDesign(void)), this, SLOT(handleEvalEngineDeactivate(void)));
-    connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
+    connect(this, SIGNAL(newTitleSubtext(const QString &)), _parentTabWidget->parent(), SLOT(handleNewTitleSubtext(const QString &)));
 }
 
 GraphEditor::~GraphEditor(void)
@@ -142,9 +144,7 @@ QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) co
 void GraphEditor::showEvent(QShowEvent *event)
 {
     //load our state monitor into the actions dock
-    auto actionsDock = dynamic_cast<GraphActionsDock *>(getObjectMap()["graphActionsDock"]);
-    assert(actionsDock != nullptr);
-    actionsDock->setActiveWidget(_stateManager);
+    GraphActionsDock::global()->setActiveWidget(_stateManager);
 
     this->updateGraphEditorMenus();
     this->updateEnabledActions();

@@ -1,7 +1,6 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //getObjectMap
 #include "EvalEngine.hpp"
 #include "EvalEngineImpl.hpp"
 #include "GraphObjects/GraphBlock.hpp"
@@ -22,7 +21,7 @@ EvalEngine::EvalEngine(QObject *parent):
     _monitorTimer(new QTimer(this)),
     _impl(new EvalEngineImpl()),
     _blockEvalMapper(new QSignalMapper(this)),
-    _affinityDock(dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]))
+    _affinityDock(AffinityZonesDock::global())
 {
     assert(_affinityDock != nullptr);
     connect(_affinityDock, SIGNAL(zonesChanged(void)), this, SLOT(handleAffinityZonesChanged(void)));

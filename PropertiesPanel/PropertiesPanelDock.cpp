@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PothosGuiUtils.hpp" //make icon theme
@@ -18,6 +18,13 @@
 #include <QVBoxLayout>
 #include <QScrollArea>
 
+static PropertiesPanelDock *globalPropertiesPanelDock = nullptr;
+
+PropertiesPanelDock *PropertiesPanelDock::global(void)
+{
+    return globalPropertiesPanelDock;
+}
+
 PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     QDockWidget(parent),
     _propertiesPanel(nullptr),
@@ -25,6 +32,7 @@ PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     _commitButton(nullptr),
     _cancelButton(nullptr)
 {
+    globalPropertiesPanelDock = this;
     this->setObjectName("PropertiesPanelDock");
     this->setWindowTitle(tr("Properties Panel"));
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);

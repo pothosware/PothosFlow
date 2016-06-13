@@ -23,6 +23,10 @@ class AffinityZonesDock : public QDockWidget
 {
     Q_OBJECT
 public:
+
+    //! Get the global affinity zone dock
+    static AffinityZonesDock *global(void);
+
     AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExplorer);
 
     //! Make a new affinity selection menu that updates with this panel's configuration

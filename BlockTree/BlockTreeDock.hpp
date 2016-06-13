@@ -17,6 +17,10 @@ class BlockTreeDock : public QDockWidget
 {
     Q_OBJECT
 public:
+
+    //! Get access to the global block tree dock
+    static BlockTreeDock *global(void);
+
     BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEditorTabs *editorTabs);
 
 signals:

@@ -82,11 +82,19 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
 /***********************************************************************
  * Block Cache impl
  **********************************************************************/
+static BlockCache *globalBlockCache = nullptr;
+
+BlockCache *BlockCache::global(void)
+{
+    return globalBlockCache;
+}
+
 BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     QObject(parent),
     _hostExplorerDock(hostExplorer),
     _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this))
 {
+    globalBlockCache = this;
     assert(_hostExplorerDock != nullptr);
     connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
     connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherFinished(void)));

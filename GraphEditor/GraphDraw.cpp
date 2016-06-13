@@ -1,12 +1,13 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //action and object map
+#include "PothosGuiUtils.hpp" //action map
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include <Poco/JSON/Parser.h>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
@@ -56,7 +57,7 @@ GraphDraw::GraphDraw(QWidget *parent):
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
     connect(this, SIGNAL(modifyProperties(QObject *)),
-        getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(QObject *)));
+        PropertiesPanelDock::global(), SLOT(handleGraphModifyProperties(QObject *)));
     connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
