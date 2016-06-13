@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "MainWindow.hpp"
+#include "MainWindow/MainWindow.hpp"
 #include "PothosGuiUtils.hpp" //object and action maps, settings
 #include <Pothos/System.hpp>
 #include "BlockTree/BlockCache.hpp"
@@ -13,6 +13,9 @@
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "MessageWindow/MessageWindowDock.hpp"
 #include "ColorUtils/ColorsDialog.hpp"
+#include "MainWindow/MainActions.hpp"
+#include "MainWindow/MainMenu.hpp"
+#include "MainWindow/MainToolBar.hpp"
 #include <QMainWindow>
 #include <QGridLayout>
 #include <QSettings>
@@ -45,34 +48,36 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     //initialize actions and action buttons
     postStatusMessage(tr("Creating actions..."));
-    this->createActions();
+    auto actions = new PothosGuiMainActions(this);
     postStatusMessage(tr("Creating toolbar..."));
-    this->createMainToolBar();
+    auto mainToolBar = new PothosGuiMainToolBar(this, actions);
+    postStatusMessage(tr("Creating menus..."));
+    auto mainMenus = new PothosGuiMainMenu(this, actions);
 
     //create message window dock
     postStatusMessage(tr("Creating message window..."));
-    _messageWindowDock = new MessageWindowDock(this);
-    this->addDockWidget(Qt::BottomDockWidgetArea, _messageWindowDock);
+    auto messageWindowDock = new MessageWindowDock(this);
+    this->addDockWidget(Qt::BottomDockWidgetArea, messageWindowDock);
     poco_information_f1(Poco::Logger::get("PothosGui.MainWindow"), "Welcome to Pothos v%s", Pothos::System::getApiVersion());
 
     //create graph actions dock
     postStatusMessage(tr("Creating actions dock..."));
-    _graphActionsDock = new GraphActionsDock(this);
-    this->addDockWidget(Qt::BottomDockWidgetArea, _graphActionsDock);
+    auto graphActionsDock = new GraphActionsDock(this);
+    this->addDockWidget(Qt::BottomDockWidgetArea, graphActionsDock);
 
     //create host explorer dock
     postStatusMessage(tr("Creating host explorer..."));
-    _hostExplorerDock = new HostExplorerDock(this);
-    this->addDockWidget(Qt::RightDockWidgetArea, _hostExplorerDock);
+    auto hostExplorerDock = new HostExplorerDock(this);
+    this->addDockWidget(Qt::RightDockWidgetArea, hostExplorerDock);
 
     //create affinity panel
     postStatusMessage(tr("Creating affinity panel..."));
-    _affinityZonesDock = new AffinityZonesDock(this, _hostExplorerDock);
-    this->tabifyDockWidget(_hostExplorerDock, _affinityZonesDock);
+    auto affinityZonesDock = new AffinityZonesDock(this, hostExplorerDock);
+    this->tabifyDockWidget(hostExplorerDock, affinityZonesDock);
 
     //block cache (make before block tree)
     postStatusMessage(tr("Creating block cache..."));
-    auto blockCache = new BlockCache(this, _hostExplorerDock);
+    auto blockCache = new BlockCache(this, hostExplorerDock);
     connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
 
     //create topology editor tabbed widget
@@ -84,29 +89,34 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     //create block tree (after the block cache)
     postStatusMessage(tr("Creating block tree..."));
-    _blockTreeDock = new BlockTreeDock(this, blockCache, editorTabs);
-    connect(getActionMap()["find"], SIGNAL(triggered(void)), _blockTreeDock, SLOT(activateFind(void)));
-    this->tabifyDockWidget(_affinityZonesDock, _blockTreeDock);
+    auto blockTreeDock = new BlockTreeDock(this, blockCache, editorTabs);
+    connect(getActionMap()["find"], SIGNAL(triggered(void)), blockTreeDock, SLOT(activateFind(void)));
+    this->tabifyDockWidget(affinityZonesDock, blockTreeDock);
 
     //create properties panel (make after block cache)
     postStatusMessage(tr("Creating properties panel..."));
-    _propertiesPanelDock = new PropertiesPanelDock(this);
-    this->tabifyDockWidget(_blockTreeDock, _propertiesPanelDock);
+    auto propertiesPanelDock = new PropertiesPanelDock(this);
+    this->tabifyDockWidget(blockTreeDock, propertiesPanelDock);
 
     //restore main window settings from file
     postStatusMessage(tr("Restoring configuration..."));
     this->restoreGeometry(getSettings().value("MainWindow/geometry").toByteArray());
     this->restoreState(getSettings().value("MainWindow/state").toByteArray());
-    _propertiesPanelDock->hide(); //hidden until used
+    propertiesPanelDock->hide(); //hidden until used
     _showPortNamesAction->setChecked(getSettings().value("MainWindow/showPortNames", true).toBool());
     _eventPortsInlineAction->setChecked(getSettings().value("MainWindow/eventPortsInline", true).toBool());
     _clickConnectModeAction->setChecked(getSettings().value("MainWindow/clickConnectMode", false).toBool());
     _showGraphConnectionPointsAction->setChecked(getSettings().value("MainWindow/showGraphConnectionPoints", false).toBool());
     _showGraphBoundingBoxesAction->setChecked(getSettings().value("MainWindow/showGraphBoundingBoxes", false).toBool());
 
-    //create menus after docks and tool bars (view menu calls their toggleViewAction())
-    postStatusMessage(tr("Creating menus..."));
-    this->createMenus();
+    //finish view menu after docks and tool bars (view menu calls their toggleViewAction())
+    auto viewMenu = mainMenus->viewMenu;
+    viewMenu->addAction(hostExplorerDock->toggleViewAction());
+    viewMenu->addAction(messageWindowDock->toggleViewAction());
+    viewMenu->addAction(graphActionsDock->toggleViewAction());
+    viewMenu->addAction(blockTreeDock->toggleViewAction());
+    viewMenu->addAction(affinityZonesDock->toggleViewAction());
+    viewMenu->addAction(mainToolBar->toggleViewAction());
 
     //we do this last so all of the connections and logging is setup
     postStatusMessage(tr("Completing initialization..."));
@@ -436,7 +446,7 @@ void PothosGuiMainWindow::createMenus(void)
     pageMenu->addAction(_inputBreakerAction);
     pageMenu->addAction(_outputBreakerAction);
     _menuMap["moveGraphObjects"] = _editMenu->addMenu(makeIconFromTheme("transform-move"), tr("Move graph objects..."));
-    _menuMap["setAffinityZone"] = dynamic_cast<AffinityZonesDock *>(_affinityZonesDock)->makeMenu(_editMenu);
+    //_menuMap["setAffinityZone"] = dynamic_cast<AffinityZonesDock *>(_affinityZonesDock)->makeMenu(_editMenu);
     _editMenu->addMenu(_menuMap["setAffinityZone"]);
     _menuMap["insertGraphWidgets"] = _editMenu->addMenu(makeIconFromTheme("insert-image"), tr("Insert graph widgets..."));
 
@@ -448,12 +458,14 @@ void PothosGuiMainWindow::createMenus(void)
 
     _viewMenu = menuBar()->addMenu(tr("&View"));
     _menuMap["view"] = _viewMenu;
+    /*
     _viewMenu->addAction(_hostExplorerDock->toggleViewAction());
     _viewMenu->addAction(_messageWindowDock->toggleViewAction());
     _viewMenu->addAction(_graphActionsDock->toggleViewAction());
     _viewMenu->addAction(_blockTreeDock->toggleViewAction());
     _viewMenu->addAction(_affinityZonesDock->toggleViewAction());
     _viewMenu->addAction(_mainToolBar->toggleViewAction());
+    */
     _viewMenu->addAction(_fullScreenViewAction);
     _viewMenu->addSeparator();
     _viewMenu->addAction(_zoomInAction);

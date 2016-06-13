@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "MainWindow.hpp"
+#include "MainWindow/MainWindow.hpp"
 #include "PothosGuiUtils.hpp"
 #include <Pothos/Init.hpp>
 #include <Pothos/Remote.hpp>

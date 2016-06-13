@@ -8,11 +8,16 @@
 #include <QMap>
 
 class QToolBar;
-class QDockWidget;
+class QMenu;
 class QAction;
 class QCloseEvent;
 class QShowEvent;
 class HostExplorerDock;
+class MessageWindowDock;
+class GraphActionsDock;
+class BlockTreeDock;
+class PropertiesPanelDock;
+class AffinityZonesDock;
 
 class PothosGuiMainWindow : public QMainWindow
 {
@@ -103,12 +108,14 @@ private:
 
     void createMainToolBar(void);
     QToolBar *_mainToolBar;
+    /*
     HostExplorerDock *_hostExplorerDock;
-    QDockWidget *_messageWindowDock;
-    QDockWidget *_graphActionsDock;
-    QDockWidget *_blockTreeDock;
-    QDockWidget *_propertiesPanelDock;
-    QDockWidget *_affinityZonesDock;
+    MessageWindowDock *_messageWindowDock;
+    GraphActionsDock *_graphActionsDock;
+    BlockTreeDock *_blockTreeDock;
+    PropertiesPanelDock *_propertiesPanelDock;
+    AffinityZonesDock *_affinityZonesDock;
+    */
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;

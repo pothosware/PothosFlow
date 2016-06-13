@@ -96,7 +96,11 @@ endif(WIN32)
 list(APPEND SOURCES
     PothosGui.cpp
     PothosGuiUtils.cpp
-    MainWindow.cpp
+
+    MainWindow/MainWindow.cpp
+    MainWindow/MainActions.cpp
+    MainWindow/MainMenu.cpp
+    MainWindow/MainToolBar.cpp
 
     ColorUtils/ColorUtils.cpp
     ColorUtils/ColorsDialog.cpp
