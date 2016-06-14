@@ -45,8 +45,10 @@ int main(int argc, char **argv)
 
     //create the entry point to the GUI
     QApplication app(argc, argv);
-    app.setOrganizationName("PothosWare");
     app.setApplicationName("Pothos");
+    app.setOrganizationName("PothosWare");
+    app.setOrganizationDomain("www.pothosware.com");
+    app.setApplicationVersion(QString::fromStdString(Pothos::System::getApiVersion()));
 
     //create splash screen
     getSplashScreen()->show();
