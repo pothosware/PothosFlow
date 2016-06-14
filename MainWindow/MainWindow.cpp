@@ -68,6 +68,13 @@ MainWindow::MainWindow(QWidget *parent):
     _splash->postMessage(tr("Creating menus..."));
     auto mainMenu = new MainMenu(this, _actions);
 
+    //connect actions to the main window
+    connect(_actions->exitAction, SIGNAL(triggered(void)), this, SLOT(close(void)));
+    connect(_actions->showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
+    connect(_actions->showAboutQtAction, SIGNAL(triggered(void)), this, SLOT(handleShowAboutQt(void)));
+    connect(_actions->showColorsDialogAction, SIGNAL(triggered(void)), this, SLOT(handleColorsDialogAction(void)));
+    connect(_actions->fullScreenViewAction, SIGNAL(toggled(bool)), this, SLOT(handleFullScreenViewAction(bool)));
+
     //create message window dock
     _splash->postMessage(tr("Creating message window..."));
     auto messageWindowDock = new MessageWindowDock(this);

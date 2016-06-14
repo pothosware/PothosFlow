@@ -29,6 +29,7 @@ MainToolBar::MainToolBar(QWidget *parent, MainActions *actions):
     this->addSeparator();
 
     this->addAction(actions->activateTopologyAction);
+    this->addAction(actions->reloadPluginsAction);
     this->addSeparator();
 
     this->addAction(actions->cutAction);

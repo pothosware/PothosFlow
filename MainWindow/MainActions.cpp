@@ -32,7 +32,7 @@ MainActions::MainActions(QObject *parent):
     saveAllAction = new QAction(makeIconFromTheme("document-save-all"), tr("Save A&ll"), this);
     saveAllAction->setShortcut(QKeySequence("CTRL+SHIFT+A"));
 
-    reloadAction = new QAction(makeIconFromTheme("view-refresh"), tr("&Reload"), this);
+    reloadAction = new QAction(makeIconFromTheme("document-revert"), tr("&Reload"), this);
     QList<QKeySequence> reloadShortcuts;
     reloadShortcuts.push_back(QKeySequence::Refresh);
     reloadShortcuts.push_back(QKeySequence("CTRL+R"));
@@ -44,7 +44,6 @@ MainActions::MainActions(QObject *parent):
 
     exitAction = new QAction(makeIconFromTheme("application-exit"), tr("&Exit Pothos GUI"), this);
     exitAction->setShortcut(QKeySequence::Quit);
-    connect(exitAction, SIGNAL(triggered(void)), parent, SLOT(close(void)));
 
     undoAction = new QAction(makeIconFromTheme("edit-undo"), tr("&Undo"), this);
     undoAction->setShortcut(QKeySequence::Undo);
@@ -64,7 +63,7 @@ MainActions::MainActions(QObject *parent):
     disableAction->setStatusTip(tr("Disable selected graph objects"));
     disableAction->setShortcut(QKeySequence(Qt::Key_D));
 
-    reevalAction = new QAction(makeIconFromTheme("document-revert"), tr("Re-eval"), this);
+    reevalAction = new QAction(makeIconFromTheme("edit-clear-history"), tr("Re-eval"), this);
     reevalAction->setStatusTip(tr("Re-evaluate selected graph objects"));
     reevalAction->setShortcut(QKeySequence(Qt::Key_R));
 
@@ -146,15 +145,12 @@ MainActions::MainActions(QObject *parent):
 
     showAboutAction = new QAction(makeIconFromTheme("help-about"), tr("&About Pothos"), this);
     showAboutAction->setStatusTip(tr("Information about this version of Pothos"));
-    connect(showAboutAction, SIGNAL(triggered(void)), parent, SLOT(handleShowAbout(void)));
 
     showAboutQtAction = new QAction(makeIconFromTheme("help-about"), tr("About &Qt"), this);
     showAboutQtAction->setStatusTip(tr("Information about this version of QT"));
-    connect(showAboutQtAction, SIGNAL(triggered(void)), parent, SLOT(handleShowAboutQt(void)));
 
     showColorsDialogAction = new QAction(makeIconFromTheme("color-picker"), tr("&Colors Map"), this);
     showColorsDialogAction->setStatusTip(tr("Data type colors used for block properties and ports"));
-    connect(showColorsDialogAction, SIGNAL(triggered(void)), parent, SLOT(handleColorsDialogAction(void)));
 
     incrementAction = new QAction(makeIconFromTheme("list-add"), tr("Block &Increment"), this);
     incrementAction->setStatusTip(tr("Increment action on selected graph objects"));
@@ -168,5 +164,7 @@ MainActions::MainActions(QObject *parent):
     fullScreenViewAction->setCheckable(true);
     fullScreenViewAction->setStatusTip(tr("Maximize graph editor area, hide dock widgets"));
     fullScreenViewAction->setShortcut(QKeySequence(Qt::Key_F11));
-    connect(fullScreenViewAction, SIGNAL(toggled(bool)), parent, SLOT(handleFullScreenViewAction(bool)));
+
+    reloadPluginsAction = new QAction(makeIconFromTheme("view-refresh"), tr("Reload plugin registry"), this);
+    reloadPluginsAction->setStatusTip(tr("Stop evaluation, reload plugins, resume evaluation"));
 }
