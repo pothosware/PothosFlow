@@ -5,15 +5,15 @@
 #include <Pothos/Config.hpp>
 #include <QToolBar>
 
-class PothosGuiMainActions;
+class MainActions;
 
 /*!
  * Create the main toolbar out of main window actions.
  */
-class PothosGuiMainToolBar : public QToolBar
+class MainToolBar : public QToolBar
 {
     Q_OBJECT
 public:
 
-    PothosGuiMainToolBar(QWidget *parent, PothosGuiMainActions *actions);
+    MainToolBar(QWidget *parent, MainActions *actions);
 };

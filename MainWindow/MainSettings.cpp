@@ -5,9 +5,9 @@
 #include <Pothos/System.hpp>
 #include <Poco/Path.h>
 
-static PothosGuiMainSettings *globalMainSettings = nullptr;
+static MainSettings *globalMainSettings = nullptr;
 
-PothosGuiMainSettings *PothosGuiMainSettings::global(void)
+MainSettings *MainSettings::global(void)
 {
     return globalMainSettings;
 }
@@ -19,7 +19,7 @@ static QString getSettingsPath(void)
     return QString::fromStdString(path.toString());
 }
 
-PothosGuiMainSettings::PothosGuiMainSettings(QObject *parent):
+MainSettings::MainSettings(QObject *parent):
     QSettings(getSettingsPath(), QSettings::IniFormat, parent)
 {
     globalMainSettings = this;

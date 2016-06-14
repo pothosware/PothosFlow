@@ -53,8 +53,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     this->setTabPosition(QTabWidget::West);
     this->makeDefaultPage();
     this->tabBar()->setStyleSheet("font-size:8pt;");
-    auto actions = PothosGuiMainActions::global();
-    auto mainMenu = PothosGuiMainMenu::global();
+    auto actions = MainActions::global();
+    auto mainMenu = MainMenu::global();
 
     //connect handlers that work at the page-level of control
     connect(QApplication::clipboard(), SIGNAL(dataChanged(void)), this, SLOT(handleClipboardDataChange(void)));
@@ -157,7 +157,7 @@ void GraphEditor::showEvent(QShowEvent *event)
 void GraphEditor::updateEnabledActions(void)
 {
     if (not this->isVisible()) return;
-    auto actions = PothosGuiMainActions::global();
+    auto actions = MainActions::global();
 
     actions->undoAction->setEnabled(_stateManager->isPreviousAvailable());
     actions->redoAction->setEnabled(_stateManager->isSubsequentAvailable());
@@ -935,7 +935,7 @@ void GraphEditor::updateExecutionEngine(void)
 
 void GraphEditor::handleEvalEngineDeactivate(void)
 {
-    auto actions = PothosGuiMainActions::global();
+    auto actions = MainActions::global();
     actions->activateTopologyAction->setChecked(false);
     _isTopologyActive = false;
 }
@@ -975,7 +975,7 @@ void GraphEditor::load(void)
     try
     {
         poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
-        PothosGuiMainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
+        MainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
     }
@@ -1016,7 +1016,7 @@ void GraphEditor::render(void)
 void GraphEditor::updateGraphEditorMenus(void)
 {
     if (not this->isVisible()) return;
-    auto mainMenu = PothosGuiMainMenu::global();
+    auto mainMenu = MainMenu::global();
 
     //always store the last visible page with the state
     //we use this to restore the last viewed page when undo/reset

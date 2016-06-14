@@ -8,15 +8,15 @@
 /*!
  * Customized splash screen with message hooks
  */
-class PothosGuiMainSplash : public QSplashScreen
+class MainSplash : public QSplashScreen
 {
     Q_OBJECT
 public:
 
     //! Global access to main splash
-    static PothosGuiMainSplash *global(void);
+    static MainSplash *global(void);
 
-    PothosGuiMainSplash(QWidget *parent);
+    MainSplash(QWidget *parent);
 
     void postMessage(const QString &msg);
 };

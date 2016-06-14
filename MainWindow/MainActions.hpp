@@ -11,15 +11,15 @@ class QAction;
  * This class contains top level QActions used in the menu
  * and connected to slots throughout the application.
  */
-class PothosGuiMainActions : public QObject
+class MainActions : public QObject
 {
     Q_OBJECT
 public:
 
     //! Global access to main actions
-    static PothosGuiMainActions *global(void);
+    static MainActions *global(void);
 
-    PothosGuiMainActions(QObject *parent);
+    MainActions(QObject *parent);
 
     QAction *newAction;
     QAction *openAction;

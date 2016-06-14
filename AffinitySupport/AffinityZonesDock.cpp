@@ -142,7 +142,7 @@ void AffinityZonesDock::handleCreateZone(void)
 
 AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneName)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     auto editor = new AffinityZoneEditor(this, _hostExplorerDock);
     _editorsTabs->addTab(editor, zoneName);
     if (zoneName == settings->value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
@@ -179,7 +179,7 @@ void AffinityZonesDock::ensureDefault(void)
 
 void AffinityZonesDock::initAffinityZoneEditors(void)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     auto names = settings->value("AffinityZones/zoneNames").toStringList();
     for (const auto &name : names) this->createZoneFromName(name);
     this->ensureDefault();
@@ -198,13 +198,13 @@ void AffinityZonesDock::updateTabColors(void)
 
 void AffinityZonesDock::handleTabSelectionChanged(const int index)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     settings->setValue("AffinityZones/currentZone", _editorsTabs->tabText(index));
 }
 
 void AffinityZonesDock::saveAffinityZoneEditorsState(void)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     settings->setValue("AffinityZones/zoneNames", this->zones());
 
     for (int i = 0; i < _editorsTabs->count(); i++)

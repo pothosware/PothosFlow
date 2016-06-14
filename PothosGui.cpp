@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     }
     if (not files.isEmpty())
     {
-        auto settings = new PothosGuiMainSettings(nullptr);
+        auto settings = new MainSettings(nullptr);
         settings->setValue("GraphEditorTabs/files", files);
         delete settings;
     }
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     POTHOS_EXCEPTION_TRY
     {
         //create the main window for the GUI
-        PothosGuiMainWindow mainWindow(nullptr);
+        MainWindow mainWindow(nullptr);
 
         //begin application execution
         return app.exec();

@@ -8,14 +8,14 @@
 #include <QMenuBar>
 #include <QMenu>
 
-static PothosGuiMainMenu *globalMainMenu = nullptr;
+static MainMenu *globalMainMenu = nullptr;
 
-PothosGuiMainMenu *PothosGuiMainMenu::global(void)
+MainMenu *MainMenu::global(void)
 {
     return globalMainMenu;
 }
 
-PothosGuiMainMenu::PothosGuiMainMenu(QMainWindow *parent, PothosGuiMainActions *actions):
+MainMenu::MainMenu(QMainWindow *parent, MainActions *actions):
     QObject(parent)
 {
     globalMainMenu = this;

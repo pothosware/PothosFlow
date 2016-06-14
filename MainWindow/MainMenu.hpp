@@ -6,21 +6,21 @@
 
 class QMenu;
 class QMainWindow;
-class PothosGuiMainActions;
+class MainActions;
 
 /*!
  * This class contains top level QActions used in the menu
  * and connected to slots throughout the application.
  */
-class PothosGuiMainMenu : public QObject
+class MainMenu : public QObject
 {
     Q_OBJECT
 public:
 
     //! Global access to main menus
-    static PothosGuiMainMenu *global(void);
+    static MainMenu *global(void);
 
-    PothosGuiMainMenu(QMainWindow *parent, PothosGuiMainActions *actions);
+    MainMenu(QMainWindow *parent, MainActions *actions);
 
     QMenu *fileMenu;
     QMenu *editMenu;

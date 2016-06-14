@@ -87,7 +87,7 @@ Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path
 
 void BlockCache::handleUpdate(void)
 {
-    PothosGuiMainSplash::global()->postMessage(tr("Updating block cache..."));
+    MainSplash::global()->postMessage(tr("Updating block cache..."));
 
     //cancel the existing future, begin a new one
     //if (_watcher->isRunning()) return;
@@ -101,7 +101,7 @@ void BlockCache::handleUpdate(void)
 
 void BlockCache::handleWatcherFinished(void)
 {
-    PothosGuiMainSplash::global()->postMessage(tr("Block cache updated."));
+    MainSplash::global()->postMessage(tr("Block cache updated."));
 
     //remove old nodes
     std::map<QString, Poco::JSON::Array::Ptr> newMap;

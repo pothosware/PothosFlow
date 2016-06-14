@@ -8,13 +8,13 @@
 /*!
  * This class contains conf settings used by various classes.
  */
-class PothosGuiMainSettings : public QSettings
+class MainSettings : public QSettings
 {
     Q_OBJECT
 public:
 
     //! Global access to main settings
-    static PothosGuiMainSettings *global(void);
+    static MainSettings *global(void);
 
-    PothosGuiMainSettings(QObject *parent);
+    MainSettings(QObject *parent);
 };

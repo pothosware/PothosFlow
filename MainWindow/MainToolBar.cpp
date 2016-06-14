@@ -4,7 +4,7 @@
 #include "MainWindow/MainToolBar.hpp"
 #include "MainWindow/MainActions.hpp"
 
-PothosGuiMainToolBar::PothosGuiMainToolBar(QWidget *parent, PothosGuiMainActions *actions):
+MainToolBar::MainToolBar(QWidget *parent, MainActions *actions):
     QToolBar(tr("Main Tool Bar"), parent)
 {
     this->setObjectName("MainToolBar");

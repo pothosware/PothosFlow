@@ -5,14 +5,14 @@
 #include "MainWindow/MainActions.hpp"
 #include <QAction>
 
-static PothosGuiMainActions *globalMainActions = nullptr;
+static MainActions *globalMainActions = nullptr;
 
-PothosGuiMainActions *PothosGuiMainActions::global(void)
+MainActions *MainActions::global(void)
 {
     return globalMainActions;
 }
 
-PothosGuiMainActions::PothosGuiMainActions(QObject *parent):
+MainActions::MainActions(QObject *parent):
     QObject(parent)
 {
     globalMainActions = this;

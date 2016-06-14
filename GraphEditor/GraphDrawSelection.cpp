@@ -45,7 +45,7 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
     if (not ctrlDown) return QGraphicsView::wheelEvent(event);
 
     //ctrl was down, wheel event means zoom in or out:
-    auto actions = PothosGuiMainActions::global();
+    auto actions = MainActions::global();
     if (event->delta() > 0) actions->zoomInAction->activate(QAction::Trigger);
     if (event->delta() < 0) actions->zoomOutAction->activate(QAction::Trigger);
 }
@@ -89,7 +89,7 @@ void GraphDraw::mousePressEvent(QMouseEvent *event)
             }
 
             //if separate clicks to connect when try to make connection
-            auto actions = PothosGuiMainActions::global();
+            auto actions = MainActions::global();
             if (actions->clickConnectModeAction->isChecked())
             {
                 if (not this->tryToMakeConnection(thisEp))
@@ -183,7 +183,7 @@ void GraphDraw::mouseReleaseEvent(QMouseEvent *event)
     {
         const auto thisEp = this->mousedEndpoint(event->pos());
         this->tryToMakeConnection(thisEp);
-        auto actions = PothosGuiMainActions::global();
+        auto actions = MainActions::global();
         if (not actions->clickConnectModeAction->isChecked())
             _lastClickSelectEp = GraphConnectionEndpoint();
     }

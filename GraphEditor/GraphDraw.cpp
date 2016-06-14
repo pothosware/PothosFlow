@@ -62,7 +62,7 @@ GraphDraw::GraphDraw(QWidget *parent):
     connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
-    auto actions = PothosGuiMainActions::global();
+    auto actions = MainActions::global();
     connect(actions->showGraphConnectionPointsAction, SIGNAL(triggered(void)),
         this, SLOT(handleGraphDebugViewChange(void)));
     connect(actions->showGraphBoundingBoxesAction, SIGNAL(triggered(void)),
@@ -72,7 +72,7 @@ GraphDraw::GraphDraw(QWidget *parent):
 
 void GraphDraw::handleGraphDebugViewChange(void)
 {
-    auto actions = PothosGuiMainActions::global();
+    auto actions = MainActions::global();
     _graphConnectionPoints.reset();
     if (actions->showGraphConnectionPointsAction->isChecked())
     {
@@ -152,7 +152,7 @@ void GraphDraw::showEvent(QShowEvent *event)
 
 void GraphDraw::keyPressEvent(QKeyEvent *event)
 {
-    auto actions = PothosGuiMainActions::global();
+    auto actions = MainActions::global();
 
     //map a key-press to an action name
     QAction *action = nullptr;
@@ -195,8 +195,8 @@ void GraphDraw::updateEnabledActions(void)
     auto selectedObjBlocks = this->getObjectsSelected(GRAPH_BLOCK);
     const bool selectedBlocks = not selectedObjBlocks.empty();
 
-    auto actions = PothosGuiMainActions::global();
-    auto mainMenu = PothosGuiMainMenu::global();
+    auto actions = MainActions::global();
+    auto mainMenu = MainMenu::global();
     actions->cutAction->setEnabled(selectedNoC);
     actions->copyAction->setEnabled(selectedNoC);
     actions->deleteAction->setEnabled(selected);
@@ -280,7 +280,7 @@ void GraphDraw::render(void)
 
 void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
 {
-    auto mainMenu = PothosGuiMainMenu::global();
+    auto mainMenu = MainMenu::global();
     _lastContextMenuPos = this->mapToScene(pos);
     mainMenu->editMenu->exec(this->mapToGlobal(pos));
 }

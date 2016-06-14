@@ -616,7 +616,7 @@ void GraphBlock::render(QPainter &painter)
     //render text
     if (this->isChanged())
     {
-        auto actions = PothosGuiMainActions::global();
+        auto actions = MainActions::global();
         _impl->showPortNames = actions->showPortNamesAction->isChecked();
         _impl->eventPortsInline = actions->eventPortsInlineAction->isChecked();
 

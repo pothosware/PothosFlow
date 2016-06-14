@@ -10,18 +10,18 @@
 
 class QCloseEvent;
 class QShowEvent;
-class PothosGuiMainSplash;
-class PothosGuiMainSettings;
-class PothosGuiMainActions;
+class MainSplash;
+class MainSettings;
+class MainActions;
 
-class PothosGuiMainWindow : public QMainWindow
+class MainWindow : public QMainWindow
 {
     Q_OBJECT
 public:
 
-    PothosGuiMainWindow(QWidget *parent);
+    MainWindow(QWidget *parent);
 
-    ~PothosGuiMainWindow(void);
+    ~MainWindow(void);
 
 signals:
     void initDone(void);
@@ -41,9 +41,9 @@ protected:
     void showEvent(QShowEvent *event);
 
 private:
-    PothosGuiMainSplash *_splash;
-    PothosGuiMainSettings *_settings;
-    PothosGuiMainActions *_actions;
+    MainSplash *_splash;
+    MainSettings *_settings;
+    MainActions *_actions;
     Pothos::RemoteServer _server;
 
     //restoring from full screen

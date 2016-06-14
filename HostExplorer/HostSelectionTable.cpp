@@ -28,7 +28,7 @@
  **********************************************************************/
 void NodeInfo::update(void)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     //determine if the host is online and update access times
     try
     {
@@ -61,7 +61,7 @@ void NodeInfo::update(void)
  **********************************************************************/
 static QStringList getHostUriList(void)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     auto uris = settings->value("HostExplorer/uris").toStringList();
     uris.push_front(QString::fromStdString("tcp://"+Pothos::Util::getLoopbackAddr()));
 
@@ -76,7 +76,7 @@ static QStringList getHostUriList(void)
 
 static void setHostUriList(const QStringList &uris)
 {
-    auto settings = PothosGuiMainSettings::global();
+    auto settings = MainSettings::global();
     settings->setValue("HostExplorer/uris", uris);
 }
 

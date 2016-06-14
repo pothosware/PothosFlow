@@ -32,10 +32,10 @@
 #include <Poco/Logger.h>
 #include <iostream>
 
-PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
+MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
-    _splash(new PothosGuiMainSplash(this)),
-    _settings(new PothosGuiMainSettings(this)),
+    _splash(new MainSplash(this)),
+    _settings(new MainSettings(this)),
     _actions(nullptr)
 {
     _splash->show();
@@ -70,11 +70,11 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
 
     //initialize actions and action buttons
     _splash->postMessage(tr("Creating actions..."));
-    _actions = new PothosGuiMainActions(this);
+    _actions = new MainActions(this);
     _splash->postMessage(tr("Creating toolbar..."));
-    auto mainToolBar = new PothosGuiMainToolBar(this, _actions);
+    auto mainToolBar = new MainToolBar(this, _actions);
     _splash->postMessage(tr("Creating menus..."));
-    auto mainMenu = new PothosGuiMainMenu(this, _actions);
+    auto mainMenu = new MainMenu(this, _actions);
 
     //create message window dock
     _splash->postMessage(tr("Creating message window..."));
@@ -149,7 +149,7 @@ PothosGuiMainWindow::PothosGuiMainWindow(QWidget *parent):
     emit this->initDone();
 }
 
-PothosGuiMainWindow::~PothosGuiMainWindow(void)
+MainWindow::~MainWindow(void)
 {
     this->handleFullScreenViewAction(false); //undo if set -- so we dont save full mode below
     _settings->setValue("MainWindow/geometry", this->saveGeometry());
@@ -170,19 +170,19 @@ PothosGuiMainWindow::~PothosGuiMainWindow(void)
     _server = Pothos::RemoteServer();
 }
 
-void PothosGuiMainWindow::handleInitDone(void)
+void MainWindow::handleInitDone(void)
 {
     _splash->postMessage(tr("Completing initialization..."));
     _splash->finish(this);
     poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Initialization complete");
 }
 
-void PothosGuiMainWindow::handleNewTitleSubtext(const QString &s)
+void MainWindow::handleNewTitleSubtext(const QString &s)
 {
     this->setWindowTitle("Pothos GUI - " + s);
 }
 
-void PothosGuiMainWindow::handleShowAbout(void)
+void MainWindow::handleShowAbout(void)
 {
     QMessageBox::about(this, "About Pothos", QString(
         "Pothos v%1\n"
@@ -192,19 +192,19 @@ void PothosGuiMainWindow::handleShowAbout(void)
         .arg(QString::fromStdString(Pothos::System::getRootPath())));
 }
 
-void PothosGuiMainWindow::handleShowAboutQt(void)
+void MainWindow::handleShowAboutQt(void)
 {
     QMessageBox::aboutQt(this);
 }
 
-void PothosGuiMainWindow::handleColorsDialogAction(void)
+void MainWindow::handleColorsDialogAction(void)
 {
     auto dialog = new ColorsDialog(this);
     dialog->exec();
     delete dialog;
 }
 
-void PothosGuiMainWindow::handleFullScreenViewAction(const bool toggle)
+void MainWindow::handleFullScreenViewAction(const bool toggle)
 {
     //gather a list of widgets to show/hide
     if (toggle and _widgetToOldVisibility.empty())
@@ -231,12 +231,12 @@ void PothosGuiMainWindow::handleFullScreenViewAction(const bool toggle)
     }
 }
 
-void PothosGuiMainWindow::closeEvent(QCloseEvent *event)
+void MainWindow::closeEvent(QCloseEvent *event)
 {
     emit this->exitBegin(event);
 }
 
-void PothosGuiMainWindow::showEvent(QShowEvent *event)
+void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
 }

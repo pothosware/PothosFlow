@@ -5,20 +5,20 @@
 #include "MainWindow/MainSplash.hpp"
 #include <QApplication>
 
-static PothosGuiMainSplash *globalMainSplash = nullptr;
+static MainSplash *globalMainSplash = nullptr;
 
-PothosGuiMainSplash *PothosGuiMainSplash::global(void)
+MainSplash *MainSplash::global(void)
 {
     return globalMainSplash;
 }
 
-PothosGuiMainSplash::PothosGuiMainSplash(QWidget *parent):
+MainSplash::MainSplash(QWidget *parent):
     QSplashScreen(parent, QPixmap(makeIconPath("PothosSplash.png")))
 {
     globalMainSplash = this;
 }
 
-void PothosGuiMainSplash::postMessage(const QString &msg)
+void MainSplash::postMessage(const QString &msg)
 {
     this->showMessage(msg, Qt::AlignLeft | Qt::AlignBottom);
     QApplication::instance()->processEvents();
