@@ -3,12 +3,14 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include <Pothos/Remote.hpp>
 #include <QMainWindow>
 #include <QString>
 #include <QMap>
 
 class QCloseEvent;
 class QShowEvent;
+class PothosGuiMainSplash;
 class PothosGuiMainSettings;
 class PothosGuiMainActions;
 
@@ -26,7 +28,7 @@ signals:
     void exitBegin(QCloseEvent *);
 
 private slots:
-
+    void handleInitDone(void);
     void handleNewTitleSubtext(const QString &s);
     void handleShowAbout(void);
     void handleShowAboutQt(void);
@@ -39,8 +41,10 @@ protected:
     void showEvent(QShowEvent *event);
 
 private:
+    PothosGuiMainSplash *_splash;
     PothosGuiMainSettings *_settings;
     PothosGuiMainActions *_actions;
+    Pothos::RemoteServer _server;
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;

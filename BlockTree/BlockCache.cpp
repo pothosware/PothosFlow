@@ -4,6 +4,7 @@
 #include "BlockTree/BlockCache.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
+#include "MainWindow/MainSplash.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <QFuture>
@@ -86,6 +87,8 @@ Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path
 
 void BlockCache::handleUpdate(void)
 {
+    PothosGuiMainSplash::global()->postMessage(tr("Updating block cache..."));
+
     //cancel the existing future, begin a new one
     //if (_watcher->isRunning()) return;
     _watcher->cancel();
@@ -98,6 +101,8 @@ void BlockCache::handleUpdate(void)
 
 void BlockCache::handleWatcherFinished(void)
 {
+    PothosGuiMainSplash::global()->postMessage(tr("Block cache updated."));
+
     //remove old nodes
     std::map<QString, Poco::JSON::Array::Ptr> newMap;
     for (const auto &uri : _allRemoteNodeUris) newMap[uri] = _uriToBlockDescs[uri];

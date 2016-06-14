@@ -6,6 +6,7 @@
 #include "GraphEditor/GraphEditor.hpp"
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainSettings.hpp"
+#include "MainWindow/MainSplash.hpp"
 #include <QTabWidget>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -53,6 +54,7 @@ GraphEditor *GraphEditorTabs::getCurrentGraphEditor(void) const
 
 void GraphEditorTabs::handleInit(void)
 {
+    PothosGuiMainSplash::global()->postMessage(tr("Restoring graph editor..."));
     this->loadState();
 }
 

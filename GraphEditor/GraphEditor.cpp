@@ -1,7 +1,6 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //action map
 #include "EvalEngine/EvalEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphEditor.hpp"
@@ -15,6 +14,7 @@
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
+#include "MainWindow/MainSplash.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
@@ -975,7 +975,7 @@ void GraphEditor::load(void)
     try
     {
         poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
-        postStatusMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
+        PothosGuiMainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
     }
