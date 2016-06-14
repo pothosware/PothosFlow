@@ -3,7 +3,7 @@
 
 #include "MainWindow/MainWindow.hpp"
 #include "MainWindow/MainSettings.hpp"
-#include "PothosGuiUtils.hpp"
+#include "MainWindow/IconUtils.hpp"
 #include <Pothos/System.hpp>
 #include <Poco/Logger.h>
 #include <QMessageBox>

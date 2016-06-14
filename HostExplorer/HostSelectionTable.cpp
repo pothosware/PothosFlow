@@ -1,7 +1,7 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //makeIconFromTheme
+#include "MainWindow/IconUtils.hpp"
 #include "HostExplorer/HostSelectionTable.hpp"
 #include "MainWindow/MainSettings.hpp"
 #include <QLineEdit>

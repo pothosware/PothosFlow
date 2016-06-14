@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon theme
+#include "MainWindow/IconUtils.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "AffinitySupport/AffinityZonesMenu.hpp"
 #include "AffinitySupport/AffinityZonesComboBox.hpp"

@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //makeIconFromTheme
+#include "MainWindow/IconUtils.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "BlockTree/BlockTreeWidget.hpp"
 #include "BlockTree/BlockCache.hpp"

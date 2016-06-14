@@ -1,8 +1,8 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //makeIconFromTheme
 #include "MainWindow/MainSplash.hpp"
+#include "MainWindow/IconUtils.hpp"
 #include <QApplication>
 
 static MainSplash *globalMainSplash = nullptr;

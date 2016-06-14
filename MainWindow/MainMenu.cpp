@@ -1,9 +1,9 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //makeIconFromTheme
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainActions.hpp"
+#include "MainWindow/IconUtils.hpp"
 #include <QMainWindow>
 #include <QMenuBar>
 #include <QMenu>

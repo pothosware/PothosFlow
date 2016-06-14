@@ -1,7 +1,7 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon from theme
+#include "MainWindow/IconUtils.hpp"
 #include "ConnectionPropertiesPanel.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphBlock.hpp"

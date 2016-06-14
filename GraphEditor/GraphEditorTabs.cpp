@@ -1,7 +1,7 @@
 // Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon path
+#include "MainWindow/IconUtils.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "MainWindow/MainActions.hpp"

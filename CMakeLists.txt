@@ -95,7 +95,6 @@ endif(WIN32)
 ########################################################################
 list(APPEND SOURCES
     PothosGui.cpp
-    PothosGuiUtils.cpp
 
     MainWindow/MainWindow.cpp
     MainWindow/MainActions.cpp
@@ -103,6 +102,7 @@ list(APPEND SOURCES
     MainWindow/MainToolBar.cpp
     MainWindow/MainSettings.cpp
     MainWindow/MainSplash.cpp
+    MainWindow/IconUtils.cpp
 
     ColorUtils/ColorUtils.cpp
     ColorUtils/ColorsDialog.cpp
