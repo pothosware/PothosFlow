@@ -19,18 +19,9 @@
 #include "MainWindow/MainToolBar.hpp"
 #include "MainWindow/MainSettings.hpp"
 #include "MainWindow/MainSplash.hpp"
-#include <QMainWindow>
-#include <QGridLayout>
-#include <QSettings>
-#include <QDockWidget>
 #include <QMenuBar>
-#include <QToolBar>
-#include <QAction>
-#include <QTabWidget>
 #include <QMessageBox>
-#include <QMap>
 #include <Poco/Logger.h>
-#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
