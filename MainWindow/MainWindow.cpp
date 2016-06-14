@@ -27,7 +27,8 @@ MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     _splash(new MainSplash(this)),
     _settings(new MainSettings(this)),
-    _actions(nullptr)
+    _actions(nullptr),
+    _editorTabs(nullptr)
 {
     _splash->show();
     _splash->postMessage(tr("Creating main window..."));
@@ -88,7 +89,7 @@ MainWindow::MainWindow(QWidget *parent):
     auto affinityZonesDock = new AffinityZonesDock(this, hostExplorerDock);
     this->tabifyDockWidget(hostExplorerDock, affinityZonesDock);
     auto editMenu = mainMenu->editMenu;
-    mainMenu->affinityZoneMenu = AffinityZonesDock::global()->makeMenu(editMenu);
+    mainMenu->affinityZoneMenu = affinityZonesDock->makeMenu(editMenu);
     editMenu->addMenu(mainMenu->affinityZoneMenu);
 
     //block cache (make before block tree)
@@ -98,14 +99,14 @@ MainWindow::MainWindow(QWidget *parent):
 
     //create topology editor tabbed widget
     _splash->postMessage(tr("Creating graph editor..."));
-    auto editorTabs = new GraphEditorTabs(this);
-    this->setCentralWidget(editorTabs);
-    connect(this, SIGNAL(initDone(void)), editorTabs, SLOT(handleInit(void)));
-    connect(this, SIGNAL(exitBegin(QCloseEvent *)), editorTabs, SLOT(handleExit(QCloseEvent *)));
+    _editorTabs = new GraphEditorTabs(this);
+    this->setCentralWidget(_editorTabs);
+    connect(this, SIGNAL(initDone(void)), _editorTabs, SLOT(handleInit(void)));
+    connect(this, SIGNAL(exitBegin(QCloseEvent *)), _editorTabs, SLOT(handleExit(QCloseEvent *)));
 
     //create block tree (after the block cache)
     _splash->postMessage(tr("Creating block tree..."));
-    auto blockTreeDock = new BlockTreeDock(this, blockCache, editorTabs);
+    auto blockTreeDock = new BlockTreeDock(this, blockCache, _editorTabs);
     connect(_actions->findAction, SIGNAL(triggered(void)), blockTreeDock, SLOT(activateFind(void)));
     this->tabifyDockWidget(affinityZonesDock, blockTreeDock);
 
@@ -151,8 +152,9 @@ MainWindow::~MainWindow(void)
     _settings->setValue("MainWindow/showGraphConnectionPoints", _actions->showGraphConnectionPointsAction->isChecked());
     _settings->setValue("MainWindow/showGraphBoundingBoxes", _actions->showGraphBoundingBoxesAction->isChecked());
 
-    //cleanup all widgets which may use plugins or the server
-    for (auto obj : this->children()) delete obj;
+    //cleanup widgets which may use plugins or the server
+    //this includes active graph blocks and eval engines
+    delete _editorTabs;
 
     //unload the plugins
     Pothos::deinit();

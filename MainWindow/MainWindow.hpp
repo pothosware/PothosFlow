@@ -13,6 +13,7 @@ class QShowEvent;
 class MainSplash;
 class MainSettings;
 class MainActions;
+class GraphEditorTabs;
 
 class MainWindow : public QMainWindow
 {
@@ -45,6 +46,7 @@ private:
     MainSettings *_settings;
     MainActions *_actions;
     Pothos::RemoteServer _server;
+    GraphEditorTabs *_editorTabs;
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;
