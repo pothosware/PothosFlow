@@ -21,10 +21,10 @@
 #include "MainWindow/MainSplash.hpp"
 #include <QMenuBar>
 #include <QMessageBox>
-#include <Poco/Logger.h>
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
+    _logger(Poco::Logger::get("PothosGui.MainWindow")),
     _splash(new MainSplash(this)),
     _settings(new MainSettings(this)),
     _actions(nullptr),
@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent):
         Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
     }
 
-    _splash->postMessage(tr("Initializing Pothos plugins..."));
+    _splash->postMessage(tr("Loading Pothos plugins..."));
     Pothos::init();
 
     #ifdef __APPLE__
@@ -72,7 +72,7 @@ MainWindow::MainWindow(QWidget *parent):
     _splash->postMessage(tr("Creating message window..."));
     auto messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, messageWindowDock);
-    poco_information_f1(Poco::Logger::get("PothosGui.MainWindow"), "Welcome to Pothos v%s", Pothos::System::getApiVersion());
+    poco_information_f1(_logger, "Welcome to Pothos v%s", Pothos::System::getApiVersion());
 
     //create graph actions dock
     _splash->postMessage(tr("Creating actions dock..."));
@@ -143,6 +143,7 @@ MainWindow::MainWindow(QWidget *parent):
 
 MainWindow::~MainWindow(void)
 {
+    poco_information(_logger, "Save application state");
     this->handleFullScreenViewAction(false); //undo if set -- so we dont save full mode below
     _settings->setValue("MainWindow/geometry", this->saveGeometry());
     _settings->setValue("MainWindow/state", this->saveState());
@@ -154,9 +155,13 @@ MainWindow::~MainWindow(void)
 
     //cleanup widgets which may use plugins or the server
     //this includes active graph blocks and eval engines
+    poco_information(_logger, "Shutdown graph editor");
     delete _editorTabs;
 
     //unload the plugins
+    //increase the log level to avoid deinit verbose
+    poco_information(_logger, "Unload Pothos plugins");
+    Poco::Logger::get("").setLevel(Poco::Message::PRIO_INFORMATION);
     Pothos::deinit();
 
     //stop the server
@@ -167,7 +172,7 @@ void MainWindow::handleInitDone(void)
 {
     _splash->postMessage(tr("Completing initialization..."));
     _splash->finish(this);
-    poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Initialization complete");
+    poco_information(_logger, "Initialization complete");
 }
 
 void MainWindow::handleNewTitleSubtext(const QString &s)

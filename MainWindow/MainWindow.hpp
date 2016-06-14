@@ -7,6 +7,7 @@
 #include <QMainWindow>
 #include <QString>
 #include <QMap>
+#include <Poco/Logger.h>
 
 class QCloseEvent;
 class QShowEvent;
@@ -42,6 +43,7 @@ protected:
     void showEvent(QShowEvent *event);
 
 private:
+    Poco::Logger &_logger;
     MainSplash *_splash;
     MainSettings *_settings;
     MainActions *_actions;
