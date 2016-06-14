@@ -1,10 +1,10 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get object map
 #include "BlockTree/BlockCache.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
+#include "MainWindow/MainSplash.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <QFuture>
@@ -13,54 +13,8 @@
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
-#include <Poco/SingletonHolder.h>
-#include <Poco/RWLock.h>
 #include <iostream>
 #include <map>
-
-/***********************************************************************
- * lookup cache
- **********************************************************************/
-static std::map<std::string, Poco::JSON::Object::Ptr> &getRegistryPathToBlockDesc(void)
-{
-    static Poco::SingletonHolder<std::map<std::string, Poco::JSON::Object::Ptr>> sh;
-    return *sh.get();
-}
-
-static Poco::RWLock &getMapMutex(void)
-{
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
-}
-
-Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path)
-{
-    //look in the cache
-    {
-        Poco::RWLock::ScopedReadLock lock(getMapMutex());
-        auto it = getRegistryPathToBlockDesc().find(path);
-        if (it != getRegistryPathToBlockDesc().end()) return it->second;
-    }
-
-    //search all of the nodes
-    auto dock = dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"]);
-    if (dock != nullptr) for (const auto &uri : dock->hostUriList())
-    {
-        try
-        {
-            auto client = Pothos::RemoteClient(uri.toStdString());
-            auto env = client.makeEnvironment("managed");
-            auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
-            return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
-        }
-        catch (const Pothos::Exception &)
-        {
-            //pass
-        }
-    }
-
-    return Poco::JSON::Object::Ptr();
-}
 
 /***********************************************************************
  * Query JSON docs from node
@@ -84,19 +38,57 @@ static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
 /***********************************************************************
  * Block Cache impl
  **********************************************************************/
-BlockCache::BlockCache(QObject *parent):
+static BlockCache *globalBlockCache = nullptr;
+
+BlockCache *BlockCache::global(void)
+{
+    return globalBlockCache;
+}
+
+BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     QObject(parent),
-    _hostExplorerDock(dynamic_cast<HostExplorerDock *>(getObjectMap()["hostExplorerDock"])),
+    _hostExplorerDock(hostExplorer),
     _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this))
 {
+    globalBlockCache = this;
     assert(_hostExplorerDock != nullptr);
     connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
     connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherFinished(void)));
     connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(handleUpdate(void)));
 }
 
+Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path)
+{
+    //look in the cache
+    {
+        Poco::RWLock::ScopedReadLock lock(_mapMutex);
+        auto it = _pathToBlockDesc.find(path);
+        if (it != _pathToBlockDesc.end()) return it->second;
+    }
+
+    //search all of the nodes
+    for (const auto &uri : _hostExplorerDock->hostUriList())
+    {
+        try
+        {
+            auto client = Pothos::RemoteClient(uri.toStdString());
+            auto env = client.makeEnvironment("managed");
+            auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
+            return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
+        }
+        catch (const Pothos::Exception &)
+        {
+            //pass
+        }
+    }
+
+    return Poco::JSON::Object::Ptr();
+}
+
 void BlockCache::handleUpdate(void)
 {
+    MainSplash::global()->postMessage(tr("Updating block cache..."));
+
     //cancel the existing future, begin a new one
     //if (_watcher->isRunning()) return;
     _watcher->cancel();
@@ -109,6 +101,8 @@ void BlockCache::handleUpdate(void)
 
 void BlockCache::handleWatcherFinished(void)
 {
+    MainSplash::global()->postMessage(tr("Block cache updated."));
+
     //remove old nodes
     std::map<QString, Poco::JSON::Array::Ptr> newMap;
     for (const auto &uri : _allRemoteNodeUris) newMap[uri] = _uriToBlockDescs[uri];
@@ -116,8 +110,8 @@ void BlockCache::handleWatcherFinished(void)
 
     //map paths to block descs
     {
-        Poco::RWLock::ScopedWriteLock lock(getMapMutex());
-        getRegistryPathToBlockDesc().clear();
+        Poco::RWLock::ScopedWriteLock lock(_mapMutex);
+        _pathToBlockDesc.clear();
         for (const auto &pair : _uriToBlockDescs)
         {
             if (not pair.second) continue;
@@ -125,7 +119,7 @@ void BlockCache::handleWatcherFinished(void)
             {
                 const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
                 const auto path = blockDesc->get("path").extract<std::string>();
-                getRegistryPathToBlockDesc()[path] = blockDesc;
+                _pathToBlockDesc[path] = blockDesc;
             }
         }
     }
@@ -133,8 +127,8 @@ void BlockCache::handleWatcherFinished(void)
     //make a master block desc list
     auto superSetBlockDescs = new Poco::JSON::Array();
     {
-        Poco::RWLock::ScopedReadLock lock(getMapMutex());
-        for (const auto &pair : getRegistryPathToBlockDesc())
+        Poco::RWLock::ScopedReadLock lock(_mapMutex);
+        for (const auto &pair : _pathToBlockDesc)
         {
             superSetBlockDescs->add(pair.second);
         }

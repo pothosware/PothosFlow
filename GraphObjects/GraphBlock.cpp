@@ -1,13 +1,13 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get object map
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "GraphEditor/GraphDraw.hpp"
 #include "BlockTree/BlockCache.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "ColorUtils/ColorUtils.hpp"
+#include "MainWindow/MainActions.hpp"
 #include <Pothos/Exception.hpp>
 #include <QGraphicsScene>
 #include <QAction>
@@ -616,14 +616,15 @@ void GraphBlock::render(QPainter &painter)
     //render text
     if (this->isChanged())
     {
-        _impl->showPortNames = getActionMap()["showPortNames"]->isChecked();
-        _impl->eventPortsInline = getActionMap()["eventPortsInline"]->isChecked();
+        auto actions = MainActions::global();
+        _impl->showPortNames = actions->showPortNamesAction->isChecked();
+        _impl->eventPortsInline = actions->eventPortsInlineAction->isChecked();
 
         this->update(); //call first because this will set changed again
         this->clearChanged();
 
         //update colors
-        auto zoneColor = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"])->zoneToColor(this->getAffinityZone());
+        auto zoneColor = AffinityZonesDock::global()->zoneToColor(this->getAffinityZone());
         _impl->mainBlockColor = zoneColor.isValid()?zoneColor:QColor(GraphObjectDefaultFillColor);
         if (not this->isEnabled()) _impl->mainBlockColor = generateDisabledColor(zoneColor);
         _impl->inputPortColors.resize(_inputPorts.size(), GraphObjectDefaultFillColor);
@@ -862,7 +863,7 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     auto properties = obj->getArray("properties");
 
     //init the block with the description
-    auto blockDesc = getBlockDescFromPath(path);
+    auto blockDesc = BlockCache::global()->getBlockDescFromPath(path);
 
     //Can't find the block description?
     //Generate a pseudo description so that the block will appear

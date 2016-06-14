@@ -1,7 +1,7 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //makeIconFromTheme
+#include "MainWindow/IconUtils.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "EvalEngine/EvalEngine.hpp"
 #include <QDialog>

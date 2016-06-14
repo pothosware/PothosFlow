@@ -1,7 +1,6 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get object map
 #include "BlockTree/BlockTreeWidget.hpp"
 #include "BlockTree/BlockTreeWidgetItem.hpp"
 #include "GraphObjects/GraphBlock.hpp"
@@ -22,8 +21,9 @@
 
 static const long UPDATE_TIMER_MS = 500;
 
-BlockTreeWidget::BlockTreeWidget(QWidget *parent):
+BlockTreeWidget::BlockTreeWidget(QWidget *parent, GraphEditorTabs *editorTabs):
     QTreeWidget(parent),
+    _editorTabs(editorTabs),
     _filttimer(new QTimer(this))
 {
     QStringList columnNames;
@@ -74,7 +74,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     if (not blockItem->getBlockDesc()) return;
 
     //create a block object to render the image
-    auto draw = dynamic_cast<GraphEditorTabs *>(getObjectMap()["editorTabs"])->getCurrentGraphEditor()->getCurrentGraphDraw();
+    auto draw = _editorTabs->getCurrentGraphEditor()->getCurrentGraphDraw();
     std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(draw));
     renderBlock->setBlockDesc(blockItem->getBlockDesc());
     renderBlock->prerender(); //precalculate so we can get bounds

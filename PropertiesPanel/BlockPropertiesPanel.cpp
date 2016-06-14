@@ -1,7 +1,7 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get object map
+#include "MainWindow/FormLayout.hpp"
 #include "PropertyEditWidget.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "BlockPropertiesPanel.hpp"
@@ -118,9 +118,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     //affinity zone
     {
         _affinityZoneOriginal = _block->getAffinityZone();
-        auto dock = dynamic_cast<AffinityZonesDock *>(getObjectMap()["affinityZonesDock"]);
-        assert(dock != nullptr);
-        _affinityZoneBox = dock->makeComboBox(this);
+        _affinityZoneBox = AffinityZonesDock::global()->makeComboBox(this);
         _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
         connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
     }

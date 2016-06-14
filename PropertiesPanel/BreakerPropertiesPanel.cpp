@@ -1,7 +1,7 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make form layout
+#include "MainWindow/FormLayout.hpp"
 #include "BreakerPropertiesPanel.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"

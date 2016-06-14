@@ -1,7 +1,8 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon theme
+#include "MainWindow/FormLayout.hpp"
+#include "MainWindow/IconUtils.hpp"
 #include "PropertyEditWidget.hpp"
 #include "GraphPropertiesPanel.hpp"
 #include "GraphEditor/GraphEditor.hpp"

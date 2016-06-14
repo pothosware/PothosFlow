@@ -1,12 +1,13 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon theme
+#include "MainWindow/IconUtils.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
 #include "AffinitySupport/AffinityZonesMenu.hpp"
 #include "AffinitySupport/AffinityZonesComboBox.hpp"
 #include "AffinitySupport/AffinityZoneEditor.hpp"
 #include "ColorUtils/ColorUtils.hpp"
+#include "MainWindow/MainSettings.hpp"
 #include <QToolTip>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -19,13 +20,22 @@
 #include <cassert>
 #include <sstream>
 
-AffinityZonesDock::AffinityZonesDock(QWidget *parent):
+static AffinityZonesDock *globalAffinityZonesDock = nullptr;
+
+AffinityZonesDock *AffinityZonesDock::global(void)
+{
+    return globalAffinityZonesDock;
+}
+
+AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExplorer):
     QDockWidget(parent),
+    _hostExplorerDock(hostExplorer),
     _mapper(new QSignalMapper(this)),
     _zoneEntry(new QLineEdit(this)),
     _createButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create zone"), this)),
     _editorsTabs(new QTabWidget(this))
 {
+    globalAffinityZonesDock = this;
     this->setObjectName("AffinityZonesDock");
     this->setWindowTitle(tr("Affinity Zones"));
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -132,12 +142,13 @@ void AffinityZonesDock::handleCreateZone(void)
 
 AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneName)
 {
-    auto editor = new AffinityZoneEditor(this);
+    auto settings = MainSettings::global();
+    auto editor = new AffinityZoneEditor(this, _hostExplorerDock);
     _editorsTabs->addTab(editor, zoneName);
-    if (zoneName == getSettings().value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
+    if (zoneName == settings->value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
 
     //restore the settings from save -- even if this is a new panel with the same name as a previous one
-    auto json = getSettings().value("AffinityZones/zones/"+zoneName).toString();
+    auto json = settings->value("AffinityZones/zones/"+zoneName).toString();
     if (not json.isEmpty()) try
     {
         Poco::JSON::Parser p; p.parse(json.toStdString());
@@ -168,7 +179,8 @@ void AffinityZonesDock::ensureDefault(void)
 
 void AffinityZonesDock::initAffinityZoneEditors(void)
 {
-    auto names = getSettings().value("AffinityZones/zoneNames").toStringList();
+    auto settings = MainSettings::global();
+    auto names = settings->value("AffinityZones/zoneNames").toStringList();
     for (const auto &name : names) this->createZoneFromName(name);
     this->ensureDefault();
     connect(_editorsTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequested(int)));
@@ -186,12 +198,14 @@ void AffinityZonesDock::updateTabColors(void)
 
 void AffinityZonesDock::handleTabSelectionChanged(const int index)
 {
-    getSettings().setValue("AffinityZones/currentZone", _editorsTabs->tabText(index));
+    auto settings = MainSettings::global();
+    settings->setValue("AffinityZones/currentZone", _editorsTabs->tabText(index));
 }
 
 void AffinityZonesDock::saveAffinityZoneEditorsState(void)
 {
-    getSettings().setValue("AffinityZones/zoneNames", this->zones());
+    auto settings = MainSettings::global();
+    settings->setValue("AffinityZones/zoneNames", this->zones());
 
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
@@ -199,7 +213,7 @@ void AffinityZonesDock::saveAffinityZoneEditorsState(void)
         assert(editor != nullptr);
         auto dataObj = editor->getCurrentConfig();
         std::stringstream ss; dataObj->stringify(ss);
-        getSettings().setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
+        settings->setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
     }
 
     emit this->zonesChanged();

@@ -1,12 +1,14 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //action and object map
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "PropertiesPanel/PropertiesPanelDock.hpp"
+#include "MainWindow/MainActions.hpp"
+#include "MainWindow/MainMenu.hpp"
 #include <Poco/JSON/Parser.h>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
@@ -56,28 +58,30 @@ GraphDraw::GraphDraw(QWidget *parent):
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
     connect(this, SIGNAL(modifyProperties(QObject *)),
-        getObjectMap()["propertiesPanel"], SLOT(handleGraphModifyProperties(QObject *)));
+        PropertiesPanelDock::global(), SLOT(handleGraphModifyProperties(QObject *)));
     connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
-    connect(getActionMap()["showGraphConnectionPoints"], SIGNAL(triggered(void)),
+    auto actions = MainActions::global();
+    connect(actions->showGraphConnectionPointsAction, SIGNAL(triggered(void)),
         this, SLOT(handleGraphDebugViewChange(void)));
-    connect(getActionMap()["showGraphBoundingBoxes"], SIGNAL(triggered(void)),
+    connect(actions->showGraphBoundingBoxesAction, SIGNAL(triggered(void)),
         this, SLOT(handleGraphDebugViewChange(void)));
     this->handleGraphDebugViewChange();
 }
 
 void GraphDraw::handleGraphDebugViewChange(void)
 {
+    auto actions = MainActions::global();
     _graphConnectionPoints.reset();
-    if (getActionMap()["showGraphConnectionPoints"]->isChecked())
+    if (actions->showGraphConnectionPointsAction->isChecked())
     {
         _graphConnectionPoints.reset(new QGraphicsPixmapItem());
         this->scene()->addItem(_graphConnectionPoints.get());
     }
 
     _graphBoundingBoxes.reset();
-    if (getActionMap()["showGraphBoundingBoxes"]->isChecked())
+    if (actions->showGraphBoundingBoxesAction->isChecked())
     {
         _graphBoundingBoxes.reset(new QGraphicsPixmapItem());
         this->scene()->addItem(_graphBoundingBoxes.get());
@@ -148,33 +152,35 @@ void GraphDraw::showEvent(QShowEvent *event)
 
 void GraphDraw::keyPressEvent(QKeyEvent *event)
 {
+    auto actions = MainActions::global();
+
     //map a key-press to an action name
-    QString name;
+    QAction *action = nullptr;
     switch(event->key())
     {
-    case Qt::Key_Plus:     name = "increment"; break;
-    case Qt::Key_Minus:    name = "decrement"; break;
-    case Qt::Key_Return:   name = "objectProperties"; break;
-    case Qt::Key_E:        name = "enable"; break;
-    case Qt::Key_D:        name = "disable"; break;
-    case Qt::Key_R:        name = "reeval"; break;
-    case Qt::Key_Left:     name = "rotateLeft"; break;
-    case Qt::Key_Right:    name = "rotateRight"; break;
+    case Qt::Key_Plus:     action = actions->incrementAction; break;
+    case Qt::Key_Minus:    action = actions->decrementAction; break;
+    case Qt::Key_Return:   action = actions->objectPropertiesAction; break;
+    case Qt::Key_E:        action = actions->enableAction; break;
+    case Qt::Key_D:        action = actions->disableAction; break;
+    case Qt::Key_R:        action = actions->reevalAction; break;
+    case Qt::Key_Left:     action = actions->rotateLeftAction; break;
+    case Qt::Key_Right:    action = actions->rotateRightAction; break;
     }
 
     //default action is taken when nothing is selected
     //or a graph widget has the focus or unmatched key.
     if (
         this->getObjectsSelected().isEmpty() or
-        this->graphWidgetHasFocus() or name.isEmpty())
+        this->graphWidgetHasFocus() or action == nullptr)
     {
         QGraphicsView::keyPressEvent(event);
     }
 
-    //otherwise trigger the action given by name
+    //otherwise trigger the action
     else
     {
-        getActionMap()[name]->activate(QAction::Trigger);
+        action->activate(QAction::Trigger);
     }
 }
 
@@ -189,21 +195,23 @@ void GraphDraw::updateEnabledActions(void)
     auto selectedObjBlocks = this->getObjectsSelected(GRAPH_BLOCK);
     const bool selectedBlocks = not selectedObjBlocks.empty();
 
-    getActionMap()["cut"]->setEnabled(selectedNoC);
-    getActionMap()["copy"]->setEnabled(selectedNoC);
-    getActionMap()["delete"]->setEnabled(selected);
-    getActionMap()["rotateLeft"]->setEnabled(selectedNoC);
-    getActionMap()["rotateRight"]->setEnabled(selectedNoC);
-    getActionMap()["objectProperties"]->setEnabled(selected);
-    getActionMap()["increment"]->setEnabled(selectedBlocks);
-    getActionMap()["decrement"]->setEnabled(selectedBlocks);
-    getActionMap()["enable"]->setEnabled(selected);
-    getActionMap()["disable"]->setEnabled(selected);
-    getActionMap()["reeval"]->setEnabled(selectedBlocks);
-    getMenuMap()["setAffinityZone"]->setEnabled(selectedBlocks);
+    auto actions = MainActions::global();
+    auto mainMenu = MainMenu::global();
+    actions->cutAction->setEnabled(selectedNoC);
+    actions->copyAction->setEnabled(selectedNoC);
+    actions->deleteAction->setEnabled(selected);
+    actions->rotateLeftAction->setEnabled(selectedNoC);
+    actions->rotateRightAction->setEnabled(selectedNoC);
+    actions->objectPropertiesAction->setEnabled(selected);
+    actions->incrementAction->setEnabled(selectedBlocks);
+    actions->decrementAction->setEnabled(selectedBlocks);
+    actions->enableAction->setEnabled(selected);
+    actions->disableAction->setEnabled(selected);
+    actions->reevalAction->setEnabled(selectedBlocks);
+    mainMenu->affinityZoneMenu->setEnabled(selectedBlocks);
 
     //and enable/disable the actions in the move graph objects submenu
-    for (auto child : getMenuMap()["moveGraphObjects"]->children())
+    for (auto child : mainMenu->moveGraphObjectsMenu->children())
     {
         auto action = dynamic_cast<QAction *>(child);
         if (action != nullptr) action->setEnabled(selectedNoC);
@@ -272,6 +280,7 @@ void GraphDraw::render(void)
 
 void GraphDraw::handleCustomContextMenuRequested(const QPoint &pos)
 {
+    auto mainMenu = MainMenu::global();
     _lastContextMenuPos = this->mapToScene(pos);
-    getMenuMap()["edit"]->exec(this->mapToGlobal(pos));
+    mainMenu->editMenu->exec(this->mapToGlobal(pos));
 }

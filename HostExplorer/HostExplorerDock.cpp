@@ -1,7 +1,7 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //icon path
+#include "MainWindow/IconUtils.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "HostExplorer/HostSelectionTable.hpp"
 #include "HostExplorer/PluginModuleTree.hpp"

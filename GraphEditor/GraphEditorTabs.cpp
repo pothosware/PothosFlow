@@ -1,9 +1,12 @@
 // Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //make icon path and object/action maps
+#include "MainWindow/IconUtils.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphEditor.hpp"
+#include "MainWindow/MainActions.hpp"
+#include "MainWindow/MainSettings.hpp"
+#include "MainWindow/MainSplash.hpp"
 #include <QTabWidget>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -28,15 +31,14 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
         QString("QTabBar::close-button:hover {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-hover-16.png"))+
         QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
 
-    connect(getObjectMap()["mainWindow"], SIGNAL(initDone(void)), this, SLOT(handleInit(void)));
-    connect(getObjectMap()["mainWindow"], SIGNAL(exitBegin(QCloseEvent *)), this, SLOT(handleExit(QCloseEvent *)));
-    connect(getActionMap()["new"], SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
-    connect(getActionMap()["open"], SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
-    connect(getActionMap()["save"], SIGNAL(triggered(void)), this, SLOT(handleSave(void)));
-    connect(getActionMap()["saveAs"], SIGNAL(triggered(void)), this, SLOT(handleSaveAs(void)));
-    connect(getActionMap()["saveAll"], SIGNAL(triggered(void)), this, SLOT(handleSaveAll(void)));
-    connect(getActionMap()["reload"], SIGNAL(triggered(void)), this, SLOT(handleReload(void)));
-    connect(getActionMap()["close"], SIGNAL(triggered(void)), this, SLOT(handleClose(void)));
+    auto actions = MainActions::global();
+    connect(actions->newAction, SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
+    connect(actions->openAction, SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
+    connect(actions->saveAction, SIGNAL(triggered(void)), this, SLOT(handleSave(void)));
+    connect(actions->saveAsAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAs(void)));
+    connect(actions->saveAllAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAll(void)));
+    connect(actions->reloadAction, SIGNAL(triggered(void)), this, SLOT(handleReload(void)));
+    connect(actions->closeAction, SIGNAL(triggered(void)), this, SLOT(handleClose(void)));
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(handleClose(int)));
 }
 
@@ -52,6 +54,7 @@ GraphEditor *GraphEditorTabs::getCurrentGraphEditor(void) const
 
 void GraphEditorTabs::handleInit(void)
 {
+    MainSplash::global()->postMessage(tr("Restoring graph editor..."));
     this->loadState();
 }
 
@@ -60,7 +63,7 @@ void GraphEditorTabs::handleNew(void)
     auto editor = new GraphEditor(this);
     this->addTab(editor, "");
     this->setCurrentWidget(editor);
-    dynamic_cast<GraphEditor *>(editor)->load();
+    editor->load();
     this->saveState();
 }
 
@@ -79,7 +82,8 @@ void GraphEditorTabs::doReloadDialog(GraphEditor *editor)
 
 void GraphEditorTabs::handleOpen(void)
 {
-    auto lastPath = getSettings().value("GraphEditorTabs/lastFile").toString();
+    auto settings = MainSettings::global();
+    auto lastPath = settings->value("GraphEditorTabs/lastFile").toString();
     if(lastPath.isEmpty()) {
         lastPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     }
@@ -92,7 +96,7 @@ void GraphEditorTabs::handleOpen(void)
     for (const auto &file : filePaths)
     {
         const auto filePath = QDir(file).absolutePath();
-        getSettings().setValue("GraphEditorTabs/lastFile", filePath);
+        settings->setValue("GraphEditorTabs/lastFile", filePath);
         this->handleOpen(filePath);
     }
 }
@@ -160,7 +164,8 @@ void GraphEditorTabs::handleSaveAs(void)
     if (filePath.isEmpty()) return;
     if (not filePath.endsWith(".pth")) filePath += ".pth";
     filePath = QDir(filePath).absolutePath();
-    getSettings().setValue("GraphEditorTabs/lastFile", filePath);
+    auto settings = MainSettings::global();
+    settings->setValue("GraphEditorTabs/lastFile", filePath);
     editor->setCurrentFilePath(filePath);
     editor->save();
     this->saveState();
@@ -220,7 +225,8 @@ void GraphEditorTabs::handleClose(GraphEditor *editor)
 void GraphEditorTabs::handleExit(QCloseEvent *event)
 {
     //save the currently selected editor tab
-    getSettings().setValue("GraphEditorTabs/activeIndex", this->currentIndex());
+    auto settings = MainSettings::global();
+    settings->setValue("GraphEditorTabs/activeIndex", this->currentIndex());
 
     //exit logic -- save changes dialogs
     for (int i = 0; i < this->count(); i++)
@@ -251,7 +257,8 @@ void GraphEditorTabs::handleExit(QCloseEvent *event)
 void GraphEditorTabs::loadState(void)
 {
     //load option topologies from file list
-    auto files = getSettings().value("GraphEditorTabs/files").toStringList();
+    auto settings = MainSettings::global();
+    auto files = settings->value("GraphEditorTabs/files").toStringList();
     for (int i = 0; i < files.size(); i++)
     {
         if (files.at(i).isEmpty()) continue; //skip empty files
@@ -270,7 +277,7 @@ void GraphEditorTabs::loadState(void)
     this->ensureOneEditor();
 
     //restore the active index setting
-    this->setCurrentIndex(getSettings().value("GraphEditorTabs/activeIndex").toInt());
+    this->setCurrentIndex(settings->value("GraphEditorTabs/activeIndex").toInt());
 }
 
 void GraphEditorTabs::ensureOneEditor(void)
@@ -290,10 +297,6 @@ void GraphEditorTabs::saveState(void)
         assert(editor != nullptr);
         files.push_back(editor->getCurrentFilePath());
     }
-    getSettings().setValue("GraphEditorTabs/files", files);
-}
-
-QWidget *makeGraphEditorTabs(QWidget *parent)
-{
-    return new GraphEditorTabs(parent);
+    auto settings = MainSettings::global();
+    settings->setValue("GraphEditorTabs/files", files);
 }

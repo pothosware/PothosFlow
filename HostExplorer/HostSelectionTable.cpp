@@ -1,8 +1,9 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //get settings
+#include "MainWindow/IconUtils.hpp"
 #include "HostExplorer/HostSelectionTable.hpp"
+#include "MainWindow/MainSettings.hpp"
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QToolButton>
@@ -27,6 +28,7 @@
  **********************************************************************/
 void NodeInfo::update(void)
 {
+    auto settings = MainSettings::global();
     //determine if the host is online and update access times
     try
     {
@@ -36,11 +38,11 @@ void NodeInfo::update(void)
             auto env = client.makeEnvironment("managed");
             auto hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
             this->nodeName = QString::fromStdString(hostInfo.nodeName);
-            getSettings().setValue("HostExplorer/"+this->uri+"/nodeName", this->nodeName);
+            settings->setValue("HostExplorer/"+this->uri+"/nodeName", this->nodeName);
         }
         this->isOnline = true;
         this->lastAccess = Poco::Timestamp();
-        getSettings().setValue("HostExplorer/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
+        settings->setValue("HostExplorer/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
     }
     //otherwise, fetch the information from the settings cache
     catch(const Pothos::RemoteClientError &)
@@ -48,9 +50,9 @@ void NodeInfo::update(void)
         this->isOnline = false;
         if (this->nodeName.isEmpty())
         {
-            this->nodeName = getSettings().value("HostExplorer/"+this->uri+"/nodeName").toString();
+            this->nodeName = settings->value("HostExplorer/"+this->uri+"/nodeName").toString();
         }
-        this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(getSettings().value("HostExplorer/"+this->uri+"/lastAccess").toInt()));
+        this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(settings->value("HostExplorer/"+this->uri+"/lastAccess").toInt()));
     }
 }
 
@@ -59,7 +61,8 @@ void NodeInfo::update(void)
  **********************************************************************/
 static QStringList getHostUriList(void)
 {
-    auto uris = getSettings().value("HostExplorer/uris").toStringList();
+    auto settings = MainSettings::global();
+    auto uris = settings->value("HostExplorer/uris").toStringList();
     uris.push_front(QString::fromStdString("tcp://"+Pothos::Util::getLoopbackAddr()));
 
     //sanitize duplicates
@@ -73,7 +76,8 @@ static QStringList getHostUriList(void)
 
 static void setHostUriList(const QStringList &uris)
 {
-    getSettings().setValue("HostExplorer/uris", uris);
+    auto settings = MainSettings::global();
+    settings->setValue("HostExplorer/uris", uris);
 }
 
 /***********************************************************************

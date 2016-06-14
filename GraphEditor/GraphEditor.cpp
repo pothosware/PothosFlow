@@ -1,7 +1,6 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "PothosGuiUtils.hpp" //action map
 #include "EvalEngine/EvalEngine.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "GraphEditor/GraphEditor.hpp"
@@ -11,6 +10,11 @@
 #include "GraphObjects/GraphBreaker.hpp"
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphWidget.hpp"
+#include "BlockTree/BlockTreeDock.hpp"
+#include "AffinitySupport/AffinityZonesDock.hpp"
+#include "MainWindow/MainActions.hpp"
+#include "MainWindow/MainMenu.hpp"
+#include "MainWindow/MainSplash.hpp"
 #include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
@@ -48,49 +52,50 @@ GraphEditor::GraphEditor(QWidget *parent):
     this->setUsesScrollButtons(true);
     this->setTabPosition(QTabWidget::West);
     this->makeDefaultPage();
-
     this->tabBar()->setStyleSheet("font-size:8pt;");
+    auto actions = MainActions::global();
+    auto mainMenu = MainMenu::global();
 
     //connect handlers that work at the page-level of control
     connect(QApplication::clipboard(), SIGNAL(dataChanged(void)), this, SLOT(handleClipboardDataChange(void)));
     connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentChanged(int)));
     connect(_stateManager, SIGNAL(newStateSelected(int)), this, SLOT(handleResetState(int)));
-    connect(getActionMap()["createGraphPage"], SIGNAL(triggered(void)), this, SLOT(handleCreateGraphPage(void)));
-    connect(getActionMap()["renameGraphPage"], SIGNAL(triggered(void)), this, SLOT(handleRenameGraphPage(void)));
-    connect(getActionMap()["deleteGraphPage"], SIGNAL(triggered(void)), this, SLOT(handleDeleteGraphPage(void)));
-    connect(getActionMap()["inputBreaker"], SIGNAL(triggered(void)), this, SLOT(handleCreateInputBreaker(void)));
-    connect(getActionMap()["outputBreaker"], SIGNAL(triggered(void)), this, SLOT(handleCreateOutputBreaker(void)));
-    connect(getActionMap()["cut"], SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
-    connect(getActionMap()["copy"], SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
-    connect(getActionMap()["paste"], SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(getObjectMap()["blockTreeDock"], SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
-    connect(getActionMap()["selectAll"], SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
-    connect(getActionMap()["delete"], SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
-    connect(getActionMap()["rotateLeft"], SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
-    connect(getActionMap()["rotateRight"], SIGNAL(triggered(void)), this, SLOT(handleRotateRight(void)));
-    connect(getActionMap()["objectProperties"], SIGNAL(triggered(void)), this, SLOT(handleObjectProperties(void)));
-    connect(getActionMap()["graphProperties"], SIGNAL(triggered(void)), this, SLOT(handleGraphProperties(void)));
-    connect(getActionMap()["zoomIn"], SIGNAL(triggered(void)), this, SLOT(handleZoomIn(void)));
-    connect(getActionMap()["zoomOut"], SIGNAL(triggered(void)), this, SLOT(handleZoomOut(void)));
-    connect(getActionMap()["zoomOriginal"], SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
-    connect(getActionMap()["undo"], SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
-    connect(getActionMap()["redo"], SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
-    connect(getActionMap()["enable"], SIGNAL(triggered(void)), this, SLOT(handleEnable(void)));
-    connect(getActionMap()["disable"], SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
-    connect(getActionMap()["reeval"], SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
-    connect(getMenuMap()["setAffinityZone"], SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
-    connect(getObjectMap()["affinityZonesDock"], SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
-    connect(getActionMap()["showRenderedGraph"], SIGNAL(triggered(void)), this, SLOT(handleShowRenderedGraphDialog(void)));
-    connect(getActionMap()["showTopologyStats"], SIGNAL(triggered(void)), this, SLOT(handleShowTopologyStatsDialog(void)));
-    connect(getActionMap()["activateTopology"], SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
-    connect(getActionMap()["showPortNames"], SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
-    connect(getActionMap()["eventPortsInline"], SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
-    connect(getActionMap()["increment"], SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
-    connect(getActionMap()["decrement"], SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
+    connect(actions->createGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleCreateGraphPage(void)));
+    connect(actions->renameGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleRenameGraphPage(void)));
+    connect(actions->deleteGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleDeleteGraphPage(void)));
+    connect(actions->inputBreakerAction, SIGNAL(triggered(void)), this, SLOT(handleCreateInputBreaker(void)));
+    connect(actions->outputBreakerAction, SIGNAL(triggered(void)), this, SLOT(handleCreateOutputBreaker(void)));
+    connect(actions->cutAction, SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
+    connect(actions->copyAction, SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
+    connect(actions->pasteAction, SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
+    connect(BlockTreeDock::global(), SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
+    connect(actions->selectAllAction, SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
+    connect(actions->deleteAction, SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
+    connect(actions->rotateLeftAction, SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
+    connect(actions->rotateRightAction, SIGNAL(triggered(void)), this, SLOT(handleRotateRight(void)));
+    connect(actions->objectPropertiesAction, SIGNAL(triggered(void)), this, SLOT(handleObjectProperties(void)));
+    connect(actions->graphPropertiesAction, SIGNAL(triggered(void)), this, SLOT(handleGraphProperties(void)));
+    connect(actions->zoomInAction, SIGNAL(triggered(void)), this, SLOT(handleZoomIn(void)));
+    connect(actions->zoomOutAction, SIGNAL(triggered(void)), this, SLOT(handleZoomOut(void)));
+    connect(actions->zoomOriginalAction, SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
+    connect(actions->undoAction, SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
+    connect(actions->redoAction, SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
+    connect(actions->enableAction, SIGNAL(triggered(void)), this, SLOT(handleEnable(void)));
+    connect(actions->disableAction, SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
+    connect(actions->reevalAction, SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
+    connect(mainMenu->affinityZoneMenu, SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
+    connect(AffinityZonesDock::global(), SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
+    connect(actions->showRenderedGraphAction, SIGNAL(triggered(void)), this, SLOT(handleShowRenderedGraphDialog(void)));
+    connect(actions->showTopologyStatsAction, SIGNAL(triggered(void)), this, SLOT(handleShowTopologyStatsDialog(void)));
+    connect(actions->activateTopologyAction, SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
+    connect(actions->showPortNamesAction, SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
+    connect(actions->eventPortsInlineAction, SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
+    connect(actions->incrementAction, SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
+    connect(actions->decrementAction, SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(_evalEngine, SIGNAL(deactivateDesign(void)), this, SLOT(handleEvalEngineDeactivate(void)));
-    connect(this, SIGNAL(newTitleSubtext(const QString &)), getObjectMap()["mainWindow"], SLOT(handleNewTitleSubtext(const QString &)));
+    connect(this, SIGNAL(newTitleSubtext(const QString &)), _parentTabWidget->parent(), SLOT(handleNewTitleSubtext(const QString &)));
 }
 
 GraphEditor::~GraphEditor(void)
@@ -142,9 +147,7 @@ QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) co
 void GraphEditor::showEvent(QShowEvent *event)
 {
     //load our state monitor into the actions dock
-    auto actionsDock = dynamic_cast<GraphActionsDock *>(getObjectMap()["graphActionsDock"]);
-    assert(actionsDock != nullptr);
-    actionsDock->setActiveWidget(_stateManager);
+    GraphActionsDock::global()->setActiveWidget(_stateManager);
 
     this->updateGraphEditorMenus();
     this->updateEnabledActions();
@@ -154,18 +157,19 @@ void GraphEditor::showEvent(QShowEvent *event)
 void GraphEditor::updateEnabledActions(void)
 {
     if (not this->isVisible()) return;
+    auto actions = MainActions::global();
 
-    getActionMap()["undo"]->setEnabled(_stateManager->isPreviousAvailable());
-    getActionMap()["redo"]->setEnabled(_stateManager->isSubsequentAvailable());
-    getActionMap()["save"]->setEnabled(not _stateManager->isCurrentSaved());
-    getActionMap()["reload"]->setEnabled(not this->getCurrentFilePath().isEmpty());
-    getActionMap()["activateTopology"]->setChecked(_isTopologyActive);
+    actions->undoAction->setEnabled(_stateManager->isPreviousAvailable());
+    actions->redoAction->setEnabled(_stateManager->isSubsequentAvailable());
+    actions->saveAction->setEnabled(not _stateManager->isCurrentSaved());
+    actions->reloadAction->setEnabled(not this->getCurrentFilePath().isEmpty());
+    actions->activateTopologyAction->setChecked(_isTopologyActive);
 
     //can we paste something from the clipboard?
     auto mimeData = QApplication::clipboard()->mimeData();
     const bool canPaste = mimeData->hasFormat("text/json/pothos_object_array") and
                       not mimeData->data("text/json/pothos_object_array").isEmpty();
-    getActionMap()["paste"]->setEnabled(canPaste);
+    actions->pasteAction->setEnabled(canPaste);
 
     //update window title
     QString subtext = this->getCurrentFilePath();
@@ -931,7 +935,8 @@ void GraphEditor::updateExecutionEngine(void)
 
 void GraphEditor::handleEvalEngineDeactivate(void)
 {
-    getActionMap()["activateTopology"]->setChecked(false);
+    auto actions = MainActions::global();
+    actions->activateTopologyAction->setChecked(false);
     _isTopologyActive = false;
 }
 
@@ -970,7 +975,7 @@ void GraphEditor::load(void)
     try
     {
         poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
-        postStatusMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
+        MainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
     }
@@ -1011,12 +1016,13 @@ void GraphEditor::render(void)
 void GraphEditor::updateGraphEditorMenus(void)
 {
     if (not this->isVisible()) return;
+    auto mainMenu = MainMenu::global();
 
     //always store the last visible page with the state
     //we use this to restore the last viewed page when undo/reset
     _stateToLastTabIndex[_stateManager->getCurrentIndex()] = this->currentIndex();
 
-    auto menu = getMenuMap()["moveGraphObjects"];
+    auto menu = mainMenu->moveGraphObjectsMenu;
     menu->clear();
     for (int i = 0; i < this->count(); i++)
     {
@@ -1026,7 +1032,7 @@ void GraphEditor::updateGraphEditorMenus(void)
         _moveGraphObjectsMapper->setMapping(action, i);
     }
 
-    menu = getMenuMap()["insertGraphWidgets"];
+    menu = mainMenu->insertGraphWidgetsMenu;
     menu->clear();
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {

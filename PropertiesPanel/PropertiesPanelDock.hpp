@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -13,6 +13,10 @@ class PropertiesPanelDock : public QDockWidget
 {
     Q_OBJECT
 public:
+
+    //! Get access to the global properties panel dock
+    static PropertiesPanelDock *global(void);
+
     PropertiesPanelDock(QWidget *parent);
 
 signals:

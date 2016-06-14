@@ -1,16 +1,13 @@
 // Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
-#include "MainWindow.hpp"
-#include "PothosGuiUtils.hpp"
-#include <Pothos/Init.hpp>
-#include <Pothos/Remote.hpp>
+#include "MainWindow/MainWindow.hpp"
+#include "MainWindow/MainSettings.hpp"
+#include "MainWindow/IconUtils.hpp"
 #include <Pothos/System.hpp>
-#include <Pothos/Util/Network.hpp>
 #include <Poco/Logger.h>
 #include <QMessageBox>
 #include <QApplication>
-#include <QSplashScreen>
 #include <QDir>
 #include <stdexcept>
 #include <cstdlib> //EXIT_FAILURE
@@ -41,7 +38,12 @@ int main(int argc, char **argv)
         if (file.isEmpty()) continue;
         files.push_back(QDir(file).absolutePath());
     }
-    if (not files.isEmpty()) getSettings().setValue("GraphEditorTabs/files", files);
+    if (not files.isEmpty())
+    {
+        auto settings = new MainSettings(nullptr);
+        settings->setValue("GraphEditorTabs/files", files);
+        delete settings;
+    }
 
     //create the entry point to the GUI
     QApplication app(argc, argv);
@@ -50,55 +52,16 @@ int main(int argc, char **argv)
     app.setOrganizationDomain("www.pothosware.com");
     app.setApplicationVersion(QString::fromStdString(Pothos::System::getApiVersion()));
 
-    //create splash screen
-    getSplashScreen()->show();
-
     //setup the application icon
     app.setWindowIcon(QIcon(makeIconPath("PothosGui.png")));
 
-    //perform library initialization with graphical error message on failure
-    Pothos::RemoteServer server;
-    try
-    {
-        //try to talk to the server on localhost, if not there, spawn a custom one
-        //make a server and node that is temporary with this process
-        postStatusMessage("Launching scratch process...");
-        try
-        {
-            Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
-        }
-        catch (const Pothos::RemoteClientError &)
-        {
-            server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
-            //TODO make server background so it does not close with process
-            Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
-        }
-    }
-    catch (const Pothos::Exception &ex)
-    {
-        QMessageBox msgBox(QMessageBox::Critical, "Pothos Initialization Error", QString::fromStdString(ex.displayText()));
-        msgBox.exec();
-        return EXIT_FAILURE;
-    }
-
     POTHOS_EXCEPTION_TRY
     {
-        postStatusMessage("Initializing Pothos plugins...");
-        Pothos::ScopedInit init;
-
         //create the main window for the GUI
-        auto mainWindow = new PothosGuiMainWindow(nullptr);
-        mainWindow->show();
-        getSplashScreen()->finish(mainWindow);
-        getSettings().setParent(mainWindow);
+        MainWindow mainWindow(nullptr);
 
         //begin application execution
-        int ret = app.exec();
-
-        //handle application shutdown
-        delete mainWindow;
-        server = Pothos::RemoteServer();
-        return ret;
+        return app.exec();
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
     {

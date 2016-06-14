@@ -1,9 +1,10 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
+#include "MainWindow/IconUtils.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
-#include "PothosGuiUtils.hpp" //getObjectMap
 #include "BlockTree/BlockTreeWidget.hpp"
+#include "BlockTree/BlockCache.hpp"
 #include <QVBoxLayout>
 #include <QLineEdit>
 #include <QPushButton>
@@ -11,10 +12,18 @@
 #include <cassert>
 #include <QAction>
 
-BlockTreeDock::BlockTreeDock(QWidget *parent):
+static BlockTreeDock *globalBlockTreeDock = nullptr;
+
+BlockTreeDock *BlockTreeDock::global(void)
+{
+    return globalBlockTreeDock;
+}
+
+BlockTreeDock::BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEditorTabs *editorTabs):
     QDockWidget(parent),
     _searchBox(new QLineEdit(this))
 {
+    globalBlockTreeDock = this;
     this->setObjectName("BlockTreeDock");
     this->setWindowTitle(tr("Block Tree"));
     this->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -29,8 +38,8 @@ BlockTreeDock::BlockTreeDock(QWidget *parent):
 #endif
     layout->addWidget(_searchBox);
 
-    _blockTree = new BlockTreeWidget(this->widget());
-    connect(getObjectMap()["blockCache"], SIGNAL(blockDescUpdate(const Poco::JSON::Array::Ptr &)),
+    _blockTree = new BlockTreeWidget(this->widget(), editorTabs);
+    connect(blockCache, SIGNAL(blockDescUpdate(const Poco::JSON::Array::Ptr &)),
         _blockTree, SLOT(handleBlockDescUpdate(const Poco::JSON::Array::Ptr &)));
     connect(_blockTree, SIGNAL(blockDescEvent(const Poco::JSON::Object::Ptr &, bool)),
         this, SLOT(handleBlockDescEvent(const Poco::JSON::Object::Ptr &, bool)));
