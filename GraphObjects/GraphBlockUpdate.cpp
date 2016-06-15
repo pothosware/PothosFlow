@@ -24,6 +24,9 @@ void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
     }
     this->setTitle(QString::fromStdString(name));
 
+    //reload properties description, clear the old first
+    _properties.clear();
+
     //extract the params or properties from the description
     if (blockDesc->isArray("params")) for (const auto &paramObj : *blockDesc->getArray("params"))
     {

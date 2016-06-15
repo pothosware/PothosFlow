@@ -842,13 +842,13 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
         obj->set("activeEditTab", this->getActiveEditTab());
     }
 
-    Poco::JSON::Array jPropsObj;
+    Poco::JSON::Array::Ptr jPropsObj(new Poco::JSON::Array);
     for (const auto &propKey : this->getProperties())
     {
-        Poco::JSON::Object jPropObj;
-        jPropObj.set("key", propKey.toStdString());
-        jPropObj.set("value", this->getPropertyValue(propKey).toStdString());
-        jPropsObj.add(jPropObj);
+        Poco::JSON::Object::Ptr jPropObj(new Poco::JSON::Object);
+        jPropObj->set("key", propKey.toStdString());
+        jPropObj->set("value", this->getPropertyValue(propKey).toStdString());
+        jPropsObj->add(jPropObj);
     }
     obj->set("properties", jPropsObj);
 
