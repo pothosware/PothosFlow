@@ -36,19 +36,8 @@ MainWindow::MainWindow(QWidget *parent):
     _splash->show();
     _splash->postMessage(tr("Creating main window..."));
 
-    //try to talk to the server on localhost, if not there, spawn a custom one
-    //make a server and node that is temporary with this process
     _splash->postMessage(tr("Launching scratch process..."));
-    try
-    {
-        Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
-    }
-    catch (const Pothos::RemoteClientError &)
-    {
-        _server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
-        //TODO make server background so it does not close with process
-        Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
-    }
+    this->setupServer();
 
     _splash->postMessage(tr("Initializing Pothos plugins..."));
     Pothos::init();
@@ -251,8 +240,7 @@ void MainWindow::handleReloadPlugins(void)
     _blockCache->clear();
 
     //restart the local server
-    _server = Pothos::RemoteServer();
-    _server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
+    this->setupServer();
 
     //reload the block cache
     _blockCache->update();
@@ -275,4 +263,30 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
+}
+
+void MainWindow::setupServer(void)
+{
+    //spawn a new server if we previously spawned one
+    bool spawnNewServer = bool(_server);
+
+    //shutdown a previously opened server
+    _server = Pothos::RemoteServer();
+
+    //test connect to an existing server on localhost
+    if (not spawnNewServer) try
+    {
+        Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
+    }
+    catch (const Pothos::RemoteClientError &)
+    {
+        spawnNewServer = true;
+    }
+
+    //make a server and node that is temporary with this process
+    //TODO make server background so it does not close with process
+    _server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
+
+    //perform a test connection to the server
+    Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
 }

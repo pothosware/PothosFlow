@@ -17,6 +17,11 @@ class BlockCache;
 class GraphEditorTabs;
 class PropertiesPanelDock;
 
+/*!
+ * The MainWindow is the entry point for the entire GUI application.
+ * It sets up the various top level dock widgets, editor tabs,
+ * creates main actions and menu items, and loads Pothos plugins.
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -55,4 +60,7 @@ private:
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;
+
+    //! Setup server for scratch process
+    void setupServer(void);
 };
