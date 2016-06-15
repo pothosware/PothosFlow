@@ -94,21 +94,36 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(actions->decrementAction, SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
-    connect(_evalEngine, SIGNAL(deactivateDesign(void)), this, SLOT(handleEvalEngineDeactivate(void)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), _parentTabWidget->parent(), SLOT(handleNewTitleSubtext(const QString &)));
 }
 
 GraphEditor::~GraphEditor(void)
 {
-    //cleanup all graph objects, blocks may hold widgets
-    for (auto obj : this->getGraphObjects()) delete obj;
-
     //stop the eval engine and its evaluator thread
-    delete _evalEngine;
+    this->stopEvaluation();
 
     //the actions dock owns state manager for display purposes,
     //so delete it here when the graph editor is actually done with it
     delete _stateManager;
+}
+
+void GraphEditor::stopEvaluation(void)
+{
+    delete _evalEngine;
+    _evalEngine = nullptr;
+}
+
+void GraphEditor::restartEvaluation(void)
+{
+    //force all blocks to reload the block description
+    for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
+    {
+        obj->deserialize(obj->serialize());
+    }
+
+    _evalEngine = new EvalEngine(this);
+    _evalEngine->submitTopology(this->getGraphObjects());
+    _evalEngine->submitActivateTopology(_isTopologyActive);
 }
 
 QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) const
@@ -796,6 +811,7 @@ void GraphEditor::handleReeval(void)
 {
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
+    if (_evalEngine == nullptr) return;
     _evalEngine->submitReeval(draw->getObjectsSelected(GRAPH_BLOCK));
 }
 
@@ -874,6 +890,7 @@ void GraphEditor::handleStateChange(const GraphState &state)
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
     if (not this->isVisible()) return;
+    if (_evalEngine == nullptr) return;
     _evalEngine->submitActivateTopology(enable);
     _isTopologyActive = enable;
 }
@@ -930,14 +947,14 @@ void GraphEditor::handleBlockXcrement(const int adj)
 void GraphEditor::updateExecutionEngine(void)
 {
     this->deleteFlagged(); //scan+remove deleted before submit
+    if (_evalEngine == nullptr) return;
     _evalEngine->submitTopology(this->getGraphObjects());
 }
 
 void GraphEditor::handleEvalEngineDeactivate(void)
 {
-    auto actions = MainActions::global();
-    actions->activateTopologyAction->setChecked(false);
     _isTopologyActive = false;
+    this->updateEnabledActions();
 }
 
 void GraphEditor::save(void)

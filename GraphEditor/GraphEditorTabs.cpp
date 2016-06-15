@@ -52,12 +52,6 @@ GraphEditor *GraphEditorTabs::getCurrentGraphEditor(void) const
     return this->getGraphEditor(this->currentIndex());
 }
 
-void GraphEditorTabs::handleInit(void)
-{
-    MainSplash::global()->postMessage(tr("Restoring graph editor..."));
-    this->loadState();
-}
-
 void GraphEditorTabs::handleNew(void)
 {
     auto editor = new GraphEditor(this);
@@ -256,6 +250,8 @@ void GraphEditorTabs::handleExit(QCloseEvent *event)
 
 void GraphEditorTabs::loadState(void)
 {
+    MainSplash::global()->postMessage(tr("Restoring graph editor..."));
+
     //load option topologies from file list
     auto settings = MainSettings::global();
     auto files = settings->value("GraphEditorTabs/files").toStringList();

@@ -23,6 +23,12 @@ public:
     GraphEditor(QWidget *parent);
     ~GraphEditor(void);
 
+    //! Stop the evaluator and for plugin reload
+    void stopEvaluation(void);
+
+    //! Restore evaluator and from a plugin reload
+    void restartEvaluation(void);
+
     void dumpState(std::ostream &os) const;
 
     void loadState(std::istream &os);

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngineImpl.hpp"
@@ -73,11 +73,13 @@ void EvalEngineImpl::submitActivateTopology(const bool enable)
     {
         _topologyEval.reset(new TopologyEval());
         _requireEval = true;
-        this->evaluate();
     }
 
     //if disabled, clear the current evaluator if present
     if (not enable) _topologyEval.reset();
+
+    //call into the conditional evaluation regardless
+    this->evaluate();
 }
 
 void EvalEngineImpl::submitBlock(const BlockInfo &info)

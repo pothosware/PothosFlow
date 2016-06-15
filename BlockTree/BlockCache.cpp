@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockTree/BlockCache.hpp"
-#include "GraphObjects/GraphBlock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
 #include "MainWindow/MainSplash.hpp"
 #include <Pothos/Remote.hpp>
@@ -54,7 +53,7 @@ BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     assert(_hostExplorerDock != nullptr);
     connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
     connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherFinished(void)));
-    connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(handleUpdate(void)));
+    connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(update(void)));
 }
 
 Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path)
@@ -85,7 +84,13 @@ Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path
     return Poco::JSON::Object::Ptr();
 }
 
-void BlockCache::handleUpdate(void)
+void BlockCache::clear(void)
+{
+    Poco::RWLock::ScopedWriteLock lock(_mapMutex);
+    _pathToBlockDesc.clear();
+}
+
+void BlockCache::update(void)
 {
     MainSplash::global()->postMessage(tr("Updating block cache..."));
 

@@ -62,11 +62,6 @@ public slots:
     //! query the JSON stats for the active topology
     std::string getTopologyJSONStats(void);
 
-signals:
-
-    //! A failure occured, this is a notification to deactivate
-    void deactivateDesign(void);
-
 private slots:
     void handleAffinityZonesChanged(void);
     void handleEvalThreadHeartBeat(void);

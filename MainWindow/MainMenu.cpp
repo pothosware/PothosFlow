@@ -71,6 +71,7 @@ MainMenu::MainMenu(QMainWindow *parent, MainActions *actions):
     executeMenu->addAction(actions->activateTopologyAction);
     executeMenu->addAction(actions->showRenderedGraphAction);
     executeMenu->addAction(actions->showTopologyStatsAction);
+    executeMenu->addAction(actions->reloadPluginsAction);
 
     viewMenu = parent->menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(actions->zoomInAction);

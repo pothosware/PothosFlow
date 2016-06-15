@@ -8,6 +8,7 @@
 #include "BlockTree/BlockCache.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
@@ -28,24 +29,15 @@ MainWindow::MainWindow(QWidget *parent):
     _splash(new MainSplash(this)),
     _settings(new MainSettings(this)),
     _actions(nullptr),
-    _editorTabs(nullptr)
+    _blockCache(nullptr),
+    _editorTabs(nullptr),
+    _propertiesPanel(nullptr)
 {
     _splash->show();
     _splash->postMessage(tr("Creating main window..."));
 
-    //try to talk to the server on localhost, if not there, spawn a custom one
-    //make a server and node that is temporary with this process
     _splash->postMessage(tr("Launching scratch process..."));
-    try
-    {
-        Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
-    }
-    catch (const Pothos::RemoteClientError &)
-    {
-        _server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
-        //TODO make server background so it does not close with process
-        Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
-    }
+    this->setupServer();
 
     _splash->postMessage(tr("Loading Pothos plugins..."));
     Pothos::init();
@@ -67,6 +59,14 @@ MainWindow::MainWindow(QWidget *parent):
     auto mainToolBar = new MainToolBar(this, _actions);
     _splash->postMessage(tr("Creating menus..."));
     auto mainMenu = new MainMenu(this, _actions);
+
+    //connect actions to the main window
+    connect(_actions->exitAction, SIGNAL(triggered(void)), this, SLOT(close(void)));
+    connect(_actions->showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
+    connect(_actions->showAboutQtAction, SIGNAL(triggered(void)), this, SLOT(handleShowAboutQt(void)));
+    connect(_actions->showColorsDialogAction, SIGNAL(triggered(void)), this, SLOT(handleColorsDialogAction(void)));
+    connect(_actions->fullScreenViewAction, SIGNAL(toggled(bool)), this, SLOT(handleFullScreenViewAction(bool)));
+    connect(_actions->reloadPluginsAction, SIGNAL(triggered(bool)), this, SLOT(handleReloadPlugins(void)));
 
     //create message window dock
     _splash->postMessage(tr("Creating message window..."));
@@ -94,32 +94,32 @@ MainWindow::MainWindow(QWidget *parent):
 
     //block cache (make before block tree)
     _splash->postMessage(tr("Creating block cache..."));
-    auto blockCache = new BlockCache(this, hostExplorerDock);
-    connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
+    _blockCache = new BlockCache(this, hostExplorerDock);
+    connect(this, SIGNAL(initDone(void)), _blockCache, SLOT(update(void)));
 
     //create topology editor tabbed widget
     _splash->postMessage(tr("Creating graph editor..."));
     _editorTabs = new GraphEditorTabs(this);
     this->setCentralWidget(_editorTabs);
-    connect(this, SIGNAL(initDone(void)), _editorTabs, SLOT(handleInit(void)));
+    connect(this, SIGNAL(initDone(void)), _editorTabs, SLOT(loadState(void)));
     connect(this, SIGNAL(exitBegin(QCloseEvent *)), _editorTabs, SLOT(handleExit(QCloseEvent *)));
 
     //create block tree (after the block cache)
     _splash->postMessage(tr("Creating block tree..."));
-    auto blockTreeDock = new BlockTreeDock(this, blockCache, _editorTabs);
+    auto blockTreeDock = new BlockTreeDock(this, _blockCache, _editorTabs);
     connect(_actions->findAction, SIGNAL(triggered(void)), blockTreeDock, SLOT(activateFind(void)));
     this->tabifyDockWidget(affinityZonesDock, blockTreeDock);
 
     //create properties panel (make after block cache)
     _splash->postMessage(tr("Creating properties panel..."));
-    auto propertiesPanelDock = new PropertiesPanelDock(this);
-    this->tabifyDockWidget(blockTreeDock, propertiesPanelDock);
+    _propertiesPanel = new PropertiesPanelDock(this);
+    this->tabifyDockWidget(blockTreeDock, _propertiesPanel);
 
     //restore main window settings from file
     _splash->postMessage(tr("Restoring configuration..."));
     this->restoreGeometry(_settings->value("MainWindow/geometry").toByteArray());
     this->restoreState(_settings->value("MainWindow/state").toByteArray());
-    propertiesPanelDock->hide(); //hidden until used
+    _propertiesPanel->hide(); //hidden until used
     _actions->showPortNamesAction->setChecked(_settings->value("MainWindow/showPortNames", true).toBool());
     _actions->eventPortsInlineAction->setChecked(_settings->value("MainWindow/eventPortsInline", true).toBool());
     _actions->clickConnectModeAction->setChecked(_settings->value("MainWindow/clickConnectMode", false).toBool());
@@ -229,6 +229,37 @@ void MainWindow::handleFullScreenViewAction(const bool toggle)
     }
 }
 
+void MainWindow::handleReloadPlugins(void)
+{
+    //close any open properties panel editor window
+    _propertiesPanel->launchEditor(nullptr);
+
+    //stop evaluation on all graph editor
+    for (int i = 0; i < _editorTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
+        if (editor != nullptr) editor->stopEvaluation();
+    }
+
+    //clear the block cache
+    _blockCache->clear();
+
+    //restart the local server
+    this->setupServer();
+
+    //reload the block cache
+    _blockCache->update();
+
+    //start evaluation on all graph editor
+    for (int i = 0; i < _editorTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
+        if (editor != nullptr) editor->restartEvaluation();
+    }
+
+    poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Reload plugins complete");
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     emit this->exitBegin(event);
@@ -237,4 +268,30 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
+}
+
+void MainWindow::setupServer(void)
+{
+    //spawn a new server if we previously spawned one
+    bool spawnNewServer = bool(_server);
+
+    //shutdown a previously opened server
+    _server = Pothos::RemoteServer();
+
+    //test connect to an existing server on localhost
+    if (not spawnNewServer) try
+    {
+        Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr());
+    }
+    catch (const Pothos::RemoteClientError &)
+    {
+        spawnNewServer = true;
+    }
+
+    //make a server and node that is temporary with this process
+    //TODO make server background so it does not close with process
+    _server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
+
+    //perform a test connection to the server
+    Pothos::RemoteClient client("tcp://"+Pothos::Util::getLoopbackAddr()); //now it should connect to the new server
 }

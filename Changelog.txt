@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.4.0 (pending)
 ==========================
 
+- Added plugin reload feature without closing/reopening the GUI
 - Re-factor access between top level objects, cleanup indirection
 - Added icons for every scale type for the freedesktop.org install
 - Added editable dimension option to the DTypeChooser edit widget

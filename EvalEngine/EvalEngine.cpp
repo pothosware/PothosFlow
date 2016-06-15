@@ -35,7 +35,7 @@ EvalEngine::EvalEngine(QObject *parent):
 
     connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
     connect(_impl, SIGNAL(monitorHeartBeat(void)), this, SLOT(handleEvalThreadHeartBeat(void)));
-    connect(_impl, SIGNAL(deactivateDesign(void)), this, SIGNAL(deactivateDesign(void)));
+    connect(_impl, SIGNAL(deactivateDesign(void)), parent, SLOT(handleEvalEngineDeactivate(void)));
 }
 
 EvalEngine::~EvalEngine(void)

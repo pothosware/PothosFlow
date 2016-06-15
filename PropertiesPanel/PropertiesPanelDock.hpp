@@ -22,9 +22,12 @@ public:
 signals:
     void replacePanel(void);
 
-private slots:
+public slots:
 
-    void handleGraphModifyProperties(QObject *obj);
+    //! Load the editor based on the type of graph object
+    void launchEditor(QObject *obj);
+
+private slots:
 
     void handlePanelDestroyed(QObject *);
 

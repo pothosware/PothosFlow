@@ -14,8 +14,15 @@ class QShowEvent;
 class MainSplash;
 class MainSettings;
 class MainActions;
+class BlockCache;
 class GraphEditorTabs;
+class PropertiesPanelDock;
 
+/*!
+ * The MainWindow is the entry point for the entire GUI application.
+ * It sets up the various top level dock widgets, editor tabs,
+ * creates main actions and menu items, and loads Pothos plugins.
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -36,6 +43,7 @@ private slots:
     void handleShowAboutQt(void);
     void handleColorsDialogAction(void);
     void handleFullScreenViewAction(const bool);
+    void handleReloadPlugins(void);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -48,8 +56,13 @@ private:
     MainSettings *_settings;
     MainActions *_actions;
     Pothos::RemoteServer _server;
+    BlockCache *_blockCache;
     GraphEditorTabs *_editorTabs;
+    PropertiesPanelDock *_propertiesPanel;
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;
+
+    //! Setup server for scratch process
+    void setupServer(void);
 };
