@@ -44,7 +44,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
-    _evalEngine(nullptr),
+    _evalEngine(new EvalEngine(this)),
     _isTopologyActive(false)
 {
     this->setDocumentMode(true);
@@ -113,7 +113,7 @@ void GraphEditor::stopEvaluation(void)
     _evalEngine = nullptr;
 }
 
-void GraphEditor::startEvaluation(void)
+void GraphEditor::restartEvaluation(void)
 {
     //force all blocks to reload the block description
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
@@ -122,7 +122,6 @@ void GraphEditor::startEvaluation(void)
     }
 
     _evalEngine = new EvalEngine(this);
-    connect(_evalEngine, SIGNAL(deactivateDesign(void)), this, SLOT(handleEvalEngineDeactivate(void)));
     _evalEngine->submitTopology(this->getGraphObjects());
     _evalEngine->submitActivateTopology(_isTopologyActive);
 }
@@ -1007,7 +1006,6 @@ void GraphEditor::load(void)
     _stateManager->saveCurrent();
     this->updateGraphEditorMenus();
     this->render();
-    this->startEvaluation();
 }
 
 void GraphEditor::render(void)

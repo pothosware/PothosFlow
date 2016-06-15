@@ -249,7 +249,7 @@ void MainWindow::handleReloadPlugins(void)
     for (int i = 0; i < _editorTabs->count(); i++)
     {
         auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
-        if (editor != nullptr) editor->startEvaluation();
+        if (editor != nullptr) editor->restartEvaluation();
     }
 
     poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Reload plugins complete");

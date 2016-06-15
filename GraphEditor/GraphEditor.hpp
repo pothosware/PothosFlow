@@ -27,7 +27,7 @@ public:
     void stopEvaluation(void);
 
     //! Restore evaluator and from a plugin reload
-    void startEvaluation(void);
+    void restartEvaluation(void);
 
     void dumpState(std::ostream &os) const;
 
