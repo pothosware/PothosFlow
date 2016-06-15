@@ -58,7 +58,7 @@ PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
     }
 }
 
-void PropertiesPanelDock::handleGraphModifyProperties(QObject *obj)
+void PropertiesPanelDock::launchEditor(QObject *obj)
 {
     //clear old panel
     if (_propertiesPanel)

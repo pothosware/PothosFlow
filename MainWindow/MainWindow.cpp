@@ -8,6 +8,7 @@
 #include "BlockTree/BlockCache.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
+#include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphEditorTabs.hpp"
 #include "GraphEditor/GraphActionsDock.hpp"
 #include "HostExplorer/HostExplorerDock.hpp"
@@ -28,7 +29,9 @@ MainWindow::MainWindow(QWidget *parent):
     _splash(new MainSplash(this)),
     _settings(new MainSettings(this)),
     _actions(nullptr),
-    _editorTabs(nullptr)
+    _blockCache(nullptr),
+    _editorTabs(nullptr),
+    _propertiesPanel(nullptr)
 {
     _splash->show();
     _splash->postMessage(tr("Creating main window..."));
@@ -74,6 +77,7 @@ MainWindow::MainWindow(QWidget *parent):
     connect(_actions->showAboutQtAction, SIGNAL(triggered(void)), this, SLOT(handleShowAboutQt(void)));
     connect(_actions->showColorsDialogAction, SIGNAL(triggered(void)), this, SLOT(handleColorsDialogAction(void)));
     connect(_actions->fullScreenViewAction, SIGNAL(toggled(bool)), this, SLOT(handleFullScreenViewAction(bool)));
+    connect(_actions->reloadPluginsAction, SIGNAL(triggered(bool)), this, SLOT(handleReloadPlugins(void)));
 
     //create message window dock
     _splash->postMessage(tr("Creating message window..."));
@@ -101,32 +105,32 @@ MainWindow::MainWindow(QWidget *parent):
 
     //block cache (make before block tree)
     _splash->postMessage(tr("Creating block cache..."));
-    auto blockCache = new BlockCache(this, hostExplorerDock);
-    connect(this, SIGNAL(initDone(void)), blockCache, SLOT(handleUpdate(void)));
+    _blockCache = new BlockCache(this, hostExplorerDock);
+    connect(this, SIGNAL(initDone(void)), _blockCache, SLOT(update(void)));
 
     //create topology editor tabbed widget
     _splash->postMessage(tr("Creating graph editor..."));
     _editorTabs = new GraphEditorTabs(this);
     this->setCentralWidget(_editorTabs);
-    connect(this, SIGNAL(initDone(void)), _editorTabs, SLOT(handleInit(void)));
+    connect(this, SIGNAL(initDone(void)), _editorTabs, SLOT(loadState(void)));
     connect(this, SIGNAL(exitBegin(QCloseEvent *)), _editorTabs, SLOT(handleExit(QCloseEvent *)));
 
     //create block tree (after the block cache)
     _splash->postMessage(tr("Creating block tree..."));
-    auto blockTreeDock = new BlockTreeDock(this, blockCache, _editorTabs);
+    auto blockTreeDock = new BlockTreeDock(this, _blockCache, _editorTabs);
     connect(_actions->findAction, SIGNAL(triggered(void)), blockTreeDock, SLOT(activateFind(void)));
     this->tabifyDockWidget(affinityZonesDock, blockTreeDock);
 
     //create properties panel (make after block cache)
     _splash->postMessage(tr("Creating properties panel..."));
-    auto propertiesPanelDock = new PropertiesPanelDock(this);
-    this->tabifyDockWidget(blockTreeDock, propertiesPanelDock);
+    _propertiesPanel = new PropertiesPanelDock(this);
+    this->tabifyDockWidget(blockTreeDock, _propertiesPanel);
 
     //restore main window settings from file
     _splash->postMessage(tr("Restoring configuration..."));
     this->restoreGeometry(_settings->value("MainWindow/geometry").toByteArray());
     this->restoreState(_settings->value("MainWindow/state").toByteArray());
-    propertiesPanelDock->hide(); //hidden until used
+    _propertiesPanel->hide(); //hidden until used
     _actions->showPortNamesAction->setChecked(_settings->value("MainWindow/showPortNames", true).toBool());
     _actions->eventPortsInlineAction->setChecked(_settings->value("MainWindow/eventPortsInline", true).toBool());
     _actions->clickConnectModeAction->setChecked(_settings->value("MainWindow/clickConnectMode", false).toBool());
@@ -229,6 +233,38 @@ void MainWindow::handleFullScreenViewAction(const bool toggle)
     {
         pair.first->setVisible(pair.second);
     }
+}
+
+void MainWindow::handleReloadPlugins(void)
+{
+    //close any open properties panel editor window
+    _propertiesPanel->launchEditor(nullptr);
+
+    //stop evaluation on all graph editor
+    for (int i = 0; i < _editorTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
+        if (editor != nullptr) editor->stopEvaluation();
+    }
+
+    //clear the block cache
+    _blockCache->clear();
+
+    //restart the local server
+    _server = Pothos::RemoteServer();
+    _server = Pothos::RemoteServer("tcp://"+Pothos::Util::getLoopbackAddr(Pothos::RemoteServer::getLocatorPort()));
+
+    //reload the block cache
+    _blockCache->update();
+
+    //start evaluation on all graph editor
+    for (int i = 0; i < _editorTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
+        if (editor != nullptr) editor->startEvaluation();
+    }
+
+    poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Reload plugins complete");
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

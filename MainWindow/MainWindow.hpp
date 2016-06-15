@@ -13,7 +13,9 @@ class QShowEvent;
 class MainSplash;
 class MainSettings;
 class MainActions;
+class BlockCache;
 class GraphEditorTabs;
+class PropertiesPanelDock;
 
 class MainWindow : public QMainWindow
 {
@@ -35,6 +37,7 @@ private slots:
     void handleShowAboutQt(void);
     void handleColorsDialogAction(void);
     void handleFullScreenViewAction(const bool);
+    void handleReloadPlugins(void);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -46,7 +49,9 @@ private:
     MainSettings *_settings;
     MainActions *_actions;
     Pothos::RemoteServer _server;
+    BlockCache *_blockCache;
     GraphEditorTabs *_editorTabs;
+    PropertiesPanelDock *_propertiesPanel;
 
     //restoring from full screen
     std::map<QWidget *, bool> _widgetToOldVisibility;

@@ -33,7 +33,8 @@ signals:
     void blockDescReady(void);
 
 public slots:
-    void handleUpdate(void);
+    void clear(void);
+    void update(void);
 
 private slots:
     void handleWatcherFinished(void);

@@ -58,7 +58,7 @@ GraphDraw::GraphDraw(QWidget *parent):
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
         this, SLOT(handleCustomContextMenuRequested(const QPoint &)));
     connect(this, SIGNAL(modifyProperties(QObject *)),
-        PropertiesPanelDock::global(), SLOT(handleGraphModifyProperties(QObject *)));
+        PropertiesPanelDock::global(), SLOT(launchEditor(QObject *)));
     connect(this->scene(), SIGNAL(selectionChanged(void)), this, SLOT(updateEnabledActions(void)));
 
     //debug view - connect and initialize
