@@ -15,9 +15,13 @@
 #include <QColor>
 #include <QMetaObject>
 #include <QMetaMethod>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <vector>
 #include <iostream>
 #include <cassert>
+#include <Pothos/Util/TypeInfo.hpp>
+#include <Poco/Logger.h>
 
 /***********************************************************************
  * GraphWidget private container
@@ -161,9 +165,30 @@ void GraphWidget::handleWidgetStateChanged(const QVariant &state)
 /***********************************************************************
  * Hooks between Poco JSON and QVariant
  **********************************************************************/
-static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state)
+static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state, std::string *stateType = nullptr)
 {
     if (not state.isValid()) return Poco::Dynamic::Var();
+
+    //binary data -- only for top level element
+    if (state.type() == qMetaTypeId<QByteArray>() and stateType != nullptr)
+    {
+        *stateType = "binary";
+        return state.toByteArray().toBase64().toStdString();
+    }
+
+    //json array -- recurse for list conversion
+    if (state.type() == qMetaTypeId<QJsonArray>() and stateType != nullptr)
+    {
+        *stateType = "json";
+        return QVariantToJsonState(state.toJsonArray().toVariantList());
+    }
+
+    //json object -- recurse for map conversion
+    if (state.type() == qMetaTypeId<QJsonObject>() and stateType != nullptr)
+    {
+        *stateType = "json";
+        return QVariantToJsonState(state.toJsonObject().toVariantMap());
+    }
 
     //boolean
     if (state.type() == qMetaTypeId<bool>()) return state.toBool();
@@ -194,7 +219,7 @@ static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state)
     if (state.type() == qMetaTypeId<double>()) return state.toDouble();
 
     //list type
-    if (state.canConvert<QList<QVariant>>())
+    if (state.canConvert<QVariantList>())
     {
         Poco::JSON::Array::Ptr arr(new Poco::JSON::Array);
         for (const auto &elem : state.toList())
@@ -205,7 +230,7 @@ static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state)
     }
 
     //map type
-    if (state.canConvert<QMap<QString, QVariant>>())
+    if (state.canConvert<QVariantMap>())
     {
         Poco::JSON::Object::Ptr obj(new Poco::JSON::Object);
         for (const auto &pair : state.toMap().toStdMap())
@@ -215,13 +240,33 @@ static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state)
         return obj;
     }
 
-    //TODO else log error...
+    //present an error when the conversion is not possible
+    poco_error_f1(Poco::Logger::get("PothosGui.GraphWidget.serialize"),
+        "No conversion to JSON with type=%s", std::string(state.typeName()));
     return Poco::Dynamic::Var();
 }
 
-static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var)
+static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var, const std::string &stateType = "")
 {
     if (var.isEmpty()) return QVariant();
+
+    //binary data -- only for top level element
+    if (stateType == "binary" and var.isString())
+    {
+        return QByteArray::fromBase64(QByteArray::fromStdString(var.extract<std::string>()));
+    }
+
+    //json array -- recurse for list conversion
+    if (stateType == "json" and var.type() == typeid(Poco::JSON::Array::Ptr))
+    {
+        return QJsonArray::fromVariantList(JsonStateToQVariant(var).toList());
+    }
+
+    //json object -- recurse for map conversion
+    if (stateType == "json" and var.type() == typeid(Poco::JSON::Object::Ptr))
+    {
+        return QJsonObject::fromVariantMap(JsonStateToQVariant(var).toMap());
+    }
 
     //boolean
     if (var.isBoolean()) return var.extract<bool>();
@@ -241,7 +286,7 @@ static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var)
     //array type
     if (var.type() == typeid(Poco::JSON::Array::Ptr))
     {
-        QList<QVariant> list;
+        QVariantList list;
         for (const auto &elem : *var.extract<Poco::JSON::Array::Ptr>())
         {
             list.append(JsonStateToQVariant(elem));
@@ -252,7 +297,7 @@ static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var)
     //object type
     if (var.type() == typeid(Poco::JSON::Object::Ptr))
     {
-        QMap<QString, QVariant> map;
+        QVariantMap map;
         for (const auto &pair : *var.extract<Poco::JSON::Object::Ptr>())
         {
             map[QString::fromStdString(pair.first)] = JsonStateToQVariant(pair.second);
@@ -260,7 +305,10 @@ static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var)
         return map;
     }
 
-    //TODO else log error...
+    //present an error when the conversion is not possible
+    poco_error_f2(Poco::Logger::get("PothosGui.GraphWidget.deserialize"),
+        "No conversion to QVariant: varType=%s, stateType=%s",
+        Pothos::Util::typeInfoToString(var.type()), stateType);
     return QVariant();
 }
 
@@ -276,8 +324,10 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
     obj->set("height", _impl->graphicsWidget->size().height());
 
     //save the widget state to JSON
-    auto stateVar = QVariantToJsonState(_impl->widgetState);
+    std::string stateType;
+    auto stateVar = QVariantToJsonState(_impl->widgetState, &stateType);
     if (not stateVar.isEmpty()) obj->set("state", stateVar);
+    if (not stateType.empty()) obj->set("stateType", stateType);
 
     return obj;
 }
@@ -304,7 +354,8 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     //restore the widget state from JSON
     Poco::Dynamic::Var stateVar;
     if (obj->has("state")) stateVar = obj->get("state");
-    _impl->widgetState = JsonStateToQVariant(stateVar);
+    const auto stateType = obj->optValue<std::string>("stateType", "text");
+    _impl->widgetState = JsonStateToQVariant(stateVar, stateType);
 
     //emit the current state to the widget when connected
     if (_impl->stateRestoreConnection and _impl->widgetState.isValid())
