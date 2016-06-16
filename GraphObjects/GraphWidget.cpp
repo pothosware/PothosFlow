@@ -22,6 +22,7 @@
 #include <cassert>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <Poco/Logger.h>
+#include <Poco/Types.h>
 
 /***********************************************************************
  * GraphWidget private container
@@ -197,12 +198,12 @@ static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state, std::string
     if (state.type() == qMetaTypeId<QString>()) return state.toString().toStdString();
 
     //signed 64-bit integers
-    if (state.type() == qMetaTypeId<qint64>()) return state.toLongLong();
-    if (state.type() == qMetaTypeId<qlonglong>()) return state.toLongLong();
+    if (state.type() == qMetaTypeId<qint64>()) return Poco::Int64(state.toLongLong());
+    if (state.type() == qMetaTypeId<qlonglong>()) return Poco::Int64(state.toLongLong());
 
     //unsigned 64-bit integers
-    if (state.type() == qMetaTypeId<quint64>()) return state.toULongLong();
-    if (state.type() == qMetaTypeId<qulonglong>()) return state.toULongLong();
+    if (state.type() == qMetaTypeId<quint64>()) return Poco::UInt64(state.toULongLong());
+    if (state.type() == qMetaTypeId<qulonglong>()) return Poco::UInt64(state.toULongLong());
 
     //signed integers
     if (state.type() == qMetaTypeId<qint32>()) return state.toInt();
@@ -275,13 +276,13 @@ static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var, const std::st
     if (var.isString()) return QString::fromStdString(var.extract<std::string>());
 
     //signed integer, use signed 64-bit destination
-    if (var.isInteger() and var.isSigned()) return var.extract<qint64>();
+    if (var.isInteger() and var.isSigned()) return qint64(var.convert<Poco::Int64>());
 
     //unsigned integer, use unsigned 64-bit destination
-    if (var.isInteger() and not var.isSigned()) return var.extract<quint64>();
+    if (var.isInteger() and not var.isSigned()) return quint64(var.convert<Poco::UInt64>());
 
     //floating point types, use double
-    if (var.isNumeric()) return var.extract<double>();
+    if (var.isNumeric()) return var.convert<double>();
 
     //array type
     if (var.type() == typeid(Poco::JSON::Array::Ptr))
@@ -354,7 +355,7 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     //restore the widget state from JSON
     Poco::Dynamic::Var stateVar;
     if (obj->has("state")) stateVar = obj->get("state");
-    const auto stateType = obj->optValue<std::string>("stateType", "text");
+    const auto stateType = obj->optValue<std::string>("stateType", "");
     _impl->widgetState = JsonStateToQVariant(stateVar, stateType);
 
     //emit the current state to the widget when connected
