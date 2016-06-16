@@ -161,57 +161,107 @@ void GraphWidget::handleWidgetStateChanged(const QVariant &state)
 /***********************************************************************
  * Hooks between Poco JSON and QVariant
  **********************************************************************/
-static void QVariantToJsonState(const QVariant &state, Poco::JSON::Object::Ptr &obj)
+static Poco::Dynamic::Var QVariantToJsonState(const QVariant &state)
 {
-    if (not state.isValid()) return;
-
-    Poco::Dynamic::Var var;
+    if (not state.isValid()) return Poco::Dynamic::Var();
 
     //boolean
-    if (state.type() == qMetaTypeId<bool>()) var = state.toBool();
+    if (state.type() == qMetaTypeId<bool>()) return state.toBool();
 
     //string
-    else if (state.type() == qMetaTypeId<QString>()) var = state.toString().toStdString();
+    if (state.type() == qMetaTypeId<QString>()) return state.toString().toStdString();
 
     //signed 64-bit integers
-    else if (state.type() == qMetaTypeId<qint64>()) var = state.toLongLong();
-    else if (state.type() == qMetaTypeId<qlonglong>()) var = state.toLongLong();
+    if (state.type() == qMetaTypeId<qint64>()) return state.toLongLong();
+    if (state.type() == qMetaTypeId<qlonglong>()) return state.toLongLong();
 
     //unsigned 64-bit integers
-    else if (state.type() == qMetaTypeId<quint64>()) var = state.toULongLong();
-    else if (state.type() == qMetaTypeId<qulonglong>()) var = state.toULongLong();
+    if (state.type() == qMetaTypeId<quint64>()) return state.toULongLong();
+    if (state.type() == qMetaTypeId<qulonglong>()) return state.toULongLong();
 
-    //all other numeric types converted to double
-    else if (state.canConvert<double>()) var = state.toDouble();
+    //signed integers
+    if (state.type() == qMetaTypeId<qint32>()) return state.toInt();
+    if (state.type() == qMetaTypeId<qint16>()) return state.toInt();
+    if (state.type() == qMetaTypeId<qint8>()) return state.toInt();
+
+    //unsigned integers
+    if (state.type() == qMetaTypeId<quint32>()) return state.toUInt();
+    if (state.type() == qMetaTypeId<quint16>()) return state.toUInt();
+    if (state.type() == qMetaTypeId<quint8>()) return state.toUInt();
+
+    //floating point types
+    if (state.type() == qMetaTypeId<float>()) return state.toDouble();
+    if (state.type() == qMetaTypeId<double>()) return state.toDouble();
+
+    //list type
+    if (state.canConvert<QList<QVariant>>())
+    {
+        Poco::JSON::Array::Ptr arr(new Poco::JSON::Array);
+        for (const auto &elem : state.toList())
+        {
+            arr->add(QVariantToJsonState(elem));
+        }
+        return arr;
+    }
+
+    //map type
+    if (state.canConvert<QMap<QString, QVariant>>())
+    {
+        Poco::JSON::Object::Ptr obj(new Poco::JSON::Object);
+        for (const auto &pair : state.toMap().toStdMap())
+        {
+            obj->set(pair.first.toStdString(), QVariantToJsonState(pair.second));
+        }
+        return obj;
+    }
 
     //TODO else log error...
-
-    obj->set("state", var);
+    return Poco::Dynamic::Var();
 }
 
-static void JsonStateToQVariant(const Poco::JSON::Object::Ptr &obj, QVariant &state)
+static QVariant JsonStateToQVariant(const Poco::Dynamic::Var &var)
 {
-    state.clear();
-    if (not obj->has("state")) return;
-
-    const auto var = obj->get("state");
+    if (var.isEmpty()) return QVariant();
 
     //boolean
-    if (var.isBoolean()) state = QVariant(var.extract<bool>());
+    if (var.isBoolean()) return var.extract<bool>();
 
     //string
-    else if (var.isString()) state = QVariant(QString::fromStdString(var.extract<std::string>()));
+    if (var.isString()) return QString::fromStdString(var.extract<std::string>());
 
     //signed integer, use signed 64-bit destination
-    else if (var.isInteger() and var.isSigned()) state = QVariant(var.extract<qint64>());
+    if (var.isInteger() and var.isSigned()) return var.extract<qint64>();
 
     //unsigned integer, use unsigned 64-bit destination
-    else if (var.isInteger() and not var.isSigned()) state = QVariant(var.extract<quint64>());
+    if (var.isInteger() and not var.isSigned()) return var.extract<quint64>();
 
-    //all other numeric types converted to double
-    else if (var.isNumeric()) state = QVariant(var.extract<double>());
+    //floating point types, use double
+    if (var.isNumeric()) return var.extract<double>();
+
+    //array type
+    if (var.type() == typeid(Poco::JSON::Array::Ptr))
+    {
+        QList<QVariant> list;
+        for (const auto &elem : *var.extract<Poco::JSON::Array::Ptr>())
+        {
+            list.append(JsonStateToQVariant(elem));
+        }
+        return list;
+    }
+
+    //object type
+    if (var.type() == typeid(Poco::JSON::Object::Ptr))
+    {
+        QMap<QString, QVariant> map;
+        for (const auto &pair : *var.extract<Poco::JSON::Object::Ptr>())
+        {
+            map[QString::fromStdString(pair.first)] = JsonStateToQVariant(pair.second);
+        }
+        return map;
+    }
 
     //TODO else log error...
+    return QVariant();
 }
 
 /***********************************************************************
@@ -226,7 +276,8 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
     obj->set("height", _impl->graphicsWidget->size().height());
 
     //save the widget state to JSON
-    QVariantToJsonState(_impl->widgetState, obj);
+    auto stateVar = QVariantToJsonState(_impl->widgetState);
+    if (not stateVar.isEmpty()) obj->set("state", stateVar);
 
     return obj;
 }
@@ -251,7 +302,9 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     }
 
     //restore the widget state from JSON
-    JsonStateToQVariant(obj, _impl->widgetState);
+    Poco::Dynamic::Var stateVar;
+    if (obj->has("state")) stateVar = obj->get("state");
+    _impl->widgetState = JsonStateToQVariant(stateVar);
 
     //emit the current state to the widget when connected
     if (_impl->stateRestoreConnection and _impl->widgetState.isValid())
