@@ -13,6 +13,8 @@
 #include <QPen>
 #include <QBrush>
 #include <QColor>
+#include <QMetaObject>
+#include <QMetaMethod>
 #include <vector>
 #include <iostream>
 #include <cassert>
@@ -38,6 +40,10 @@ struct GraphWidget::Impl
 
     GraphWidgetContainer *container;
     QGraphicsProxyWidget *graphicsWidget;
+
+    QVariant widgetState;
+    QMetaObject::Connection stateChangedConnection;
+    QMetaObject::Connection stateRestoreConnection;
 };
 
 /***********************************************************************
@@ -118,7 +124,38 @@ void GraphWidget::handleBlockEvalDone(void)
 {
     //the widget could have changed when a block eval completes
     auto graphWidget = _impl->block->getGraphWidget();
+    auto oldWidget = _impl->container->widget();
     _impl->container->setWidget(graphWidget);
+
+    //no change, ignore logic below
+    if (oldWidget == graphWidget) return;
+
+    //disconnect old widget
+    if (_impl->stateChangedConnection)
+    {
+        this->disconnect(_impl->stateChangedConnection);
+        _impl->stateChangedConnection = QMetaObject::Connection();
+    }
+    if (_impl->stateRestoreConnection)
+    {
+        this->disconnect(_impl->stateRestoreConnection);
+        _impl->stateRestoreConnection = QMetaObject::Connection();
+    }
+
+    //connect new widget
+    if (graphWidget == nullptr) return;
+    auto mo = graphWidget->metaObject();
+    if (mo->indexOfSignal(QMetaObject::normalizedSignature("stateChanged(QVariant)").constData()) == -1) return;
+    if (mo->indexOfSlot(QMetaObject::normalizedSignature("restoreState(QVariant)").constData()) == -1) return;
+    _impl->stateChangedConnection = this->connect(graphWidget, SIGNAL(stateChanged(const QVariant &)), this, SLOT(handleWidgetStateChanged(const QVariant &)));
+    _impl->stateRestoreConnection = this->connect(this, SIGNAL(restoreWidgetState(const QVariant &)), graphWidget, SLOT(restoreState(const QVariant &)));
+    emit this->restoreWidgetState(_impl->widgetState); //emit state to new widget (also done in deserialize)
+}
+
+void GraphWidget::handleWidgetStateChanged(const QVariant &state)
+{
+    //stash the state -- will actually be saved by serialize
+    _impl->widgetState = state;
 }
 
 Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
@@ -128,6 +165,15 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
     obj->set("blockId", _impl->block->getId().toStdString());
     obj->set("width", _impl->graphicsWidget->size().width());
     obj->set("height", _impl->graphicsWidget->size().height());
+
+    //save the widget state to JSON
+    const auto &state = _impl->widgetState;
+    if (state.isValid())
+    {
+        //TODO types
+        obj->set("state", state.toDouble());
+    }
+
     return obj;
 }
 
@@ -148,6 +194,21 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
         _impl->graphicsWidget->resize(
             obj->getValue<int>("width"),
             obj->getValue<int>("height"));
+    }
+
+    //restore the widget state from JSON
+    auto &state = _impl->widgetState;
+    if (obj->has("state"))
+    {
+        //TODO types
+        state = QVariant(obj->getValue<double>("state"));
+    }
+    else state.clear();
+
+    //emit the current state to the widget when connected
+    if (_impl->stateRestoreConnection)
+    {
+        emit this->restoreWidgetState(state);
     }
 
     GraphObject::deserialize(obj);

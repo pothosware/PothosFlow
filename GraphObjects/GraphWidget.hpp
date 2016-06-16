@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QString>
 #include <QPointF>
+#include <QVariant>
 #include <memory>
 
 class GraphBlock;
@@ -33,11 +34,15 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
+signals:
+    void restoreWidgetState(const QVariant &state);
+
 private slots:
     void handleBlockDestroyed(QObject *);
     void handleWidgetResized(void);
     void handleBlockIdChanged(const QString &id);
     void handleBlockEvalDone(void);
+    void handleWidgetStateChanged(const QVariant &state);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
