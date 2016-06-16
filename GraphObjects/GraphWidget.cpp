@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidget.hpp"
@@ -158,6 +158,65 @@ void GraphWidget::handleWidgetStateChanged(const QVariant &state)
     _impl->widgetState = state;
 }
 
+/***********************************************************************
+ * Hooks between Poco JSON and QVariant
+ **********************************************************************/
+static void QVariantToJsonState(const QVariant &state, Poco::JSON::Object::Ptr &obj)
+{
+    if (not state.isValid()) return;
+
+    Poco::Dynamic::Var var;
+
+    //boolean
+    if (state.type() == qMetaTypeId<bool>()) var = state.toBool();
+
+    //string
+    else if (state.type() == qMetaTypeId<QString>()) var = state.toString().toStdString();
+
+    //signed 64-bit integers
+    else if (state.type() == qMetaTypeId<qint64>()) var = state.toLongLong();
+    else if (state.type() == qMetaTypeId<qlonglong>()) var = state.toLongLong();
+
+    //unsigned 64-bit integers
+    else if (state.type() == qMetaTypeId<quint64>()) var = state.toULongLong();
+    else if (state.type() == qMetaTypeId<qulonglong>()) var = state.toULongLong();
+
+    //all other numeric types converted to double
+    else if (state.canConvert<double>()) var = state.toDouble();
+
+    //TODO else log error...
+
+    obj->set("state", var);
+}
+
+static void JsonStateToQVariant(const Poco::JSON::Object::Ptr &obj, QVariant &state)
+{
+    state.clear();
+    if (not obj->has("state")) return;
+
+    const auto var = obj->get("state");
+
+    //boolean
+    if (var.isBoolean()) state = QVariant(var.extract<bool>());
+
+    //string
+    else if (var.isString()) state = QVariant(QString::fromStdString(var.extract<std::string>()));
+
+    //signed integer, use signed 64-bit destination
+    else if (var.isInteger() and var.isSigned()) state = QVariant(var.extract<qint64>());
+
+    //unsigned integer, use unsigned 64-bit destination
+    else if (var.isInteger() and not var.isSigned()) state = QVariant(var.extract<quint64>());
+
+    //all other numeric types converted to double
+    else if (var.isNumeric()) state = QVariant(var.extract<double>());
+
+    //TODO else log error...
+}
+
+/***********************************************************************
+ * serialize/deserialize hooks
+ **********************************************************************/
 Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
 {
     auto obj = GraphObject::serialize();
@@ -167,12 +226,7 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
     obj->set("height", _impl->graphicsWidget->size().height());
 
     //save the widget state to JSON
-    const auto &state = _impl->widgetState;
-    if (state.isValid())
-    {
-        //TODO types
-        obj->set("state", state.toDouble());
-    }
+    QVariantToJsonState(_impl->widgetState, obj);
 
     return obj;
 }
@@ -197,18 +251,12 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     }
 
     //restore the widget state from JSON
-    auto &state = _impl->widgetState;
-    if (obj->has("state"))
-    {
-        //TODO types
-        state = QVariant(obj->getValue<double>("state"));
-    }
-    else state.clear();
+    JsonStateToQVariant(obj, _impl->widgetState);
 
     //emit the current state to the widget when connected
-    if (_impl->stateRestoreConnection)
+    if (_impl->stateRestoreConnection and _impl->widgetState.isValid())
     {
-        emit this->restoreWidgetState(state);
+        emit this->restoreWidgetState(_impl->widgetState);
     }
 
     GraphObject::deserialize(obj);
