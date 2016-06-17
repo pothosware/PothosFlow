@@ -153,6 +153,9 @@ MainWindow::~MainWindow(void)
     _settings->setValue("MainWindow/showGraphConnectionPoints", _actions->showGraphConnectionPointsAction->isChecked());
     _settings->setValue("MainWindow/showGraphBoundingBoxes", _actions->showGraphBoundingBoxesAction->isChecked());
 
+    //close any open properties panel editor window
+    _propertiesPanel->launchEditor(nullptr);
+
     //cleanup widgets which may use plugins or the server
     //this includes active graph blocks and eval engines
     poco_information(_logger, "Shutdown graph editor");
