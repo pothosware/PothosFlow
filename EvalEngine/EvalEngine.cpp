@@ -7,7 +7,6 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
-#include <Poco/Logger.h>
 #include <QSignalMapper>
 #include <QThread>
 #include <QTimer>
@@ -17,6 +16,8 @@ static const int MONITOR_INTERVAL_MS = 1000;
 
 EvalEngine::EvalEngine(QObject *parent):
     QObject(parent),
+    _flaggedLockUp(false),
+    _logger(Poco::Logger::get("PothosGui.EvalEngine")),
     _thread(new QThread(this)),
     _monitorTimer(new QTimer(this)),
     _impl(new EvalEngineImpl()),
@@ -142,6 +143,12 @@ void EvalEngine::handleAffinityZonesChanged(void)
 
 void EvalEngine::handleEvalThreadHeartBeat(void)
 {
+    if (_flaggedLockUp)
+    {
+        _flaggedLockUp = false;
+        poco_notice(_logger, "Evaluation thread has recovered. Perhaps a call is taking too long.");
+    }
+
     _lastHeartBeat = std::chrono::system_clock::now();
 
     //make sure monitor is started when we see the heartbeat
@@ -153,8 +160,8 @@ void EvalEngine::handleMonitorTimeout(void)
 {
     if ((std::chrono::system_clock::now() - _lastHeartBeat) > std::chrono::seconds(10))
     {
+        _flaggedLockUp = true;
         _monitorTimer->stop(); //stop so the error messages will not continue
-        poco_fatal(Poco::Logger::get("PothosGui.EvalEngine.monitor"),
-            "Detected evaluation thread lock-up. The evaluator will not function.");
+        poco_fatal(_logger, "Detected evaluation thread lock-up. The evaluator will not function.");
     }
 }

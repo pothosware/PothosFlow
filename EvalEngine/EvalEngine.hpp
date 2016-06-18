@@ -1,9 +1,10 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
+#include <Poco/Logger.h>
 #include <QObject>
 #include <chrono>
 
@@ -68,6 +69,8 @@ private slots:
     void handleMonitorTimeout(void);
 
 private:
+    bool _flaggedLockUp;
+    Poco::Logger &_logger;
     QThread *_thread;
     QTimer *_monitorTimer;
     EvalEngineImpl *_impl;
