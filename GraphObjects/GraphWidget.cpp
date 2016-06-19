@@ -175,7 +175,8 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
         QByteArray data;
         QDataStream ds(&data, QIODevice::WriteOnly);
         ds << _impl->widgetState;
-        obj->set("state", data.toBase64().toStdString());
+        data = data.toBase64();
+        obj->set("state", std::string(data.data(), data.size()));
     }
 
     return obj;
@@ -205,7 +206,7 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     if (state.empty()) _impl->widgetState.clear();
     else
     {
-        auto data = QByteArray::fromStdString(state);
+        auto data = QByteArray(state.data(), state.size());
         data = QByteArray::fromBase64(data);
         QDataStream ds(&data, QIODevice::ReadOnly);
         ds >> _impl->widgetState;
