@@ -6,6 +6,7 @@
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
 #include <Poco/JSON/Object.h>
+#include <Poco/Logger.h>
 #include <QTabWidget>
 #include <QPointer>
 #include <ios>
@@ -154,6 +155,7 @@ private slots:
     void handleEvalEngineDeactivate(void);
 
 private:
+    Poco::Logger &_logger;
     QTabWidget *_parentTabWidget;
 
     void updateGraphEditorMenus(void);

@@ -15,7 +15,6 @@
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainSplash.hpp"
-#include <Poco/Logger.h>
 #include <QTabBar>
 #include <QInputDialog>
 #include <QAction>
@@ -40,6 +39,7 @@
 
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
+    _logger(Poco::Logger::get("PothosGui.GraphEditor")),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
@@ -964,12 +964,13 @@ void GraphEditor::save(void)
     auto fileName = this->getCurrentFilePath().toStdString();
     try
     {
+        poco_information_f1(_logger, "Saving %s", fileName);
         std::ofstream outFile(fileName.c_str());
         this->dumpState(outFile);
     }
     catch (const std::exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.GraphEditor.save"), "Error saving %s: %s", fileName, std::string(ex.what()));
+        poco_error_f2(_logger, "Error saving %s: %s", fileName, std::string(ex.what()));
     }
 
     _stateManager->saveCurrent();
@@ -991,14 +992,14 @@ void GraphEditor::load(void)
 
     try
     {
-        poco_information_f1(Poco::Logger::get("PothosGui.GraphEditor.load"), "Loading %s from file", fileName);
+        poco_information_f1(_logger, "Loading %s", fileName);
         MainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
         std::ifstream inFile(fileName.c_str());
         this->loadState(inFile);
     }
     catch (const std::exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.GraphEditor.load"), "Error loading %s: %s", fileName, std::string(ex.what()));
+        poco_error_f2(_logger, "Error loading %s: %s", fileName, std::string(ex.what()));
     }
 
     _stateManager->resetToDefault();
