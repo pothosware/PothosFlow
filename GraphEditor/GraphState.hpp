@@ -7,6 +7,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QListWidget>
+#include <QVariant>
 #include <vector>
 #include <map>
 #include <cassert>
@@ -133,10 +134,14 @@ struct GraphState
 {
     GraphState(void);
     GraphState(const QString &iconName, const QString &description, const QByteArray &dump = QByteArray());
+    GraphState(const QString &iconName, const QString &description, const QVariant &extraInfo);
 
     QString iconName;
     QString description;
     QByteArray dump;
+
+    //! extra info associated with this state change
+    QVariant extraInfo;
 };
 
 class GraphStateManager : public QListWidget, public StateManager<GraphState>

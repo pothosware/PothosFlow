@@ -44,6 +44,9 @@ public:
      */
     void restoreWidgetState(const QVariant &state);
 
+    //! True if the state changed since the last save
+    bool didWidgetStateChange(void) const;
+
 private slots:
     void handleBlockDestroyed(QObject *);
     void handleWidgetResized(void);

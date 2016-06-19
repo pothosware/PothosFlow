@@ -142,6 +142,10 @@ void GraphWidget::handleBlockEvalDone(void)
     this->restoreWidgetState(_impl->widgetState);
 }
 
+/***********************************************************************
+ * tie-ins for widget state
+ **********************************************************************/
+
 QVariant GraphWidget::saveWidgetState(void) const
 {
     QVariant state;
@@ -149,15 +153,23 @@ QVariant GraphWidget::saveWidgetState(void) const
     {
         QMetaObject::invokeMethod(_impl->container->widget(), "saveState", Qt::DirectConnection, Q_RETURN_ARG(QVariant, state));
     }
+
     return state;
 }
 
 void GraphWidget::restoreWidgetState(const QVariant &state)
 {
-    if (_impl->hasStateInterface and _impl->widgetState.isValid())
+    if (_impl->hasStateInterface and state.isValid())
     {
-        QMetaObject::invokeMethod(_impl->container->widget(), "restoreState", Qt::QueuedConnection, Q_ARG(QVariant, state));
+        QMetaObject::invokeMethod(_impl->container->widget(), "restoreState", Qt::DirectConnection, Q_ARG(QVariant, state));
     }
+}
+
+bool GraphWidget::didWidgetStateChange(void) const
+{
+    auto state = this->saveWidgetState();
+    if (not state.isValid()) return false;
+    return state != _impl->widgetState;
 }
 
 /***********************************************************************
@@ -182,6 +194,7 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
         ds << state;
         data = data.toBase64();
         obj->set("state", std::string(data.data(), data.size()));
+        _impl->widgetState = state; //stash
     }
 
     return obj;

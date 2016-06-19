@@ -15,6 +15,7 @@ class GraphDraw;
 class QSignalMapper;
 class QTabWidget;
 class EvalEngine;
+class QTimer;
 
 class GraphEditor : public QTabWidget
 {
@@ -152,6 +153,7 @@ private slots:
     void handleBlockDecrement(void);
     void handleBlockXcrement(const int adj);
     void handleEvalEngineDeactivate(void);
+    void handlePollWidgetTimer(void);
 
 private:
     QTabWidget *_parentTabWidget;
@@ -177,6 +179,7 @@ private:
 
     EvalEngine *_evalEngine;
     bool _isTopologyActive;
+    QTimer *_pollWidgetTimer;
 
     //graph globals/constant expressions
     QStringList _globalNames;
