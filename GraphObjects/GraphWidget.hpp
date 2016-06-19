@@ -34,15 +34,14 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-signals:
-    void restoreWidgetState(const QVariant &state);
+    void saveWidgetState(void) const;
+    void restoreWidgetState(void);
 
 private slots:
     void handleBlockDestroyed(QObject *);
     void handleWidgetResized(void);
     void handleBlockIdChanged(const QString &id);
     void handleBlockEvalDone(void);
-    void handleWidgetStateChanged(const QVariant &state);
 
 protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);

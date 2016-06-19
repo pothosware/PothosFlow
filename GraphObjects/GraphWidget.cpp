@@ -13,8 +13,6 @@
 #include <QPen>
 #include <QBrush>
 #include <QColor>
-#include <QMetaObject>
-#include <QMetaMethod>
 #include <vector>
 #include <iostream>
 #include <cassert>
@@ -26,7 +24,8 @@ struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
         container(new GraphWidgetContainer()),
-        graphicsWidget(new QGraphicsProxyWidget(parent))
+        graphicsWidget(new QGraphicsProxyWidget(parent)),
+        hasStateInterface(false)
     {
         graphicsWidget->setWidget(container);
     }
@@ -42,8 +41,7 @@ struct GraphWidget::Impl
     QGraphicsProxyWidget *graphicsWidget;
 
     QVariant widgetState;
-    QMetaObject::Connection stateChangedConnection;
-    QMetaObject::Connection stateRestoreConnection;
+    bool hasStateInterface;
 };
 
 /***********************************************************************
@@ -130,32 +128,34 @@ void GraphWidget::handleBlockEvalDone(void)
     //no change, ignore logic below
     if (oldWidget == graphWidget) return;
 
-    //disconnect old widget
-    if (_impl->stateChangedConnection)
-    {
-        this->disconnect(_impl->stateChangedConnection);
-        _impl->stateChangedConnection = QMetaObject::Connection();
-    }
-    if (_impl->stateRestoreConnection)
-    {
-        this->disconnect(_impl->stateRestoreConnection);
-        _impl->stateRestoreConnection = QMetaObject::Connection();
-    }
+    //clear state info from old widget
+    _impl->hasStateInterface = false;
 
-    //connect new widget
+    //inspect the new widget
     if (graphWidget == nullptr) return;
     auto mo = graphWidget->metaObject();
-    if (mo->indexOfSignal(QMetaObject::normalizedSignature("stateChanged(QVariant)").constData()) == -1) return;
-    if (mo->indexOfSlot(QMetaObject::normalizedSignature("restoreState(QVariant)").constData()) == -1) return;
-    _impl->stateChangedConnection = this->connect(graphWidget, SIGNAL(stateChanged(const QVariant &)), this, SLOT(handleWidgetStateChanged(const QVariant &)));
-    _impl->stateRestoreConnection = this->connect(this, SIGNAL(restoreWidgetState(const QVariant &)), graphWidget, SLOT(restoreState(const QVariant &)));
-    emit this->restoreWidgetState(_impl->widgetState); //emit state to new widget (also done in deserialize)
+    if (mo->indexOfMethod(QMetaObject::normalizedSignature("saveState(void)").constData()) == -1) return;
+    if (mo->indexOfMethod(QMetaObject::normalizedSignature("restoreState(QVariant)").constData()) == -1) return;
+    _impl->hasStateInterface = true;
+
+    //restore state after a new widget has been set
+    this->restoreWidgetState();
 }
 
-void GraphWidget::handleWidgetStateChanged(const QVariant &state)
+void GraphWidget::saveWidgetState(void) const
 {
-    //stash the state -- will actually be saved by serialize
-    _impl->widgetState = state;
+    if (_impl->hasStateInterface)
+    {
+        QMetaObject::invokeMethod(_impl->container->widget(), "saveState", Qt::DirectConnection, Q_RETURN_ARG(QVariant, _impl->widgetState));
+    }
+}
+
+void GraphWidget::restoreWidgetState(void)
+{
+    if (_impl->hasStateInterface and _impl->widgetState.isValid())
+    {
+        QMetaObject::invokeMethod(_impl->container->widget(), "restoreState", Qt::QueuedConnection, Q_ARG(QVariant, _impl->widgetState));
+    }
 }
 
 /***********************************************************************
@@ -168,6 +168,9 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
     obj->set("blockId", _impl->block->getId().toStdString());
     obj->set("width", _impl->graphicsWidget->size().width());
     obj->set("height", _impl->graphicsWidget->size().height());
+
+    //query the widget state
+    this->saveWidgetState();
 
     //save the widget state to JSON
     if (_impl->widgetState.isValid())
@@ -212,11 +215,9 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
         ds >> _impl->widgetState;
     }
 
-    //emit the current state to the widget when connected
-    if (_impl->stateRestoreConnection and _impl->widgetState.isValid())
-    {
-        emit this->restoreWidgetState(_impl->widgetState);
-    }
+    //restore the widgets state when there is an active widget
+    //otherwise this is also called in handleBlockEvalDone()
+    this->restoreWidgetState();
 
     GraphObject::deserialize(obj);
 }

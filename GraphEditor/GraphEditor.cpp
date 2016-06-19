@@ -109,6 +109,12 @@ GraphEditor::~GraphEditor(void)
 
 void GraphEditor::stopEvaluation(void)
 {
+    //stash the state of all graphical widgets
+    for (auto obj : this->getGraphObjects(GRAPH_WIDGET))
+    {
+        dynamic_cast<GraphWidget *>(obj)->saveWidgetState();
+    }
+
     delete _evalEngine;
     _evalEngine = nullptr;
 }
