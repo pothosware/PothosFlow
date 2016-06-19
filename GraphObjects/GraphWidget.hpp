@@ -34,8 +34,15 @@ public:
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
 
-    void saveWidgetState(void) const;
-    void restoreWidgetState(void);
+    /*!
+     * Get the saved state of the internal widget.
+     */
+    QVariant saveWidgetState(void) const;
+
+    /*!
+     * Restore the saved state to the internal widget.
+     */
+    void restoreWidgetState(const QVariant &state);
 
 private slots:
     void handleBlockDestroyed(QObject *);
