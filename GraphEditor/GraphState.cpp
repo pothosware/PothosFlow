@@ -20,6 +20,14 @@ GraphState::GraphState(const QString &iconName, const QString &description, cons
     return;
 }
 
+GraphState::GraphState(const QString &iconName, const QString &description, const QVariant &extraInfo):
+    iconName(iconName),
+    description(description),
+    extraInfo(extraInfo)
+{
+    return;
+}
+
 GraphStateManager::GraphStateManager(QWidget *parent):
     QListWidget(parent)
 {

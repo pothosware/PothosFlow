@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QString>
 #include <QPointF>
+#include <QVariant>
 #include <memory>
 
 class GraphBlock;
@@ -32,6 +33,19 @@ public:
     Poco::JSON::Object::Ptr serialize(void) const;
 
     virtual void deserialize(Poco::JSON::Object::Ptr obj);
+
+    /*!
+     * Get the saved state of the internal widget.
+     */
+    QVariant saveWidgetState(void) const;
+
+    /*!
+     * Restore the saved state to the internal widget.
+     */
+    void restoreWidgetState(const QVariant &state);
+
+    //! True if the state changed since the last save
+    bool didWidgetStateChange(void) const;
 
 private slots:
     void handleBlockDestroyed(QObject *);

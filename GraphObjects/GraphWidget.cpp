@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidget.hpp"
@@ -24,7 +24,8 @@ struct GraphWidget::Impl
 {
     Impl(QGraphicsItem *parent):
         container(new GraphWidgetContainer()),
-        graphicsWidget(new QGraphicsProxyWidget(parent))
+        graphicsWidget(new QGraphicsProxyWidget(parent)),
+        hasStateInterface(false)
     {
         graphicsWidget->setWidget(container);
     }
@@ -38,6 +39,9 @@ struct GraphWidget::Impl
 
     GraphWidgetContainer *container;
     QGraphicsProxyWidget *graphicsWidget;
+
+    QVariant widgetState;
+    bool hasStateInterface;
 };
 
 /***********************************************************************
@@ -118,9 +122,71 @@ void GraphWidget::handleBlockEvalDone(void)
 {
     //the widget could have changed when a block eval completes
     auto graphWidget = _impl->block->getGraphWidget();
+    auto oldWidget = _impl->container->widget();
     _impl->container->setWidget(graphWidget);
+
+    //no change, ignore logic below
+    if (oldWidget == graphWidget) return;
+
+    //clear state info from old widget
+    _impl->hasStateInterface = false;
+
+    //inspect the new widget
+    if (graphWidget == nullptr) return;
+    auto mo = graphWidget->metaObject();
+    if (mo->indexOfMethod(QMetaObject::normalizedSignature("saveState(void)").constData()) == -1) return;
+    if (mo->indexOfMethod(QMetaObject::normalizedSignature("restoreState(QVariant)").constData()) == -1) return;
+    _impl->hasStateInterface = true;
+
+    //restore state after a new widget has been set
+    this->restoreWidgetState(_impl->widgetState);
 }
 
+/***********************************************************************
+ * tie-ins for widget state
+ **********************************************************************/
+
+QVariant GraphWidget::saveWidgetState(void) const
+{
+    QVariant state;
+    if (_impl->hasStateInterface)
+    {
+        QMetaObject::invokeMethod(_impl->container->widget(), "saveState", Qt::DirectConnection, Q_RETURN_ARG(QVariant, state));
+    }
+
+    return state;
+}
+
+void GraphWidget::restoreWidgetState(const QVariant &state)
+{
+    if (_impl->hasStateInterface and state.isValid())
+    {
+        QMetaObject::invokeMethod(_impl->container->widget(), "restoreState", Qt::DirectConnection, Q_ARG(QVariant, state));
+    }
+}
+
+bool GraphWidget::didWidgetStateChange(void) const
+{
+    //query the current state
+    //declare empty states/not implemented as no change
+    auto state = this->saveWidgetState();
+    if (not state.isValid()) return false;
+
+    //previous was not valid, don't declare this as changed
+    //but stash the current state so we can check next time
+    if (not _impl->widgetState.isValid())
+    {
+        _impl->widgetState = state;
+        return false;
+    }
+
+    //perform qvariant comparison for change
+    return state != _impl->widgetState;
+}
+
+/***********************************************************************
+ * serialize/deserialize hooks
+ **********************************************************************/
 Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
 {
     auto obj = GraphObject::serialize();
@@ -128,6 +194,21 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
     obj->set("blockId", _impl->block->getId().toStdString());
     obj->set("width", _impl->graphicsWidget->size().width());
     obj->set("height", _impl->graphicsWidget->size().height());
+
+    //query the widget state
+    auto state = this->saveWidgetState();
+
+    //save the widget state to JSON
+    if (state.isValid())
+    {
+        QByteArray data;
+        QDataStream ds(&data, QIODevice::WriteOnly);
+        ds << state;
+        data = data.toBase64();
+        obj->set("state", std::string(data.data(), data.size()));
+        _impl->widgetState = state; //stash
+    }
+
     return obj;
 }
 
@@ -136,12 +217,15 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
     auto editor = this->draw()->getGraphEditor();
 
     //locate the associated block
-    auto blockId = QString::fromStdString(obj->getValue<std::string>("blockId"));
-    auto graphObj = editor->getObjectById(blockId, GRAPH_BLOCK);
-    if (graphObj == nullptr) throw Pothos::NotFoundException("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
-    auto graphBlock = dynamic_cast<GraphBlock *>(graphObj);
-    assert(graphBlock != nullptr);
-    this->setGraphBlock(graphBlock);
+    if (not _impl->block)
+    {
+        auto blockId = QString::fromStdString(obj->getValue<std::string>("blockId"));
+        auto graphObj = editor->getObjectById(blockId, GRAPH_BLOCK);
+        if (graphObj == nullptr) throw Pothos::NotFoundException("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
+        auto graphBlock = dynamic_cast<GraphBlock *>(graphObj);
+        assert(graphBlock != nullptr);
+        this->setGraphBlock(graphBlock);
+    }
 
     if (obj->has("width") and obj->has("height"))
     {
@@ -149,6 +233,21 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
             obj->getValue<int>("width"),
             obj->getValue<int>("height"));
     }
+
+    //restore the widget state from JSON
+    const auto state = obj->optValue<std::string>("state", "");
+    if (state.empty()) _impl->widgetState.clear();
+    else
+    {
+        auto data = QByteArray(state.data(), state.size());
+        data = QByteArray::fromBase64(data);
+        QDataStream ds(&data, QIODevice::ReadOnly);
+        ds >> _impl->widgetState;
+    }
+
+    //restore the widgets state when there is an active widget
+    //otherwise this is also called in handleBlockEvalDone()
+    this->restoreWidgetState(_impl->widgetState);
 
     GraphObject::deserialize(obj);
 }

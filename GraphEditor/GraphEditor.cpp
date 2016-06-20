@@ -25,6 +25,7 @@
 #include <QClipboard>
 #include <QMimeData>
 #include <QRegExp>
+#include <QTimer>
 #include <fstream>
 #include <iostream>
 #include <cassert>
@@ -37,6 +38,9 @@
 #include <Pothos/Exception.hpp>
 #include <algorithm> //min/max
 
+//! How often to check for graph widget changes
+static const size_t POLL_WIDGET_CHANGES_MS = 1000;
+
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _logger(Poco::Logger::get("PothosGui.GraphEditor")),
@@ -45,7 +49,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
     _evalEngine(new EvalEngine(this)),
-    _isTopologyActive(false)
+    _isTopologyActive(false),
+    _pollWidgetTimer(new QTimer(this))
 {
     this->setDocumentMode(true);
     this->setMovable(true);
@@ -95,6 +100,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), _parentTabWidget->parent(), SLOT(handleNewTitleSubtext(const QString &)));
+    connect(_pollWidgetTimer, SIGNAL(timeout(void)), this, SLOT(handlePollWidgetTimer(void)));
+    _pollWidgetTimer->start(POLL_WIDGET_CHANGES_MS);
 }
 
 GraphEditor::~GraphEditor(void)
@@ -109,6 +116,12 @@ GraphEditor::~GraphEditor(void)
 
 void GraphEditor::stopEvaluation(void)
 {
+    //stash the state of all graphical widgets
+    for (auto obj : this->getGraphObjects(GRAPH_WIDGET))
+    {
+        obj->serialize(); //causes internal stashing
+    }
+
     delete _evalEngine;
     _evalEngine = nullptr;
 }
@@ -1147,4 +1160,34 @@ const QStringList &GraphEditor::listGlobals(void) const
 void GraphEditor::commitGlobalsChanges(void)
 {
     this->updateExecutionEngine();
+}
+
+void GraphEditor::handlePollWidgetTimer(void)
+{
+    //get a list of graph widgets changed since the last state
+    QStringList changedIds;
+    for (auto obj : this->getGraphObjects(GRAPH_WIDGET))
+    {
+        auto graphWidget = dynamic_cast<const GraphWidget *>(obj);
+        assert(graphWidget != nullptr);
+        if (not graphWidget->didWidgetStateChange()) continue;
+        auto graphBlock = graphWidget->getGraphBlock();
+        if (graphBlock == nullptr) continue;
+        changedIds.append(graphBlock->getId());
+    }
+    if (changedIds.isEmpty()) return;
+
+    //if the previous state is a widget change and its not saved
+    //perform state compressions by combining and removing this one
+    auto currentState = _stateManager->current();
+    if (currentState.extraInfo.isValid() and _stateManager->isPreviousAvailable() and not _stateManager->isCurrentSaved())
+    {
+        for (const auto &obj : currentState.extraInfo.toStringList()) changedIds.append(obj);
+        _stateManager->resetTo(_stateManager->getCurrentIndex()-1);
+    }
+    changedIds = changedIds.toSet().toList(); //unique list
+
+    //emit a new graph state for the change
+    const auto desc = (changedIds.size() == 1)? changedIds.front() : tr("multiple widgets");
+    handleStateChange(GraphState("edit-select", tr("Modified %1").arg(desc), changedIds));
 }
