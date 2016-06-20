@@ -1176,9 +1176,10 @@ void GraphEditor::handlePollWidgetTimer(void)
     }
     if (changedIds.isEmpty()) return;
 
-    //if the previous state as a widget change, remove and combine
+    //if the previous state is a widget change and its not saved
+    //perform state compressions by combining and removing this one
     auto currentState = _stateManager->current();
-    if (currentState.extraInfo.isValid() and _stateManager->isPreviousAvailable())
+    if (currentState.extraInfo.isValid() and _stateManager->isPreviousAvailable() and not _stateManager->isCurrentSaved())
     {
         for (const auto &obj : currentState.extraInfo.toStringList()) changedIds.append(obj);
         _stateManager->resetTo(_stateManager->getCurrentIndex()-1);
@@ -1187,6 +1188,5 @@ void GraphEditor::handlePollWidgetTimer(void)
 
     //emit a new graph state for the change
     const auto desc = (changedIds.size() == 1)? changedIds.front() : tr("multiple widgets");
-    GraphState state("edit-select", tr("Modified %1").arg(desc));
     handleStateChange(GraphState("edit-select", tr("Modified %1").arg(desc), changedIds));
 }

@@ -167,8 +167,20 @@ void GraphWidget::restoreWidgetState(const QVariant &state)
 
 bool GraphWidget::didWidgetStateChange(void) const
 {
+    //query the current state
+    //declare empty states/not implemented as no change
     auto state = this->saveWidgetState();
     if (not state.isValid()) return false;
+
+    //previous was not valid, don't declare this as changed
+    //but stash the current state so we can check next time
+    if (not _impl->widgetState.isValid())
+    {
+        _impl->widgetState = state;
+        return false;
+    }
+
+    //perform qvariant comparison for change
     return state != _impl->widgetState;
 }
 
