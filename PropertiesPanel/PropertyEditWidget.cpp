@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PropertyEditWidget.hpp"
@@ -60,7 +60,7 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
 
     //layout internal widgets
     auto editLayout = new QVBoxLayout(this);
-    editLayout->setContentsMargins(0, 0, 0, 0);
+    editLayout->setContentsMargins(QMargins());
     editLayout->addWidget(_editWidget);
     editLayout->addWidget(_errorLabel);
 

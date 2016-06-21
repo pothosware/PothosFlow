@@ -281,7 +281,7 @@ void GraphPropertiesPanel::createVariableEditWidget(const QString &name)
     auto &formData = _varToFormData[name];
     auto formWidget = new QWidget(this);
     auto editLayout = new QHBoxLayout(formWidget);
-    editLayout->setContentsMargins(0, 0, 0, 0);
+    editLayout->setContentsMargins(QMargins());
 
     //create edit widget
     const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());

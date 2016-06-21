@@ -23,7 +23,7 @@ public:
         _spinBox(nullptr)
     {
         auto layout = new QHBoxLayout(this);
-        layout->setContentsMargins(0, 0, 0, 0);
+        layout->setContentsMargins(QMargins());
 
         layout->addWidget(_comboBox);
         connect(_comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));

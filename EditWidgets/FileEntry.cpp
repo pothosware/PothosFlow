@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -23,7 +23,7 @@ public:
         _edit(new QLineEdit(this))
     {
         auto layout = new QHBoxLayout(this);
-        layout->setMargin(0);
+        layout->setContentsMargins(QMargins());
         layout->addWidget(_edit, 1);
         layout->addWidget(_button, 0, Qt::AlignRight);
         _button->setMaximumWidth(20);
