@@ -178,11 +178,15 @@ static bool isValid(const QString &value)
     if (value == "\"\"") return false;
     if (value == "''") return false;
     if (value == "0") return false;
-    if (value == "0.0") return false;
     if (value == "{}") return false;
     if (value == "[]") return false;
     if (value == "()") return false;
     if (value == "false") return false;
+
+    //check various forms of floating point 0.00, 0e0, etc...
+    bool ok = false;
+    if (value.toDouble(&ok) == 0.0 and ok) return false;
+
     return true;
 }
 
