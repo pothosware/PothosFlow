@@ -6,7 +6,7 @@
 #include "PropertyEditWidget.hpp"
 #include "GraphPropertiesPanel.hpp"
 #include "GraphEditor/GraphEditor.hpp"
-#include <Pothos/Proxy.hpp>
+#include <Pothos/Util/EvalEnvironment.hpp>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
@@ -244,8 +244,7 @@ void GraphPropertiesPanel::updateAllVariableForms(void)
         _varsFormLayout->removeWidget(formData.formWidget);
     }
 
-    auto env = Pothos::ProxyEnvironment::make("managed");
-    auto evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
+    Pothos::Util::EvalEnvironment evalEnv;
 
     for (const auto &name : _graphEditor->listGlobals())
     {
@@ -258,10 +257,10 @@ void GraphPropertiesPanel::updateAllVariableForms(void)
         try
         {
             const auto expr = _graphEditor->getGlobalExpression(name).toStdString();
-            evalEnv.callVoid("registerConstantExpr", name.toStdString(), expr);
-            auto obj = evalEnv.callProxy("eval", name.toStdString());
-            const auto typeStr = obj.call<std::string>("getTypeString");
-            const auto toString = obj.call<std::string>("toString");
+            evalEnv.registerConstantExpr(name.toStdString(), expr);
+            auto obj = evalEnv.eval(name.toStdString());
+            const auto typeStr = obj.getTypeString();
+            const auto toString = obj.toString();
             editWidget->setTypeStr(typeStr);
             editWidget->setErrorMsg(""); //clear errors
             editWidget->setToolTip(QString::fromStdString(toString));
