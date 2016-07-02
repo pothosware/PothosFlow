@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -54,18 +54,18 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
  **********************************************************************/
 void GraphEditor::loadState(std::istream &is)
 {
-    Poco::JSON::Parser p; p.parse(is);
+    const auto result = Poco::JSON::Parser().parse(is);
 
     //extract topObj, old style is page array only
     Poco::JSON::Object::Ptr topObj;
-    if (p.getHandler()->asVar().type() == typeid(Poco::JSON::Array::Ptr))
+    if (result.type() == typeid(Poco::JSON::Array::Ptr))
     {
         topObj = new Poco::JSON::Object();
-        topObj->set("pages", p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>());
+        topObj->set("pages", result.extract<Poco::JSON::Array::Ptr>());
     }
     else
     {
-        topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        topObj = result.extract<Poco::JSON::Object::Ptr>();
     }
 
     //extract global variables

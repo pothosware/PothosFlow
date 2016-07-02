@@ -114,8 +114,8 @@ void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 void GraphDraw::dropEvent(QDropEvent *event)
 {
     const auto &byteArray = event->mimeData()->data("text/json/pothos_block");
-    Poco::JSON::Parser p; p.parse(std::string(byteArray.constData(), byteArray.size()));
-    const auto blockDesc = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(std::string(byteArray.constData(), byteArray.size()));
+    const auto blockDesc = result.extract<Poco::JSON::Object::Ptr>();
 
     this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()));
     event->acceptProposedAction();

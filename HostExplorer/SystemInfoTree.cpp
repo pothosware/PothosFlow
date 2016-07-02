@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/SystemInfoTree.hpp"
@@ -25,8 +25,8 @@ static InfoResult getInfo(const std::string &uriStr)
         info.hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
         info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
-        Poco::JSON::Parser p; p.parse(deviceInfo);
-        info.deviceInfo = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(deviceInfo);
+        info.deviceInfo = result.extract<Poco::JSON::Array::Ptr>();
     }
     POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {

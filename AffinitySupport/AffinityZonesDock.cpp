@@ -151,8 +151,8 @@ AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneNam
     auto json = settings->value("AffinityZones/zones/"+zoneName).toString();
     if (not json.isEmpty()) try
     {
-        Poco::JSON::Parser p; p.parse(json.toStdString());
-        auto dataObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+        const auto result = Poco::JSON::Parser().parse(json.toStdString());
+        auto dataObj = result.extract<Poco::JSON::Object::Ptr>();
         editor->loadFromConfig(dataObj);
     }
     catch (const Poco::JSON::JSONException &ex)

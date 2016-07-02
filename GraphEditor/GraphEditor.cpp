@@ -585,8 +585,8 @@ void GraphEditor::handlePaste(void)
     const auto data = mimeData->data("text/json/pothos_object_array");
     const std::string dataStr(data.constData(), data.size());
     std::istringstream iss(dataStr);
-    Poco::JSON::Parser p; p.parse(iss);
-    auto graphObjects = p.getHandler()->asVar().extract<Poco::JSON::Array::Ptr>();
+    const auto result = Poco::JSON::Parser().parse(iss);
+    auto graphObjects = result.extract<Poco::JSON::Array::Ptr>();
     assert(graphObjects);
 
     //rewrite ids

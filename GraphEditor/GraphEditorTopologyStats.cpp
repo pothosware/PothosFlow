@@ -84,8 +84,8 @@ private slots:
         }
         else
         {
-            Poco::JSON::Parser p; p.parse(jsonStats);
-            auto topObj = p.getHandler()->asVar().extract<Poco::JSON::Object::Ptr>();
+            const auto result = Poco::JSON::Parser().parse(jsonStats);
+            auto topObj = result.extract<Poco::JSON::Object::Ptr>();
             std::vector<std::string> names; topObj->getNames(names);
             for (const auto &name : names)
             {
