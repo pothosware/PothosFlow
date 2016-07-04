@@ -5,6 +5,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/Constants.hpp"
 #include "EvalEngine/TopologyEval.hpp"
+#include "AffinitySupport/AffinityZonesDock.hpp"
 #include <Poco/JSON/Array.h>
 #include <Poco/JSON/Object.h>
 #include <fstream>
@@ -30,6 +31,10 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
     }
     if (globals.size() > 0) topObj.set("globals", globals);
 
+    //thread pools (filled in by blocks loop)
+    Poco::JSON::Object threadPools;
+    auto affinityZones = AffinityZonesDock::global();
+
     //blocks
     Poco::JSON::Array blocks;
     std::map<size_t, const GraphBlock*> uidToBlock;
@@ -45,7 +50,14 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
         blockObj.set("id", block->getId().toStdString());
         blockObj.set("path", block->getBlockDescPath());
 
-        //TODO threadPool from block->getAffinityZone()
+        //setup the thread pool when specified
+        const auto affinityZone = block->getAffinityZone();
+        if (not affinityZone.isEmpty() and affinityZone != "gui")
+        {
+            const auto config = affinityZones->zoneToConfig(affinityZone);
+            threadPools.set(affinityZone.toStdString(), config);
+            blockObj.set("threadPool", affinityZone.toStdString());
+        }
 
         //block description args are in the same format
         const auto desc = block->getBlockDesc();
@@ -77,6 +89,7 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
         blocks.add(blockObj);
     }
     topObj.set("blocks", blocks);
+    if (threadPools.size() > 0) topObj.set("threadPools", threadPools);
 
     //connections
     Poco::JSON::Array connections;
