@@ -1023,12 +1023,6 @@ void GraphEditor::load(void)
     this->render();
 }
 
-void GraphEditor::exportToJSONTopology(const QString &path)
-{
-    poco_information_f1(_logger, "Exporting %s", path.toStdString());
-    //TODO
-}
-
 void GraphEditor::render(void)
 {
     //generate a title

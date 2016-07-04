@@ -53,7 +53,7 @@ public:
     void load(void);
 
     //! Export the design to JSON topology format give the file path
-    void exportToJSONTopology(const QString &path);
+    void exportToJSONTopology(const QString &fileName);
 
     const QString &getCurrentFilePath(void) const
     {
