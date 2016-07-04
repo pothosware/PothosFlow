@@ -191,6 +191,7 @@ void GraphEditor::updateEnabledActions(void)
     actions->redoAction->setEnabled(_stateManager->isSubsequentAvailable());
     actions->saveAction->setEnabled(not _stateManager->isCurrentSaved());
     actions->reloadAction->setEnabled(not this->getCurrentFilePath().isEmpty());
+    actions->exportAction->setEnabled(not this->getCurrentFilePath().isEmpty());
     actions->activateTopologyAction->setChecked(_isTopologyActive);
 
     //can we paste something from the clipboard?
@@ -1020,6 +1021,12 @@ void GraphEditor::load(void)
     _stateManager->saveCurrent();
     this->updateGraphEditorMenus();
     this->render();
+}
+
+void GraphEditor::exportToJSONTopology(const QString &path)
+{
+    poco_information_f1(_logger, "Exporting %s", path.toStdString());
+    //TODO
 }
 
 void GraphEditor::render(void)

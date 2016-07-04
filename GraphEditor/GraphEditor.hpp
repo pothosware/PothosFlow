@@ -52,6 +52,9 @@ public:
     //! Deserializes the editor from the file.
     void load(void);
 
+    //! Export the design to JSON topology format give the file path
+    void exportToJSONTopology(const QString &path);
+
     const QString &getCurrentFilePath(void) const
     {
         return _currentFilePath;

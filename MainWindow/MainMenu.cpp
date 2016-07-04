@@ -27,6 +27,9 @@ MainMenu::MainMenu(QMainWindow *parent, MainActions *actions):
     fileMenu->addAction(actions->saveAsAction);
     fileMenu->addAction(actions->saveAllAction);
     fileMenu->addAction(actions->reloadAction);
+    exportMenu = fileMenu->addMenu(makeIconFromTheme("document-export"), tr("E&xport"));
+    exportMenu->addAction(actions->exportAction);
+    exportMenu->addAction(actions->exportAsAction);
     fileMenu->addAction(actions->closeAction);
     fileMenu->addSeparator();
     fileMenu->addAction(actions->exitAction);

@@ -34,6 +34,8 @@ private slots:
     void handleClose(int);
     void handleClose(GraphEditor *editor);
     void handleExit(QCloseEvent *event);
+    void handleExport(void);
+    void handleExportAs(void);
 
 private:
     void doReloadDialog(GraphEditor *editor);
