@@ -67,4 +67,6 @@ public:
     QAction *decrementAction;
     QAction *fullScreenViewAction;
     QAction *reloadPluginsAction;
+    QAction *exportAction;
+    QAction *exportAsAction;
 };

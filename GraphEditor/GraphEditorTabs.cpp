@@ -39,6 +39,8 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
     connect(actions->saveAllAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAll(void)));
     connect(actions->reloadAction, SIGNAL(triggered(void)), this, SLOT(handleReload(void)));
     connect(actions->closeAction, SIGNAL(triggered(void)), this, SLOT(handleClose(void)));
+    connect(actions->exportAction, SIGNAL(triggered(void)), this, SLOT(handleExport(void)));
+    connect(actions->exportAsAction, SIGNAL(triggered(void)), this, SLOT(handleExportAs(void)));
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(handleClose(int)));
 }
 
@@ -134,22 +136,21 @@ void GraphEditorTabs::handleSave(GraphEditor *editor)
     else editor->save();
 }
 
+static QString defaultSavePath(void)
+{
+    const auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pth";
+    assert(!defaultPath.isEmpty());
+    return QDir(defaultPath).absolutePath();
+}
+
 void GraphEditorTabs::handleSaveAs(void)
 {
     auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
 
-    QString lastPath;
-    if(editor->getCurrentFilePath().isEmpty())
-    {
-        auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pth";
-        assert(!defaultPath.isEmpty());
-        lastPath = defaultPath;
-    }
-    else
-    {
-        lastPath = editor->getCurrentFilePath();
-    }
+    QString lastPath = editor->getCurrentFilePath();
+    if (lastPath.isEmpty()) lastPath = defaultSavePath();
+
     this->setCurrentWidget(editor);
     auto filePath = QFileDialog::getSaveFileName(this,
                         tr("Save As"),
@@ -246,6 +247,40 @@ void GraphEditorTabs::handleExit(QCloseEvent *event)
     }
 
     event->accept();
+}
+
+void GraphEditorTabs::handleExport(void)
+{
+    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    assert(editor != nullptr);
+
+    auto path = editor->getCurrentFilePath();
+    if (path.endsWith(".pth")) path = path.left(path.size()-4);
+    path += ".json";
+
+    editor->exportToJSONTopology(path);
+}
+
+void GraphEditorTabs::handleExportAs(void)
+{
+    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    assert(editor != nullptr);
+
+    QString lastPath = editor->getCurrentFilePath();
+    if (lastPath.isEmpty()) lastPath = defaultSavePath();
+    if (lastPath.endsWith(".pth")) lastPath = lastPath.left(lastPath.size()-4);
+    lastPath += ".json";
+
+    this->setCurrentWidget(editor);
+    auto filePath = QFileDialog::getSaveFileName(this,
+                        tr("Export As"),
+                        lastPath,
+                        tr("Exported JSON Topologies (*.json)"));
+    if (filePath.isEmpty()) return;
+    if (not filePath.endsWith(".json")) filePath += ".json";
+    filePath = QDir(filePath).absolutePath();
+
+    editor->exportToJSONTopology(filePath);
 }
 
 void GraphEditorTabs::loadState(void)

@@ -167,4 +167,12 @@ MainActions::MainActions(QObject *parent):
 
     reloadPluginsAction = new QAction(makeIconFromTheme("view-refresh"), tr("Reload plugin registry"), this);
     reloadPluginsAction->setStatusTip(tr("Stop evaluation, reload plugins, resume evaluation"));
+
+    exportAction = new QAction(makeIconFromTheme("document-export"), tr("Export to JSON topology"), this);
+    exportAction->setStatusTip(tr("Export the current design to the JSON topology format"));
+    exportAction->setShortcut(QKeySequence("CTRL+E"));
+
+    exportAsAction = new QAction(makeIconFromTheme("document-export"), tr("Export to JSON topology as..."), this);
+    exportAsAction->setStatusTip(tr("Export the current design to the JSON topology format as..."));
+    exportAsAction->setShortcut(QKeySequence("CTRL+SHIFT+E"));
 }

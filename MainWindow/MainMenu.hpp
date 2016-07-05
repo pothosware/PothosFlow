@@ -23,6 +23,7 @@ public:
     MainMenu(QMainWindow *parent, MainActions *actions);
 
     QMenu *fileMenu;
+    QMenu *exportMenu;
     QMenu *editMenu;
     QMenu *affinityZoneMenu;
     QMenu *moveGraphObjectsMenu;

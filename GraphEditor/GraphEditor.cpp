@@ -191,6 +191,7 @@ void GraphEditor::updateEnabledActions(void)
     actions->redoAction->setEnabled(_stateManager->isSubsequentAvailable());
     actions->saveAction->setEnabled(not _stateManager->isCurrentSaved());
     actions->reloadAction->setEnabled(not this->getCurrentFilePath().isEmpty());
+    actions->exportAction->setEnabled(not this->getCurrentFilePath().isEmpty());
     actions->activateTopologyAction->setChecked(_isTopologyActive);
 
     //can we paste something from the clipboard?

@@ -15,6 +15,7 @@ MainToolBar::MainToolBar(QWidget *parent, MainActions *actions):
     this->addAction(actions->saveAsAction);
     this->addAction(actions->saveAllAction);
     this->addAction(actions->reloadAction);
+    this->addAction(actions->exportAction);
     this->addAction(actions->closeAction);
     this->addSeparator();
 
