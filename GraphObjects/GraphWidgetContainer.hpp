@@ -1,8 +1,8 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
-#include <Pothos/Config.hpp>
+#include "GraphObjects/GraphObject.hpp"
 #include <QFrame>
 #include <QPointer>
 #include <QStaticText>
@@ -16,7 +16,7 @@ class GraphWidgetContainer : public QFrame
 {
     Q_OBJECT
 public:
-    GraphWidgetContainer(QWidget *parent = nullptr);
+    GraphWidgetContainer(GraphObject *graphObject, QWidget *parent = nullptr);
 
     ~GraphWidgetContainer(void);
 
@@ -49,6 +49,7 @@ protected:
     void paintEvent(QPaintEvent *event);
 
 private:
+    GraphObject *_graphObject;
     QStaticText _gripLabel;
     QVBoxLayout *_layout;
     QWidget *_grip;

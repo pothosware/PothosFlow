@@ -1,8 +1,9 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidgetContainer.hpp"
 #include "GraphEditor/Constants.hpp"
+#include "GraphEditor/GraphDraw.hpp"
 #include <QSizeGrip>
 #include <QVBoxLayout>
 #include <QStaticText>
@@ -53,8 +54,9 @@ private:
 /***********************************************************************
  * GraphWidgetContainer implementation
  **********************************************************************/
-GraphWidgetContainer::GraphWidgetContainer(QWidget *parent):
+GraphWidgetContainer::GraphWidgetContainer(GraphObject *graphObject, QWidget *parent):
     QFrame(parent),
+    _graphObject(graphObject),
     _layout(new QVBoxLayout(this)),
     _grip(new MySizeGrip(this)),
     _widget(nullptr),
@@ -123,12 +125,14 @@ void GraphWidgetContainer::enterEvent(QEvent *event)
 {
     this->updateShowGrip();
     QWidget::enterEvent(event);
+    _graphObject->draw()->render();
 }
 
 void GraphWidgetContainer::leaveEvent(QEvent *event)
 {
     this->updateShowGrip();
     QWidget::leaveEvent(event);
+    _graphObject->draw()->render();
 }
 
 void GraphWidgetContainer::updateShowGrip(void)

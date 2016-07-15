@@ -22,8 +22,8 @@
  **********************************************************************/
 struct GraphWidget::Impl
 {
-    Impl(QGraphicsItem *parent):
-        container(new GraphWidgetContainer()),
+    Impl(GraphWidget *parent):
+        container(new GraphWidgetContainer(parent/*reference*/)),
         graphicsWidget(new QGraphicsProxyWidget(parent)),
         hasStateInterface(false)
     {
