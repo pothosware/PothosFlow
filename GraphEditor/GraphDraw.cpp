@@ -40,6 +40,8 @@ GraphDraw::GraphDraw(QWidget *parent):
     this->scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
     this->scene()->setBackgroundBrush(QColor(GraphDrawBackgroundColor));
     this->setDragMode(QGraphicsView::RubberBandDrag);
+    this->setCacheMode(QGraphicsView::CacheNone);
+    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     this->ensureVisible(QRectF()); //set scrolls to 0, 0 position
 
     //set high quality rendering
