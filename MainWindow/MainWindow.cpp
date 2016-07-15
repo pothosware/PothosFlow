@@ -57,6 +57,7 @@ MainWindow::MainWindow(QWidget *parent):
     _actions = new MainActions(this);
     _splash->postMessage(tr("Creating toolbar..."));
     auto mainToolBar = new MainToolBar(this, _actions);
+    this->addToolBar(mainToolBar);
     _splash->postMessage(tr("Creating menus..."));
     auto mainMenu = new MainMenu(this, _actions);
 
