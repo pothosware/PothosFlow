@@ -13,5 +13,6 @@ static inline QFormLayout *makeFormLayout(QWidget *parent = nullptr)
     layout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     layout->setFormAlignment(Qt::AlignLeft | Qt::AlignTop);
     layout->setLabelAlignment(Qt::AlignLeft);
+    layout->setContentsMargins(6, 6, 6, 6);
     return layout;
 }
