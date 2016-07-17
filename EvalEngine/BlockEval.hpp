@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -50,6 +50,7 @@ struct BlockStatus
     QStringList blockErrorMsgs;
     Poco::JSON::Array::Ptr inPortDesc;
     Poco::JSON::Array::Ptr outPortDesc;
+    Poco::JSON::Object::Ptr overlayDesc;
 };
 
 class BlockEval : public QObject

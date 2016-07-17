@@ -8,6 +8,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
+#include <Poco/JSON/Parser.h>
 #include <QWidget>
 #include <cassert>
 #include <iostream>
@@ -233,6 +234,25 @@ bool BlockEval::evaluationProcedure(void)
         _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
         _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
         _queryPortDesc = false;
+
+        //query description overlay as well
+        try
+        {
+            const auto overlayStr = proxyBlock.call<std::string>("overlay");
+            const auto result = Poco::JSON::Parser().parse(overlayStr);
+            _lastBlockStatus.overlayDesc = result.extract<Poco::JSON::Object::Ptr>();
+        }
+        catch (const Poco::Exception &ex)
+        {
+            poco_warning_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"),
+                "Failed to parse JSON description overlay from %s: %s",
+                _newBlockInfo.id.toStdString(), ex.displayText());
+        }
+        catch (...)
+        {
+            //the function may not exist, ignore error
+        }
+
     }
 
     //parser errors report
