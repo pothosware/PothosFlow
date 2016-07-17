@@ -118,6 +118,23 @@ Poco::JSON::Object::Ptr GraphBlock::getParamDesc(const QString &key) const
         const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
         if (param->getValue<std::string>("key") == key.toStdString()) paramDesc = param;
     }
+
+    //try to apply the overlay if it exists
+    const auto overlayDesc = this->getOverlayDesc();
+    if (paramDesc and overlayDesc and overlayDesc->isArray("params"))
+    {
+        const auto key = paramDesc->optValue<std::string>("key", "");
+        for (const auto &paramObj : *overlayDesc->getArray("params"))
+        {
+            const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
+            if (param->optValue<std::string>("key", "") != key) continue;
+            for (const auto &pair : *param)
+            {
+                paramDesc->set(pair.first, pair.second);
+            }
+        }
+    }
+
     return paramDesc;
 }
 
