@@ -39,6 +39,18 @@ const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
     return _impl->blockDesc;
 }
 
+void GraphBlock::setOverlayDesc(const Poco::JSON::Object::Ptr &desc)
+{
+    assert(_impl);
+    _impl->overlayDesc = desc;
+}
+
+const Poco::JSON::Object::Ptr &GraphBlock::getOverlayDesc(void) const
+{
+    assert(_impl);
+    return _impl->overlayDesc;
+}
+
 bool GraphBlock::isGraphWidget(void) const
 {
     return this->getBlockDesc()->optValue<std::string>("mode", "") == "graphWidget";

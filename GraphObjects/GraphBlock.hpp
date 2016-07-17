@@ -30,6 +30,10 @@ public:
     //! set the output ports description from JSON array
     void setOutputPortDesc(const Poco::JSON::Array::Ptr &);
 
+    //! set the dynamically queried block description overlay
+    void setOverlayDesc(const Poco::JSON::Object::Ptr &);
+    const Poco::JSON::Object::Ptr &getOverlayDesc(void) const;
+
     //! Does this graph block represent a display widget
     bool isGraphWidget(void) const;
     QWidget *getGraphWidget(void) const;

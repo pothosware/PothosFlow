@@ -341,6 +341,7 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
         block->setOutputPortDesc(status.outPortDesc);
     }
     block->setGraphWidget(status.widget);
+    block->setOverlayDesc(status.overlayDesc);
 
     block->update(); //cause redraw after changes
     emit block->evalDoneEvent(); //trigger done event subscribers
