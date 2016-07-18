@@ -42,13 +42,6 @@ MainWindow::MainWindow(QWidget *parent):
     _splash->postMessage(tr("Loading Pothos plugins..."));
     Pothos::init();
 
-    #ifdef __APPLE__
-    //enable the menu bar - since its not showing up as the global menu
-    this->menuBar()->setNativeMenuBar(false);
-    //enable the title bar - otherwise its invisible
-    this->setUnifiedTitleAndToolBarOnMac(true);
-    #endif //__APPLE__
-
     this->setMinimumSize(800, 600);
     this->setWindowTitle("Pothos GUI");
 

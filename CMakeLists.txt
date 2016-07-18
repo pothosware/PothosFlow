@@ -92,10 +92,17 @@ if (WIN32)
     set(CMAKE_RC_COMPILE_OBJECT
         "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
     list(APPEND SOURCES ${RES_FILES})
-endif(WIN32)
+endif (WIN32)
+
+if (APPLE)
+    set(ICON_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/icons/PothosGui.icns)
+    set_source_files_properties(${ICON_SOURCE}
+        PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    list(APPEND SOURCES ${ICON_SOURCE})
+endif (APPLE)
 
 ########################################################################
-# GUI Main App
+# sources list
 ########################################################################
 list(APPEND SOURCES
     PothosGui.cpp
@@ -169,18 +176,47 @@ list(APPEND SOURCES
     EvalEngine/TopologyTraversal.cpp
 )
 
+########################################################################
+# build executable
+########################################################################
+
 #under MSVC build a win32 app so a console is not launched with the GUI exe
 if (MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "/entry:mainCRTStartup ${CMAKE_EXE_LINKER_FLAGS}")
     add_executable(PothosGui WIN32 ${SOURCES})
-else (MSVC)
+
+#under OSX build a bundle so the menu integration works properly
+#this also creates a launcher with an icon when opened in finder
+elseif (APPLE)
+    add_executable(PothosGui MACOSX_BUNDLE ${SOURCES})
+    string(TIMESTAMP Pothos_BUNDLE_VERSION "%Y.%m.%d")
+    set_target_properties(PothosGui PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_INFO_STRING "Graphical designer for the Pothos data-flow framework"
+        MACOSX_BUNDLE_BUNDLE_NAME "PothosGui"
+        MACOSX_BUNDLE_BUNDLE_VERSION "${Pothos_BUNDLE_VERSION}"
+        MACOSX_BUNDLE_LONG_VERSION_STRING "${Pothos_VERSION}"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "${Pothos_VERSION_MAJOR}.${Pothos_VERSION_MINOR}.${Pothos_VERSION_PATCH}"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.pothosware.pothosgui"
+        MACOSX_BUNDLE_ICON_FILE "PothosGui.icns"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2013-2016 Josh Blum"
+    )
+    #provide PothosGui command line script which calls into the bundle
+    install(
+        PROGRAMS PothosGuiOSX.sh
+        RENAME PothosGui
+        DESTINATION bin)
+
+#otherwise build a standard UNIX style executable
+else ()
     add_executable(PothosGui ${SOURCES})
-endif (MSVC)
+endif ()
 
 target_link_libraries(PothosGui ${Pothos_LIBRARIES})
 
 install(
     TARGETS PothosGui
+    BUNDLE DESTINATION bin
     RUNTIME DESTINATION bin
     COMPONENT pothos_gui
 )
