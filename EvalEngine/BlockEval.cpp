@@ -227,16 +227,12 @@ bool BlockEval::evaluationProcedure(void)
             tr("'%1' is not a legal ID").arg(_newBlockInfo.id));
     }
 
-    //load its port info
-    if (evalSuccess and _queryPortDesc) try
+    //query description overlay, even if in error
+    //the overlay could be valuable even when a setup call fails
+    if (_queryPortDesc)
     {
         auto proxyBlock = this->getProxyBlock();
-        _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
-        _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
-        _queryPortDesc = false;
-
-        //query description overlay as well
-        try
+        if (proxyBlock) try
         {
             const auto overlayStr = proxyBlock.call<std::string>("overlay");
             const auto result = Poco::JSON::Parser().parse(overlayStr);
@@ -252,7 +248,15 @@ bool BlockEval::evaluationProcedure(void)
         {
             //the function may not exist, ignore error
         }
+    }
 
+    //load its port info
+    if (evalSuccess and _queryPortDesc) try
+    {
+        auto proxyBlock = this->getProxyBlock();
+        _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
+        _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
+        _queryPortDesc = false;
     }
 
     //parser errors report
