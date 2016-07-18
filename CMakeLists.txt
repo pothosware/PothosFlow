@@ -98,7 +98,7 @@ if (APPLE)
 endif (APPLE)
 
 ########################################################################
-# GUI Main App
+# sources list
 ########################################################################
 list(APPEND SOURCES
     PothosGui.cpp
@@ -172,10 +172,17 @@ list(APPEND SOURCES
     EvalEngine/TopologyTraversal.cpp
 )
 
+########################################################################
+# build executable
+########################################################################
+
 #under MSVC build a win32 app so a console is not launched with the GUI exe
 if (MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "/entry:mainCRTStartup ${CMAKE_EXE_LINKER_FLAGS}")
     add_executable(PothosGui WIN32 ${SOURCES})
+
+#under OSX build a bundle so the menu integration works properly
+#this also creates a launcher with an icon when opened in finder
 elseif (APPLE)
     add_executable(PothosGui MACOSX_BUNDLE ${SOURCES})
     string(TIMESTAMP Pothos_BUNDLE_VERSION "%Y.%m.%d")
@@ -190,6 +197,13 @@ elseif (APPLE)
         MACOSX_BUNDLE_ICON_FILE "PothosGui.icns"
         MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2013-2016 Josh Blum"
     )
+    #provide PothosGui command line script which calls into the bundle
+    install(
+        PROGRAMS PothosGuiOSX.sh
+        RENAME PothosGui
+        DESTINATION bin)
+
+#otherwise build a standard UNIX style executable
 else ()
     add_executable(PothosGui ${SOURCES})
 endif ()
