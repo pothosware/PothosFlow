@@ -202,10 +202,10 @@ elseif (APPLE)
         MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2013-2016 Josh Blum"
     )
     #provide PothosGui command line script which calls into the bundle
-    install(
-        PROGRAMS PothosGuiOSX.sh
-        RENAME PothosGui
-        DESTINATION bin)
+    configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/PothosGuiOSX.sh
+        ${CMAKE_CURRENT_BINARY_DIR}/PothosGui @ONLY)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/PothosGui DESTINATION bin)
 
 #otherwise build a standard UNIX style executable
 else ()
@@ -216,7 +216,7 @@ target_link_libraries(PothosGui ${Pothos_LIBRARIES})
 
 install(
     TARGETS PothosGui
-    BUNDLE DESTINATION bin
+    BUNDLE DESTINATION .
     RUNTIME DESTINATION bin
     COMPONENT pothos_gui
 )
