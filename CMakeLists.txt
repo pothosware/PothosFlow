@@ -180,6 +180,8 @@ list(APPEND SOURCES
 # build executable
 ########################################################################
 
+set(BUNDLE_DESTINATION bin CACHE STRING "OSX bundle destination")
+
 #under MSVC build a win32 app so a console is not launched with the GUI exe
 if (MSVC)
     set(CMAKE_EXE_LINKER_FLAGS "/entry:mainCRTStartup ${CMAKE_EXE_LINKER_FLAGS}")
@@ -202,6 +204,10 @@ elseif (APPLE)
         MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2013-2016 Josh Blum"
     )
     #provide PothosGui command line script which calls into the bundle
+    set(ABSOLUTE_BUNDLE_DESTINATION ${BUNDLE_DESTINATION})
+    if (NOT IS_ABSOLUTE "${BUNDLE_DESTINATION}")
+        set(ABSOLUTE_BUNDLE_DESTINATION ${CMAKE_INSTALL_PREFIX}/${BUNDLE_DESTINATION})
+    endif ()
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/PothosGuiOSX.sh
         ${CMAKE_CURRENT_BINARY_DIR}/PothosGui @ONLY)
@@ -216,7 +222,7 @@ target_link_libraries(PothosGui ${Pothos_LIBRARIES})
 
 install(
     TARGETS PothosGui
-    BUNDLE DESTINATION .
+    BUNDLE DESTINATION ${BUNDLE_DESTINATION}
     RUNTIME DESTINATION bin
     COMPONENT pothos_gui
 )
