@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -456,7 +456,7 @@ bool BlockEval::updateAllProperties(void)
             evalEnv = _newEnvironmentEval->getEval();
         }
         auto BlockEval = evalEnv.getEnvironment()->findProxy("Pothos/Util/BlockEval");
-        _blockEval = BlockEval.callProxy("new", evalEnv);
+        _blockEval = BlockEval(evalEnv);
         _lastThreadPoolEval.reset();
     }
     catch (const Pothos::Exception &ex)

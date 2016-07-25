@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ThreadPoolEval.hpp"
@@ -41,7 +41,7 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
     Pothos::ThreadPoolArgs args(ss.str());
 
     //create the thread pool
-    return env->findProxy("Pothos/ThreadPool").callProxy("new", args);
+    return env->findProxy("Pothos/ThreadPool")(args);
 }
 
 void ThreadPoolEval::update(void)
