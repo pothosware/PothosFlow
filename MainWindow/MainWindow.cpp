@@ -182,9 +182,11 @@ void MainWindow::handleShowAbout(void)
     QMessageBox::about(this, "About Pothos", QString(
         "Pothos v%1\n"
         "Install %2\n"
-        "www.pothosware.com")
+        "Config %3\n"
+        "http://www.pothosware.com")
         .arg(QString::fromStdString(Pothos::System::getLibVersion()))
-        .arg(QString::fromStdString(Pothos::System::getRootPath())));
+        .arg(QString::fromStdString(Pothos::System::getRootPath()))
+        .arg(QString::fromStdString(Pothos::System::getUserConfigPath())));
 }
 
 void MainWindow::handleShowAboutQt(void)
