@@ -183,7 +183,7 @@ void MainWindow::handleShowAbout(void)
         "Pothos v%1\n"
         "Install %2\n"
         "www.pothosware.com")
-        .arg(QString::fromStdString(Pothos::System::getApiVersion()))
+        .arg(QString::fromStdString(Pothos::System::getLibVersion()))
         .arg(QString::fromStdString(Pothos::System::getRootPath())));
 }
 
