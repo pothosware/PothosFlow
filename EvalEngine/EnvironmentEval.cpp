@@ -103,12 +103,30 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
     const auto logSource = (not _zoneName.isEmpty())? _zoneName.toStdString() : newHostUri.getHost();
     const auto syslogListenPort = Pothos::System::Logger::startSyslogListener();
     Poco::Net::SocketAddress serverAddr(env->getPeeringAddress(), syslogListenPort);
-    if (serverAddr.host().isLoopback()) serverAddr = Poco::Net::SocketAddress("localhost", syslogListenPort);
+
+    //deal with IPv6 addresses because the syslog server only binds to IPv4
     if (serverAddr.family() == Poco::Net::IPAddress::IPv6)
     {
-        poco_warning_f1(Poco::Logger::get("PothosGui.EnvironmentEval.make"),
-            "Log forwarding not supported over IPv6: %s", logSource);
-        return env;
+        //convert IPv6 mapped ports to IPv4 format when possible
+        if (serverAddr.host().isIPv4Mapped())
+        {
+            const Poco::Net::IPAddress v4Mapped(static_cast<const char *>(serverAddr.host().addr())+12, 4);
+            serverAddr = Poco::Net::SocketAddress(v4Mapped, std::stoi(syslogListenPort));
+        }
+
+        //convert an IPv4 loopback address into an IPv4 loopback address
+        else if (serverAddr.host().isLoopback())
+        {
+            serverAddr = Poco::Net::SocketAddress("127.0.0.1", syslogListenPort);
+        }
+
+        //otherwise warn because the forwarding will not work
+        else
+        {
+            poco_warning_f1(Poco::Logger::get("PothosGui.EnvironmentEval.make"),
+                "Log forwarding not supported over IPv6: %s", logSource);
+            return env;
+        }
     }
 
     //setup log delivery from the server process
