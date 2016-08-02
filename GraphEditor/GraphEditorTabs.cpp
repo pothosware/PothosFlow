@@ -87,7 +87,7 @@ void GraphEditorTabs::handleOpen(void)
     auto filePaths = QFileDialog::getOpenFileNames(this,
                         tr("Open Files"),
                         lastPath,
-                        tr("Pothos Topologies (*.pth)"));
+                        tr("Pothos Topologies (*.pothos *.pth)"));
 
     for (const auto &file : filePaths)
     {
@@ -138,7 +138,7 @@ void GraphEditorTabs::handleSave(GraphEditor *editor)
 
 static QString defaultSavePath(void)
 {
-    const auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pth";
+    const auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pothos";
     assert(!defaultPath.isEmpty());
     return QDir(defaultPath).absolutePath();
 }
@@ -155,9 +155,9 @@ void GraphEditorTabs::handleSaveAs(void)
     auto filePath = QFileDialog::getSaveFileName(this,
                         tr("Save As"),
                         lastPath,
-                        tr("Pothos Topologies (*.pth)"));
+                        tr("Pothos Topologies (*.pothos *.pth)"));
     if (filePath.isEmpty()) return;
-    if (not filePath.endsWith(".pth")) filePath += ".pth";
+    if (not filePath.endsWith(".pothos")) filePath += ".pothos";
     filePath = QDir(filePath).absolutePath();
     auto settings = MainSettings::global();
     settings->setValue("GraphEditorTabs/lastFile", filePath);
@@ -255,6 +255,7 @@ void GraphEditorTabs::handleExport(void)
     assert(editor != nullptr);
 
     auto path = editor->getCurrentFilePath();
+    if (path.endsWith(".pothos")) path = path.left(path.size()-7);
     if (path.endsWith(".pth")) path = path.left(path.size()-4);
     path += ".json";
 
@@ -268,6 +269,7 @@ void GraphEditorTabs::handleExportAs(void)
 
     QString lastPath = editor->getCurrentFilePath();
     if (lastPath.isEmpty()) lastPath = defaultSavePath();
+    if (lastPath.endsWith(".pothos")) lastPath = lastPath.left(lastPath.size()-7);
     if (lastPath.endsWith(".pth")) lastPath = lastPath.left(lastPath.size()-4);
     lastPath += ".json";
 

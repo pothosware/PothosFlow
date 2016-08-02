@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.4.0 (pending)
 ==========================
 
+- Switch to .pothos file extension (.pth is still supported)
 - PothosGui 0.4.0 depends on libPothos 0.4.0 API additions
 - Added menu option to export design to JSON topology format
 - Added ColorPicker edit widget for parameter color selection
