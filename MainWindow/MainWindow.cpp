@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent):
     _splash->postMessage(tr("Creating message window..."));
     auto messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, messageWindowDock);
-    poco_information_f1(_logger, "Welcome to Pothos v%s", Pothos::System::getApiVersion());
+    poco_information_f1(_logger, "Welcome to Pothos v%s", Pothos::System::getLibVersion());
 
     //create graph actions dock
     _splash->postMessage(tr("Creating actions dock..."));
