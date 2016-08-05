@@ -5,6 +5,7 @@
 #include <Poco/JSON/Object.h>
 #include <QAbstractItemView>
 #include <QComboBox>
+#include <QLineEdit>
 
 /***********************************************************************
  * ComboBox for drop-down entry
@@ -19,6 +20,16 @@ public:
         connect(this, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         connect(this, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
         this->view()->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
+    }
+
+    void setEditable(const bool enable)
+    {
+        QComboBox::setEditable(enable);
+        //line-edit should be non-null when enabled
+        if (this->lineEdit() != nullptr)
+        {
+            connect(this->lineEdit(), SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        }
     }
 
 public slots:
