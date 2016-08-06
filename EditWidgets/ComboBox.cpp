@@ -17,7 +17,7 @@ public:
     ComboBox(QWidget *parent):
         QComboBox(parent)
     {
-        connect(this, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+        connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(handleWidgetChanged(int)));
         connect(this, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
         this->view()->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
     }
@@ -35,13 +35,12 @@ public:
 public slots:
     QString value(void) const
     {
-        const auto index = QComboBox::currentIndex();
-        if (index < 0 or QComboBox::currentText() != QComboBox::itemText(index)) return QComboBox::currentText();
-        else return QComboBox::itemData(index).toString();
+        return _value;
     }
 
     void setValue(const QString &value)
     {
+        _value = value;
         int index = -1;
         for (int i = 0; i < QComboBox::count(); i++)
         {
@@ -57,14 +56,28 @@ signals:
     void entryChanged(void);
 
 private slots:
-    void handleWidgetChanged(const QString &)
+    void handleWidgetChanged(const int index)
     {
+        _value = QComboBox::itemData(index).toString();
+
+        //when returnPressed() occurs for the lineEdit() widget
+        //this hook gets called instead with the index being
+        //the maximum value which maps to the line edit widget
+        if (this->lineEdit() != nullptr and index+1 == this->count())
+        {
+            _value = this->lineEdit()->text();
+        }
+
         emit this->widgetChanged();
     }
-    void handleEntryChanged(const QString &)
+    void handleEntryChanged(const QString &val)
     {
+        _value = val;
         emit this->entryChanged();
     }
+
+private:
+    QString _value;
 };
 
 /***********************************************************************
