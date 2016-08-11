@@ -2,16 +2,10 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
-#include <Pothos/System.hpp>
-#include <Poco/Path.h>
-#include <QDir>
 
 QString makeIconPath(const QString &name)
 {
-    Poco::Path path(Pothos::System::getDataPath());
-    path.append("icons");
-    if (not name.isEmpty()) path.append(name.toStdString());
-    return QDir::fromNativeSeparators(QString::fromStdString(path.toString()));
+    return ":/icons/"+name;
 }
 
 QIcon makeIconFromTheme(const QString &name)
