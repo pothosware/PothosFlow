@@ -232,6 +232,7 @@ elseif (APPLE)
 #otherwise build a standard UNIX style executable
 else ()
     add_executable(PothosGui ${SOURCES})
+    add_subdirectory(Desktop) #freedesktop.org
 endif ()
 
 target_link_libraries(PothosGui ${Pothos_LIBRARIES})
@@ -242,8 +243,6 @@ install(
     RUNTIME DESTINATION bin
     COMPONENT pothos_gui
 )
-
-add_subdirectory(Desktop)
 
 ########################################################################
 # Edit widgets module
