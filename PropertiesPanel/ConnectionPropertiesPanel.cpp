@@ -209,6 +209,8 @@ QTreeWidget *ConnectionPropertiesPanel::makePortListWidget(QWidget *parent, cons
         listWidget->addTopLevelItem(item);
     }
     listWidget->resizeColumnToContents(0);
+    listWidget->setSortingEnabled(true);
+    listWidget->sortByColumn(0, Qt::AscendingOrder);
 
     //return new widget
     return listWidget;
