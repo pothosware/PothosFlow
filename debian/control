@@ -19,7 +19,7 @@ Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
 Depends:
     libpothosqtcolorpicker0 (= ${binary:Version}),
-    pothos-modules0.4-3-gui,
+    pothos0.4-3-modules-gui,
     ${shlibs:Depends},
     ${misc:Depends},
     xdg-utils,
@@ -36,7 +36,7 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: color picker widget library
  The Pothos data-flow software suite.
 
-Package: pothos-modules0.4-3-gui
+Package: pothos0.4-3-modules-gui
 Section: libs
 Architecture: any
 Pre-Depends: ${misc:Pre-Depends}
