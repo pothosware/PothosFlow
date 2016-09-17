@@ -980,7 +980,9 @@ void GraphEditor::save(void)
     {
         poco_information_f1(_logger, "Saving %s", fileName);
         std::ofstream outFile(fileName.c_str());
+        if (not outFile.is_open()) throw std::runtime_error("failed to open");
         this->dumpState(outFile);
+        if (not outFile) throw std::runtime_error("failed to write");
     }
     catch (const std::exception &ex)
     {
@@ -1009,7 +1011,9 @@ void GraphEditor::load(void)
         poco_information_f1(_logger, "Loading %s", fileName);
         MainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
         std::ifstream inFile(fileName.c_str());
+        if (not inFile.is_open()) throw std::runtime_error("failed to open");
         this->loadState(inFile);
+        if (not inFile) throw std::runtime_error("failed to read");
     }
     catch (const std::exception &ex)
     {

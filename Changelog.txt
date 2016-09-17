@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.4.1 (pending)
 ==========================
 
+- Additional error checking for topology file save and load
 - Column sorting for signal+slots connection properties panel
 - Replace icon installation with Qt resource bundling system
 - Support commitRequested() return hotkey in ComboBox edit widget
