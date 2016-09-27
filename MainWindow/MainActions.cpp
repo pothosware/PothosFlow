@@ -130,6 +130,7 @@ MainActions::MainActions(QObject *parent):
 
     activateTopologyAction = new QAction(makeIconFromTheme("run-build"), tr("&Activate topology"), this);
     activateTopologyAction->setCheckable(true);
+    activateTopologyAction->setShortcut(QKeySequence("F6"));
 
     showPortNamesAction = new QAction(tr("Show block port names"), this);
     showPortNamesAction->setCheckable(true);
@@ -167,6 +168,7 @@ MainActions::MainActions(QObject *parent):
 
     reloadPluginsAction = new QAction(makeIconFromTheme("view-refresh"), tr("Reload plugin registry"), this);
     reloadPluginsAction->setStatusTip(tr("Stop evaluation, reload plugins, resume evaluation"));
+    reloadPluginsAction->setShortcut(QKeySequence("F8"));
 
     exportAction = new QAction(makeIconFromTheme("document-export"), tr("Export to JSON topology"), this);
     exportAction->setStatusTip(tr("Export the current design to the JSON topology format"));
