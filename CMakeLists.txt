@@ -84,7 +84,9 @@ list(APPEND Pothos_LIBRARIES PothosQtColorPicker)
 # Bundle icon resources with executable
 ########################################################################
 set(CMAKE_AUTORCC ON)
-file(GLOB ICONS ${CMAKE_CURRENT_SOURCE_DIR}/icons/*.png)
+file(GLOB ICONS
+    ${CMAKE_CURRENT_SOURCE_DIR}/icons/*.png
+    ${CMAKE_CURRENT_SOURCE_DIR}/icons/*.gif)
 set(RESOURCES_QRC ${CMAKE_CURRENT_BINARY_DIR}/resources.qrc)
 file(WRITE ${RESOURCES_QRC} "<!DOCTYPE RCC><RCC version='1.0'>\n")
 file(APPEND ${RESOURCES_QRC} "<qresource>\n")

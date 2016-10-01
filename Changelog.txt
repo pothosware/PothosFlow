@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.4.2 (pending)
 ==========================
 
+- Added missing gif images to Qt resource bundling system
 - Keyboard shortcut F6 for activate, F8 for plugin reload
 
 Release 0.4.1 (2016-09-24)
