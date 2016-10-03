@@ -158,7 +158,7 @@ static QWidget *makeDTypeChooser(const Poco::JSON::Object::Ptr &paramDesc, QWidg
     return dtypeChooser;
 }
 
-pothos_static_block(registerComboBox)
+pothos_static_block(registerDTypeChooser)
 {
     Pothos::PluginRegistry::add("/gui/EntryWidgets/DTypeChooser", Pothos::Callable(&makeDTypeChooser));
 }
