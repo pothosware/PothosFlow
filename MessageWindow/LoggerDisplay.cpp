@@ -75,15 +75,22 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
     default: color = "black";
     }
 
+    QString sep(":");
     const auto timeStr = Poco::DateTimeFormatter::format(msg.getTime(), "%H:%M:%s");
 
     auto body = QString::fromStdString(msg.getText()).toHtmlEscaped();
-    if (body.count("\n") > 1) body = "<pre>"+body+"</pre>";
+    if (body.count("\n") > 1)
+    {
+        sep = " &rArr;";
+        body = "<pre style='background-color:#eaecee;'>"+body+"</pre>";
+    }
 
-    auto line = QString("<font color=\"%1\"><b>[%2] %3:</b></font> %4").arg(
+    //FIXME the background is sticky on subsequent logs
+
+    auto line = QString("<font color=\"%1\"><b>[%2] %3%4</b></font> %5").arg(
         color, QString::fromStdString(timeStr),
         QString::fromStdString(msg.getSource()),
-        body);
+        sep, body);
 
     _text->appendHtml(line);
 }
