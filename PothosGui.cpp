@@ -6,6 +6,7 @@
 #include "MainWindow/IconUtils.hpp"
 #include <Pothos/System.hpp>
 #include <Poco/Logger.h>
+#include <Poco/Environment.h>
 #include <QMessageBox>
 #include <QApplication>
 #include <QDir>
@@ -16,7 +17,9 @@ struct MyScopedSyslogListener
 {
     MyScopedSyslogListener(void)
     {
-        Pothos::System::Logger::startSyslogListener();
+        const auto port = Pothos::System::Logger::startSyslogListener();
+        //FIXME listener server supports IPv4 only; must forward to IPv4
+        Poco::Environment::set("POTHOS_SYSLOG_ADDR", "127.0.0.1:"+port);
     }
     ~MyScopedSyslogListener(void)
     {
