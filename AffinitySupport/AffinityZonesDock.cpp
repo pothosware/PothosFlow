@@ -87,7 +87,12 @@ QComboBox *AffinityZonesDock::makeComboBox(QWidget *parent)
 QStringList AffinityZonesDock::zones(void) const
 {
     QStringList zones;
-    for (int i = 0; i < _editorsTabs->count(); i++) zones.push_back(_editorsTabs->tabText(i));
+    for (int i = 0; i < _editorsTabs->count(); i++)
+    {
+        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        assert(editor != nullptr);
+        zones.push_back(editor->zoneName());
+    }
     return zones;
 }
 
@@ -95,10 +100,9 @@ QColor AffinityZonesDock::zoneToColor(const QString &zone)
 {
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        if (zone == _editorsTabs->tabText(i))
-        {
-            return dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i))->color();
-        }
+        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        assert(editor != nullptr);
+        if (zone == editor->zoneName()) return editor->color();
     }
     return QColor();
 }
@@ -107,10 +111,9 @@ Poco::JSON::Object::Ptr AffinityZonesDock::zoneToConfig(const QString &zone)
 {
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        if (zone == _editorsTabs->tabText(i))
-        {
-            return dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i))->getCurrentConfig();
-        }
+        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        assert(editor != nullptr);
+        if (zone == editor->zoneName()) return editor->getCurrentConfig();
     }
     return Poco::JSON::Object::Ptr();
 }
@@ -143,7 +146,7 @@ void AffinityZonesDock::handleCreateZone(void)
 AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneName)
 {
     auto settings = MainSettings::global();
-    auto editor = new AffinityZoneEditor(this, _hostExplorerDock);
+    auto editor = new AffinityZoneEditor(zoneName, this, _hostExplorerDock);
     _editorsTabs->addTab(editor, zoneName);
     if (zoneName == settings->value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
 

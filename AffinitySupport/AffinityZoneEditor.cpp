@@ -19,8 +19,9 @@
 
 static const int ARBITRARY_MAX_THREADS = 4096;
 
-AffinityZoneEditor::AffinityZoneEditor(QWidget *parent, HostExplorerDock *hostExplorer):
+AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent, HostExplorerDock *hostExplorer):
     QWidget(parent),
+    _zoneName(zoneName),
     _hostExplorerDock(hostExplorer),
     _colorPicker(new QtColorPicker(this)),
     _hostsBox(new QComboBox(this)),

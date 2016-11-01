@@ -25,7 +25,12 @@ class AffinityZoneEditor : public QWidget
 {
     Q_OBJECT
 public:
-    AffinityZoneEditor(QWidget *parent, HostExplorerDock *hostExplorer);
+    AffinityZoneEditor(const QString &zoneName, QWidget *parent, HostExplorerDock *hostExplorer);
+
+    const QString &zoneName(void) const
+    {
+        return _zoneName;
+    }
 
     //! load the settings from a JSON object
     void loadFromConfig(const Poco::JSON::Object::Ptr &config);
@@ -76,6 +81,7 @@ private:
 
     void updateCpuSelection(void);
 
+    const QString _zoneName;
     HostExplorerDock *_hostExplorerDock;
     QtColorPicker *_colorPicker;
     QComboBox *_hostsBox;
