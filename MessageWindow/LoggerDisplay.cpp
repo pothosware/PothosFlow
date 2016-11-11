@@ -82,10 +82,8 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
     if (body.count("\n") > 1)
     {
         sep = " &rArr;";
-        body = "<pre style='background-color:#eaecee;'>"+body+"</pre>";
+        body = "<pre style='background-color:#eaecee;'>"+body+"</pre><br />";
     }
-
-    //FIXME the background is sticky on subsequent logs
 
     auto line = QString("<font color=\"%1\"><b>[%2] %3%4</b></font> %5").arg(
         color, QString::fromStdString(timeStr),
