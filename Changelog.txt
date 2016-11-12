@@ -5,6 +5,8 @@ Release 0.4.2 (pending)
 
 - Fix affinity zone name changes from using itemText()
 - Fixed copy-paste typo for registering the DTypeChooser
+- Set POTHOS_SYSLOG_ADDR - optional when its supported
+- LoggerDisplay format changes for multi-line messages
 - Added missing gif images to Qt resource bundling system
 - Keyboard shortcut F6 for activate, F8 for plugin reload
 
