@@ -216,7 +216,7 @@ void AffinityZonesDock::saveAffinityZoneEditorsState(void)
         assert(editor != nullptr);
         auto dataObj = editor->getCurrentConfig();
         std::stringstream ss; dataObj->stringify(ss);
-        settings->setValue("AffinityZones/zones/"+_editorsTabs->tabText(i), QString::fromStdString(ss.str()));
+        settings->setValue("AffinityZones/zones/"+editor->zoneName(), QString::fromStdString(ss.str()));
     }
 
     emit this->zonesChanged();
