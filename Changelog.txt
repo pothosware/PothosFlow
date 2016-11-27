@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos GUI toolkit.
 
-Release 0.4.2 (pending)
+Release 0.4.2 (2016-11-26)
 ==========================
 
 - Fix affinity zone name changes from using itemText()

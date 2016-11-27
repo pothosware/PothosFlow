@@ -1,3 +1,9 @@
+pothos-gui (0.4.2-ppa1) unstable; urgency=low
+
+  * Release 0.4.2 (2016-11-26)
+
+ -- Josh Blum <josh@pothosware.com>  Sat, 26 Nov 2016 21:17:16 -0500
+
 pothos-gui (0.4.1-ppa1) unstable; urgency=low
 
   * Release 0.4.1 (2016-09-24)
