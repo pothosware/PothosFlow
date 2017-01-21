@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphConnection.hpp"
@@ -343,7 +343,15 @@ void GraphConnection::render(QPainter &painter)
             //text += QString("%1:%2")
             //    .arg(this->getKeyName(pair.first, this->getOutputEndpoint()).toHtmlEscaped())
             //    .arg(this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped());
-            text += this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped();
+
+            //Keep the text simple. If its a signal to a regular input, use the signal name.
+            if (this->getInputEndpoint().getConnectableAttrs().direction == GRAPH_CONN_INPUT)
+            {
+                text += this->getKeyName(pair.first, this->getOutputEndpoint()).toHtmlEscaped();
+            }
+
+            //Otherwise just use the slot's name. Hopefully, this will be indicative of functionality.
+            else text += this->getKeyName(pair.second, this->getInputEndpoint()).toHtmlEscaped();
         }
         if (text.isEmpty()) text = tr("<b>Empty</b>");
         _impl->lineText = QStaticText(QString("<span style='color:%1;font-size:%2;'>%3</span>")
