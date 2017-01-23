@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBlockImpl.hpp"
@@ -428,12 +428,15 @@ std::vector<GraphConnectableKey> GraphBlock::getConnectableKeys(void) const
 
 GraphConnectableKey GraphBlock::isPointingToConnectable(const QPointF &pos) const
 {
-    for (int i = 0; i < _inputPorts.size(); i++)
+    //note: the rectangles may not be allocated yet
+    //so use the bounds for both ports and rectangles
+
+    for (int i = 0; i < _inputPorts.size() and _impl->inputPortRects.size(); i++)
     {
         if (_impl->inputPortRects[i].contains(pos))
             return GraphConnectableKey(_inputPorts[i], GRAPH_CONN_INPUT);
     }
-    for (int i = 0; i < _outputPorts.size(); i++)
+    for (int i = 0; i < _outputPorts.size() and _impl->outputPortRects.size(); i++)
     {
         if (_impl->outputPortRects[i].contains(pos))
             return GraphConnectableKey(_outputPorts[i], GRAPH_CONN_OUTPUT);
