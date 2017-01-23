@@ -22,6 +22,7 @@
 #include <QScrollBar>
 #include <QMimeData>
 #include <QDragEnterEvent>
+#include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <iostream>
 #include <cassert>
@@ -99,6 +100,11 @@ void GraphDraw::dragEnterEvent(QDragEnterEvent *event)
         event->acceptProposedAction();
     }
     else QGraphicsView::dragEnterEvent(event);
+}
+
+void GraphDraw::dragLeaveEvent(QDragLeaveEvent *event)
+{
+    event->accept();
 }
 
 void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
