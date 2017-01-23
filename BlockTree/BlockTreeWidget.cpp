@@ -24,7 +24,8 @@ static const long UPDATE_TIMER_MS = 500;
 BlockTreeWidget::BlockTreeWidget(QWidget *parent, GraphEditorTabs *editorTabs):
     QTreeWidget(parent),
     _editorTabs(editorTabs),
-    _filttimer(new QTimer(this))
+    _filttimer(new QTimer(this)),
+    _dragItem(nullptr)
 {
     QStringList columnNames;
     columnNames.push_back(tr("Available Blocks"));
@@ -51,7 +52,9 @@ void BlockTreeWidget::mousePressEvent(QMouseEvent *event)
     }
     if(itemAt(event->pos())->childCount() == 0 and event->button() == Qt::LeftButton) {
         _dragStartPos = event->pos();
+        _dragItem = itemAt(_dragStartPos);
     }
+    else _dragItem = nullptr;
     //pass the event along
     QTreeWidget::mousePressEvent(event);
 }
@@ -69,8 +72,11 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
         return;
     }
 
+    //do we have a valid item to drag?
+    if (_dragItem == nullptr) return;
+
     //get the block data
-    auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(itemAt(_dragStartPos));
+    auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(_dragItem);
     if (not blockItem->getBlockDesc()) return;
 
     //create a block object to render the image

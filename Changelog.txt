@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.4.3 (2016-11-26)
 ==========================
 
+- Fix block tree invalid item drag with older selection
 - Fix GraphBlock isPointing when called before update
 - Reduce string copying when converting to QByteArray
 - Tweak connection name for signal to regular input port

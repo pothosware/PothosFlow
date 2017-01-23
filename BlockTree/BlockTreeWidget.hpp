@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -54,6 +54,7 @@ private:
     QString _filter;
     QTimer *_filttimer;
     QPoint _dragStartPos;
+    QTreeWidgetItem *_dragItem;
     Poco::JSON::Array::Ptr _blockDescs;
     std::map<std::string, BlockTreeWidgetItem *> _rootNodes;
 };
