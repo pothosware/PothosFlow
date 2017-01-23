@@ -3,6 +3,7 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.4.3 (2016-11-26)
 ==========================
 
+- Reduce string copying when converting to QByteArray
 - Tweak connection name for signal to regular input port
 
 Release 0.4.2 (2016-11-26)

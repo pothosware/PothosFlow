@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine/EvalEngine.hpp"
@@ -535,7 +535,8 @@ void GraphEditor::handleCopy(void)
     //to byte array
     std::ostringstream oss;
     jsonObjs.stringify(oss);
-    QByteArray byteArray(oss.str().data(), oss.str().size());
+    const std::string bytesStr(oss.str());
+    const QByteArray byteArray(bytesStr.data(), bytesStr.size());
 
     //load the clipboard
     auto mimeData = new QMimeData();
@@ -893,7 +894,8 @@ void GraphEditor::handleStateChange(const GraphState &state)
     std::ostringstream oss;
     this->dumpState(oss);
     GraphState stateWithDump = state;
-    stateWithDump.dump = QByteArray(oss.str().data(), oss.str().size());
+    const std::string bytesStr(oss.str());
+    stateWithDump.dump = QByteArray(bytesStr.data(), bytesStr.size());
     _stateManager->post(stateWithDump);
     this->render();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphDraw.hpp"
@@ -113,7 +113,7 @@ void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 
 void GraphDraw::dropEvent(QDropEvent *event)
 {
-    const auto &byteArray = event->mimeData()->data("text/json/pothos_block");
+    const auto byteArray = event->mimeData()->data("text/json/pothos_block");
     const auto result = Poco::JSON::Parser().parse(std::string(byteArray.constData(), byteArray.size()));
     const auto blockDesc = result.extract<Poco::JSON::Object::Ptr>();
 

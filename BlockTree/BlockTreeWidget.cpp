@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockTree/BlockTreeWidget.hpp"
@@ -95,8 +95,10 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
 
     //create the drag object
     auto mimeData = new QMimeData();
-    std::ostringstream oss; blockItem->getBlockDesc()->stringify(oss);
-    QByteArray byteArray(oss.str().c_str(), oss.str().size());
+    std::ostringstream oss;
+    blockItem->getBlockDesc()->stringify(oss);
+    const std::string bytesStr(oss.str());
+    const QByteArray byteArray(bytesStr.data(), bytesStr.size());
     mimeData->setData("text/json/pothos_block", byteArray);
     auto drag = new QDrag(this);
     drag->setMimeData(mimeData);
@@ -206,8 +208,10 @@ QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
         auto b = dynamic_cast<BlockTreeWidgetItem *>(item);
         if (b == nullptr) continue;
         auto mimeData = new QMimeData();
-        std::ostringstream oss; b->getBlockDesc()->stringify(oss);
-        QByteArray byteArray(oss.str().c_str(), oss.str().size());
+        std::ostringstream oss;
+        b->getBlockDesc()->stringify(oss);
+        const std::string bytesStr(oss.str());
+        const QByteArray byteArray(bytesStr.data(), bytesStr.size());
         mimeData->setData("text/json/pothos_block", byteArray);
         return mimeData;
     }
