@@ -192,6 +192,8 @@ list(APPEND SOURCES
     EvalEngine/EnvironmentEval.cpp
     EvalEngine/TopologyEval.cpp
     EvalEngine/TopologyTraversal.cpp
+    EvalEngine/EvalNode.cpp
+    EvalEngine/EvalGraph.cpp
 )
 
 ########################################################################
