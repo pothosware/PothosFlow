@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -58,12 +58,12 @@ signals:
 private slots:
     void handleWidgetChanged(const int index)
     {
-        _value = QComboBox::itemData(index).toString();
+        const auto item = QComboBox::itemData(index);
+        if (item.isValid()) _value = item.toString();
 
         //when returnPressed() occurs for the lineEdit() widget
-        //this hook gets called instead with the index being
-        //the maximum value which maps to the line edit widget
-        if (this->lineEdit() != nullptr and index+1 == this->count())
+        //this hook gets called instead with invalid item data
+        if (this->lineEdit() != nullptr and not item.isValid())
         {
             _value = this->lineEdit()->text();
         }
