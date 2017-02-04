@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -11,6 +11,7 @@
 
 class QLabel;
 class QTimer;
+class QVBoxLayout;
 
 /*!
  * The property edit widget creates an entry widget through a JSON description.
@@ -29,6 +30,9 @@ public:
     PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent);
 
     ~PropertyEditWidget(void);
+
+    //! Reload internal edit widget from a param desc change
+    void reloadParamDesc(const Poco::JSON::Object::Ptr &paramDesc);
 
     //! Get the initial value of the edit widget
     const QString &initialValue(void) const;
@@ -88,6 +92,8 @@ private:
     QPointer<QLabel> _formLabel;
     QString _formLabelText;
     QString _errorMsg;
-    const QString _unitsStr;
+    QString _unitsStr;
     QTimer *_entryTimer;
+    QVBoxLayout *_editLayout;
+    QWidget *_editParent;
 };

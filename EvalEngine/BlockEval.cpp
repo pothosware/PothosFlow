@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -229,14 +229,18 @@ bool BlockEval::evaluationProcedure(void)
 
     //query description overlay, even if in error
     //the overlay could be valuable even when a setup call fails
-    if (_queryPortDesc)
+    //if (_queryPortDesc)
     {
         auto proxyBlock = this->getProxyBlock();
         if (proxyBlock) try
         {
             const auto overlayStr = proxyBlock.call<std::string>("overlay");
-            const auto result = Poco::JSON::Parser().parse(overlayStr);
-            _lastBlockStatus.overlayDesc = result.extract<Poco::JSON::Object::Ptr>();
+            if (overlayStr != _lastBlockStatus.overlayDescStr)
+            {
+                const auto result = Poco::JSON::Parser().parse(overlayStr);
+                _lastBlockStatus.overlayDesc = result.extract<Poco::JSON::Object::Ptr>();
+                _lastBlockStatus.overlayDescStr = overlayStr;
+            }
         }
         catch (const Poco::Exception &ex)
         {

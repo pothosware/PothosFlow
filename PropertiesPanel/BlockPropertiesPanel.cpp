@@ -229,6 +229,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
     connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
     connect(_block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
+    connect(_block, SIGNAL(paramDescChanged(const QString &, const Poco::JSON::Object::Ptr &)),
+            this, SLOT(handleParamDescChanged(const QString &, const Poco::JSON::Object::Ptr &)));
     this->updateAllForms();
     _ignoreChanges = false;
 }
@@ -287,6 +289,11 @@ void BlockPropertiesPanel::handleAffinityZoneChanged(const QString &)
 void BlockPropertiesPanel::handleBlockEvalDone(void)
 {
     this->updateAllForms();
+}
+
+void BlockPropertiesPanel::handleParamDescChanged(const QString &key, const Poco::JSON::Object::Ptr &desc)
+{
+    _propIdToEditWidget[key]->reloadParamDesc(desc);
 }
 
 void BlockPropertiesPanel::handleCancel(void)

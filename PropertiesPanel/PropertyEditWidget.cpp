@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PropertyEditWidget.hpp"
@@ -23,13 +23,43 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     _editWidget(nullptr),
     _errorLabel(new QLabel(this)),
     _formLabel(nullptr),
-    _unitsStr(QString::fromStdString(paramDesc->optValue<std::string>("units", ""))),
-    _entryTimer(new QTimer(this))
+    _entryTimer(new QTimer(this)),
+    _editLayout(new QVBoxLayout(this)),
+    _editParent(parent)
 {
+    //setup entry timer - timeout acts like widget changed
+    _entryTimer->setSingleShot(true);
+    _entryTimer->setInterval(UPDATE_TIMER_MS);
+    connect(_entryTimer, SIGNAL(timeout(void)), this, SIGNAL(widgetChanged(void)));
+
+    //layout internal widgets
+    _editLayout->setContentsMargins(QMargins());
+    _editLayout->addWidget(_errorLabel);
+
+    //initialize edit widget
+    this->reloadParamDesc(paramDesc);
+}
+
+PropertyEditWidget::~PropertyEditWidget(void)
+{
+    //we dont own form label, so it has to be explicitly deleted
+    delete _formLabel;
+}
+
+void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDesc)
+{
+    //value to set on replaced widget
+    QString newValue = this->initialValue();
+    if (_editWidget != nullptr) newValue = this->value();
+
+    //delete a previous widget
+    delete _editWidget;
+
     //extract widget type
     auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
     if (paramDesc->isArray("options")) widgetType = "ComboBox";
     if (widgetType.empty()) widgetType = "LineEdit";
+    _unitsStr = QString::fromStdString(paramDesc->optValue<std::string>("units", ""));
 
     //check if the widget type exists in the plugin tree
     if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType)))
@@ -41,37 +71,21 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     //lookup the plugin to get the entry widget factory
     const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
-    _editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(parent));
+    _editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(_editParent));
     _editWidget->setLocale(QLocale::C);
     _editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
+    _editLayout->insertWidget(0, _editWidget);
 
     //initialize value
-    this->setValue(initialValue);
+    this->setValue(newValue);
 
     //signals to internal handler
     connect(_editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
     connect(_editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
     connect(_editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommitRequested(void)));
 
-    //setup entry timer - timeout acts like widget changed
-    _entryTimer->setSingleShot(true);
-    _entryTimer->setInterval(UPDATE_TIMER_MS);
-    connect(_entryTimer, SIGNAL(timeout(void)), this, SIGNAL(widgetChanged(void)));
-
-    //layout internal widgets
-    auto editLayout = new QVBoxLayout(this);
-    editLayout->setContentsMargins(QMargins());
-    editLayout->addWidget(_editWidget);
-    editLayout->addWidget(_errorLabel);
-
     //update display
     this->updateInternals();
-}
-
-PropertyEditWidget::~PropertyEditWidget(void)
-{
-    //we dont own form label, so it has to be explicitly deleted
-    delete _formLabel;
 }
 
 const QString &PropertyEditWidget::initialValue(void) const

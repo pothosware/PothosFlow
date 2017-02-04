@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -131,6 +131,9 @@ signals:
 
     //! Called externally to trigger individual eval
     void triggerEvalEvent(void);
+
+    //! Called when the overlay changes the param description
+    void paramDescChanged(const QString &key, const Poco::JSON::Object::Ptr &desc);
 
 protected:
 
