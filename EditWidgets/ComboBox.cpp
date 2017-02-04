@@ -15,7 +15,8 @@ class ComboBox : public QComboBox
     Q_OBJECT
 public:
     ComboBox(QWidget *parent):
-        QComboBox(parent)
+        QComboBox(parent),
+        _nonEditCount(0)
     {
         connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(handleWidgetChanged(int)));
         connect(this, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
@@ -30,6 +31,12 @@ public:
         {
             connect(this->lineEdit(), SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         }
+    }
+
+    void doneAddingItems(void)
+    {
+        //count may change when line edit is used, we need to detect this
+        _nonEditCount = this->count();
     }
 
 public slots:
@@ -62,8 +69,9 @@ private slots:
         if (item.isValid()) _value = item.toString();
 
         //when returnPressed() occurs for the lineEdit() widget
-        //this hook gets called instead with invalid item data
-        if (this->lineEdit() != nullptr and not item.isValid())
+        //this hook gets called instead with the index being
+        //the maximum value which maps to the line edit widget
+        if (this->lineEdit() != nullptr and index == _nonEditCount)
         {
             _value = this->lineEdit()->text();
         }
@@ -78,6 +86,7 @@ private slots:
 
 private:
     QString _value;
+    int _nonEditCount;
 };
 
 /***********************************************************************
@@ -97,6 +106,7 @@ static QWidget *makeComboBox(const Poco::JSON::Object::Ptr &paramDesc, QWidget *
             QString::fromStdString(option->getValue<std::string>("name")),
             QString::fromStdString(option->getValue<std::string>("value")));
     }
+    comboBox->doneAddingItems();
     return comboBox;
 }
 
