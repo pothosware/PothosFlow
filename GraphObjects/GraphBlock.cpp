@@ -16,6 +16,7 @@
 #include <QBrush>
 #include <QColor>
 #include <QFontMetrics>
+#include <QSet>
 #include <iostream>
 #include <cassert>
 #include <algorithm> //min/max
@@ -37,6 +38,49 @@ const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
 {
     assert(_impl);
     return _impl->blockDesc;
+}
+
+static void paramKeysFromJSON(QSet<QString> &keys, const Poco::JSON::Object::Ptr &desc)
+{
+    if (not desc) return;
+    if (not desc->isArray("params")) return;
+    if (desc and desc->isArray("params"))
+    for (const auto &paramObj : *desc->getArray("params"))
+    {
+        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
+        if (not param->has("key")) continue;
+        keys.insert(QString::fromStdString(param->getValue<std::string>("key")));
+    }
+}
+
+void GraphBlock::setOverlayDesc(const Poco::JSON::Object::Ptr &desc)
+{
+    assert(_impl);
+
+    //check for pointer equality since the evaluator should not
+    //give us a new JSON pointer unless the string value changed
+    const bool changed(_impl->overlayDesc != desc);
+    auto oldOverlay = _impl->overlayDesc;
+    _impl->overlayDesc = desc;
+
+    if (not changed) return; //nothing to do? return
+
+    //collect keys from the old and new overlay to cover all changed params
+    QSet<QString> changedKeys;
+    paramKeysFromJSON(changedKeys, oldOverlay);
+    paramKeysFromJSON(changedKeys, desc);
+
+    //emit description for all changed keys
+    for (const auto &key : changedKeys)
+    {
+        emit this->paramDescChanged(key, this->getParamDesc(key));
+    }
+}
+
+const Poco::JSON::Object::Ptr &GraphBlock::getOverlayDesc(void) const
+{
+    assert(_impl);
+    return _impl->overlayDesc;
 }
 
 bool GraphBlock::isGraphWidget(void) const
@@ -106,6 +150,23 @@ Poco::JSON::Object::Ptr GraphBlock::getParamDesc(const QString &key) const
         const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
         if (param->getValue<std::string>("key") == key.toStdString()) paramDesc = param;
     }
+
+    //try to apply the overlay if it exists
+    const auto overlayDesc = this->getOverlayDesc();
+    if (paramDesc and overlayDesc and overlayDesc->isArray("params"))
+    {
+        const auto key = paramDesc->optValue<std::string>("key", "");
+        for (const auto &paramObj : *overlayDesc->getArray("params"))
+        {
+            const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
+            if (param->optValue<std::string>("key", "") != key) continue;
+            for (const auto &pair : *param)
+            {
+                paramDesc->set(pair.first, pair.second);
+            }
+        }
+    }
+
     return paramDesc;
 }
 

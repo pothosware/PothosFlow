@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -8,6 +8,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
+#include <Poco/JSON/Parser.h>
 #include <QWidget>
 #include <cassert>
 #include <iostream>
@@ -226,6 +227,33 @@ bool BlockEval::evaluationProcedure(void)
             tr("'%1' is not a legal ID").arg(_newBlockInfo.id));
     }
 
+    //query description overlay, even if in error
+    //the overlay could be valuable even when a setup call fails
+    //if (_queryPortDesc)
+    {
+        auto proxyBlock = this->getProxyBlock();
+        if (proxyBlock) try
+        {
+            const auto overlayStr = proxyBlock.call<std::string>("overlay");
+            if (overlayStr != _lastBlockStatus.overlayDescStr)
+            {
+                const auto result = Poco::JSON::Parser().parse(overlayStr);
+                _lastBlockStatus.overlayDesc = result.extract<Poco::JSON::Object::Ptr>();
+                _lastBlockStatus.overlayDescStr = overlayStr;
+            }
+        }
+        catch (const Poco::Exception &ex)
+        {
+            poco_warning_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"),
+                "Failed to parse JSON description overlay from %s: %s",
+                _newBlockInfo.id.toStdString(), ex.displayText());
+        }
+        catch (...)
+        {
+            //the function may not exist, ignore error
+        }
+    }
+
     //load its port info
     if (evalSuccess and _queryPortDesc) try
     {
@@ -321,6 +349,7 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
         block->setOutputPortDesc(status.outPortDesc);
     }
     block->setGraphWidget(status.widget);
+    block->setOverlayDesc(status.overlayDesc);
 
     block->update(); //cause redraw after changes
     emit block->evalDoneEvent(); //trigger done event subscribers

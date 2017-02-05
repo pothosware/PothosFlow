@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -40,6 +40,8 @@ private slots:
     void handleAffinityZoneChanged(const QString &);
 
     void handleBlockEvalDone(void);
+
+    void handleParamDescChanged(const QString &, const Poco::JSON::Object::Ptr &);
 
     void handleDocTabChanged(int);
 
