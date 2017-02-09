@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -32,8 +32,13 @@ struct ConnectionInfo
     std::string srcPort, dstPort;
 };
 
+bool operator==(const ConnectionInfo &lhs, const ConnectionInfo &rhs);
+
 //! typedef for multiple connection informations
 typedef std::vector<ConnectionInfo> ConnectionInfos;
+
+//! Calculates set(in0 - in1)
+ConnectionInfos diffConnectionInfos(const ConnectionInfos &in0, const ConnectionInfos &in1);
 
 /*!
  * TopologyEval takes up to date connection information
