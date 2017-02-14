@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -61,6 +61,7 @@ private slots:
         QString filePath;
         if (_mode == "open") filePath = QFileDialog::getOpenFileName(this);
         if (_mode == "save") filePath = QFileDialog::getSaveFileName(this);
+        if (_mode == "directory") filePath = QFileDialog::getExistingDirectory(this);
         if (filePath.isEmpty()) return;
         this->setValue(filePath);
         emit this->widgetChanged();
