@@ -6,7 +6,9 @@
 #include <QLabel>
 #include <QLocale>
 #include <QTimer>
+#include <QToolButton>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
 
@@ -25,16 +27,30 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     _formLabel(nullptr),
     _entryTimer(new QTimer(this)),
     _editLayout(new QVBoxLayout(this)),
-    _editParent(parent)
+    _modeButton(new QToolButton(this)),
+    _modeLayout(new QHBoxLayout()),
+    _editParent(parent),
+    _forceLineWidget(false)
 {
     //setup entry timer - timeout acts like widget changed
     _entryTimer->setSingleShot(true);
     _entryTimer->setInterval(UPDATE_TIMER_MS);
     connect(_entryTimer, SIGNAL(timeout(void)), this, SIGNAL(widgetChanged(void)));
 
+    //setup edit mode button
+    _modeButton->setFixedSize(QSize(20, 20));
+    //focus color is distracting, dont enable focus
+    _modeButton->setFocusPolicy(Qt::NoFocus);
+    connect(_modeButton, SIGNAL(clicked(void)), this, SLOT(handleModeButtonClicked(void)));
+
     //layout internal widgets
+    _editLayout->setSpacing(0);
     _editLayout->setContentsMargins(QMargins());
+    _editLayout->addLayout(_modeLayout);
     _editLayout->addWidget(_errorLabel);
+    _modeLayout->setSpacing(3);
+    _modeLayout->setContentsMargins(QMargins());
+    _modeLayout->addWidget(_modeButton, 0, Qt::AlignRight);
 
     //initialize edit widget
     this->reloadParamDesc(paramDesc);
@@ -48,6 +64,8 @@ PropertyEditWidget::~PropertyEditWidget(void)
 
 void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDesc)
 {
+    _lastParamDesc = paramDesc;
+
     //value to set on replaced widget
     QString newValue = this->initialValue();
     if (_editWidget != nullptr) newValue = this->value();
@@ -68,13 +86,17 @@ void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDes
         widgetType = "LineEdit";
     }
 
+    //use line the line edit when forced by the button
+    _modeButton->setVisible(widgetType != "LineEdit");
+    if (_forceLineWidget) widgetType = "LineEdit";
+
     //lookup the plugin to get the entry widget factory
     const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
     _editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(_editParent));
     _editWidget->setLocale(QLocale::C);
     _editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
-    _editLayout->insertWidget(0, _editWidget);
+    _modeLayout->insertWidget(0, _editWidget, 1);
 
     //initialize value
     this->setValue(newValue);
@@ -121,10 +143,10 @@ void PropertyEditWidget::setErrorMsg(const QString &errorMsg)
     this->updateInternals();
 }
 
-void PropertyEditWidget::setBackgroundColor(const QColor color)
+void PropertyEditWidget::setBackgroundColor(const QColor &color)
 {
-    _editWidget->setStyleSheet(QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
-        .arg(color.name()).arg((color.lightnessF() > 0.5)?"black":"white"));
+    _bgColor = color;
+    this->updateInternals();
 }
 
 QLabel *PropertyEditWidget::makeFormLabel(const QString &text, QWidget *parent)
@@ -156,6 +178,14 @@ void PropertyEditWidget::updateInternals(void)
         .arg(this->changed()?"*":"");
     if (hasUnits) formLabelText += QString("<br /><i>%1</i>").arg(_unitsStr);
     if (_formLabel) _formLabel->setText(formLabelText);
+
+    //swap mode button arrow based on state
+    _modeButton->setArrowType(_forceLineWidget?Qt::LeftArrow:Qt::RightArrow);
+
+    //set background color when its valid
+    if (_bgColor.isValid()) _editWidget->setStyleSheet(
+        QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
+        .arg(_bgColor.name()).arg((_bgColor.lightnessF() > 0.5)?"black":"white"));
 }
 
 void PropertyEditWidget::handleWidgetChanged(void)
@@ -176,6 +206,12 @@ void PropertyEditWidget::handleCommitRequested(void)
     this->flushEvents();
     this->updateInternals();
     emit this->commitRequested();
+}
+
+void PropertyEditWidget::handleModeButtonClicked(void)
+{
+    _forceLineWidget = not _forceLineWidget;
+    this->reloadParamDesc(_lastParamDesc);
 }
 
 void PropertyEditWidget::cancelEvents(void)

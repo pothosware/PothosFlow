@@ -11,7 +11,9 @@
 
 class QLabel;
 class QTimer;
+class QToolButton;
 class QVBoxLayout;
+class QHBoxLayout;
 
 /*!
  * The property edit widget creates an entry widget through a JSON description.
@@ -53,7 +55,7 @@ public:
     void setErrorMsg(const QString &errorMsg);
 
     //! Set the background color of the edit widget
-    void setBackgroundColor(const QColor color);
+    void setBackgroundColor(const QColor &color);
 
     /*!
      * Make a label that will track the widget's status.
@@ -83,6 +85,7 @@ private slots:
     void handleWidgetChanged(void);
     void handleEntryChanged(void);
     void handleCommitRequested(void);
+    void handleModeButtonClicked(void);
 
 private:
     void updateInternals(void);
@@ -95,5 +98,10 @@ private:
     QString _unitsStr;
     QTimer *_entryTimer;
     QVBoxLayout *_editLayout;
+    QToolButton *_modeButton;
+    QHBoxLayout *_modeLayout;
     QWidget *_editParent;
+    QColor _bgColor;
+    bool _forceLineWidget;
+    Poco::JSON::Object::Ptr _lastParamDesc;
 };
