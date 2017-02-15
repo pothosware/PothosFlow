@@ -988,10 +988,7 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
         const auto jPropObj = properties->getObject(i);
         const auto propKey = QString::fromStdString(jPropObj->getValue<std::string>("key"));
         this->setPropertyValue(propKey, QString::fromStdString(jPropObj->getValue<std::string>("value")));
-        if (jPropObj->has("editMode"))
-        {
-            this->setPropertyEditMode(propKey, QString::fromStdString(jPropObj->getValue<std::string>("editMode")));
-        }
+        this->setPropertyEditMode(propKey, QString::fromStdString(jPropObj->optValue<std::string>("editMode", "")));
     }
 
     //load port description and init from it -- in the case eval fails
