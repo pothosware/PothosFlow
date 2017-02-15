@@ -31,7 +31,7 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     _modeLayout(new QHBoxLayout()),
     _editParent(parent),
     _initialEditMode(editMode),
-    _forceLineWidget(editMode == "raw")
+    _editMode(editMode)
 {
     //setup entry timer - timeout acts like widget changed
     _entryTimer->setSingleShot(true);
@@ -89,7 +89,7 @@ void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDes
 
     //use line the line edit when forced by the button
     _modeButton->setVisible(widgetType != "LineEdit");
-    if (_forceLineWidget) widgetType = "LineEdit";
+    if (_editMode == "raw") widgetType = "LineEdit";
 
     //lookup the plugin to get the entry widget factory
     const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
@@ -158,7 +158,7 @@ const QString &PropertyEditWidget::initialEditMode(void) const
 
 QString PropertyEditWidget::editMode(void) const
 {
-    return _forceLineWidget?"raw":"";
+    return _editMode;
 }
 
 QLabel *PropertyEditWidget::makeFormLabel(const QString &text, QWidget *parent)
@@ -192,7 +192,7 @@ void PropertyEditWidget::updateInternals(void)
     if (_formLabel) _formLabel->setText(formLabelText);
 
     //swap mode button arrow based on state
-    _modeButton->setArrowType(_forceLineWidget?Qt::LeftArrow:Qt::RightArrow);
+    _modeButton->setArrowType((_editMode=="raw")?Qt::LeftArrow:Qt::RightArrow);
 
     //set background color when its valid
     if (_bgColor.isValid()) _editWidget->setStyleSheet(
@@ -222,7 +222,8 @@ void PropertyEditWidget::handleCommitRequested(void)
 
 void PropertyEditWidget::handleModeButtonClicked(void)
 {
-    _forceLineWidget = not _forceLineWidget;
+    if (_editMode.isEmpty()) _editMode = "raw";
+    else _editMode = "";
     this->reloadParamDesc(_lastParamDesc);
 }
 

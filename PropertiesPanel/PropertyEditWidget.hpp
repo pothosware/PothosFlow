@@ -109,6 +109,6 @@ private:
     QWidget *_editParent;
     QColor _bgColor;
     QString _initialEditMode;
-    bool _forceLineWidget;
+    QString _editMode;
     Poco::JSON::Object::Ptr _lastParamDesc;
 };
