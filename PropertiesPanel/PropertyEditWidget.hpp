@@ -11,7 +11,9 @@
 
 class QLabel;
 class QTimer;
+class QToolButton;
 class QVBoxLayout;
+class QHBoxLayout;
 
 /*!
  * The property edit widget creates an entry widget through a JSON description.
@@ -27,7 +29,7 @@ public:
      * Make a new edit widget from a JSON description.
      * The initial value allows the widget to determine if a change occurred.
      */
-    PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent);
+    PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, const QString &editMode, QWidget *parent);
 
     ~PropertyEditWidget(void);
 
@@ -53,7 +55,13 @@ public:
     void setErrorMsg(const QString &errorMsg);
 
     //! Set the background color of the edit widget
-    void setBackgroundColor(const QColor color);
+    void setBackgroundColor(const QColor &color);
+
+    //! Original edit mode applied to this widget
+    const QString &initialEditMode(void) const;
+
+    //! get the current edit mode
+    QString editMode(void) const;
 
     /*!
      * Make a label that will track the widget's status.
@@ -83,6 +91,7 @@ private slots:
     void handleWidgetChanged(void);
     void handleEntryChanged(void);
     void handleCommitRequested(void);
+    void handleModeButtonClicked(void);
 
 private:
     void updateInternals(void);
@@ -95,5 +104,11 @@ private:
     QString _unitsStr;
     QTimer *_entryTimer;
     QVBoxLayout *_editLayout;
+    QToolButton *_modeButton;
+    QHBoxLayout *_modeLayout;
     QWidget *_editParent;
+    QColor _bgColor;
+    QString _initialEditMode;
+    QString _editMode;
+    Poco::JSON::Object::Ptr _lastParamDesc;
 };

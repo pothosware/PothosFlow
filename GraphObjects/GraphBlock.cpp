@@ -229,6 +229,18 @@ void GraphBlock::setPropertyName(const QString &key, const QString &name)
     this->markChanged();
 }
 
+QString GraphBlock::getPropertyEditMode(const QString &key) const
+{
+    auto it = _impl->propertiesEditMode.find(key);
+    if (it != _impl->propertiesEditMode.end()) return it->second;
+    return "";
+}
+
+void GraphBlock::setPropertyEditMode(const QString &key, const QString &mode)
+{
+    _impl->propertiesEditMode[key] = mode;
+}
+
 /*!
  * determine if a value is valid (boolean true)
  * empty data types are considered to be false.
@@ -916,6 +928,8 @@ Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
         Poco::JSON::Object::Ptr jPropObj(new Poco::JSON::Object);
         jPropObj->set("key", propKey.toStdString());
         jPropObj->set("value", this->getPropertyValue(propKey).toStdString());
+        auto editMode = this->getPropertyEditMode(propKey).toStdString();
+        if (not editMode.empty()) jPropObj->set("editMode", editMode);
         jPropsObj->add(jPropObj);
     }
     obj->set("properties", jPropsObj);
@@ -974,6 +988,7 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
         const auto jPropObj = properties->getObject(i);
         const auto propKey = QString::fromStdString(jPropObj->getValue<std::string>("key"));
         this->setPropertyValue(propKey, QString::fromStdString(jPropObj->getValue<std::string>("value")));
+        this->setPropertyEditMode(propKey, QString::fromStdString(jPropObj->optValue<std::string>("editMode", "")));
     }
 
     //load port description and init from it -- in the case eval fails
