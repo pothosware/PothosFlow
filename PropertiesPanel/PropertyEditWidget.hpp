@@ -29,7 +29,7 @@ public:
      * Make a new edit widget from a JSON description.
      * The initial value allows the widget to determine if a change occurred.
      */
-    PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent);
+    PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, const QString &editMode, QWidget *parent);
 
     ~PropertyEditWidget(void);
 
@@ -56,6 +56,12 @@ public:
 
     //! Set the background color of the edit widget
     void setBackgroundColor(const QColor &color);
+
+    //! Original edit mode applied to this widget
+    const QString &initialEditMode(void) const;
+
+    //! get the current edit mode
+    QString editMode(void) const;
 
     /*!
      * Make a label that will track the widget's status.
@@ -102,6 +108,7 @@ private:
     QHBoxLayout *_modeLayout;
     QWidget *_editParent;
     QColor _bgColor;
+    QString _initialEditMode;
     bool _forceLineWidget;
     Poco::JSON::Object::Ptr _lastParamDesc;
 };

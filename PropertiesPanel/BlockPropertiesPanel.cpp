@@ -58,7 +58,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     //id
     {
         const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
-        _idLineEdit = new PropertyEditWidget(_block->getId(), paramDesc, this);
+        _idLineEdit = new PropertyEditWidget(_block->getId(), paramDesc, "", this);
         _formLayout->addRow(_idLineEdit->makeFormLabel(tr("ID"), this), _idLineEdit);
         connect(_idLineEdit, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(_idLineEdit, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
@@ -100,9 +100,10 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     for (const auto &propKey : _block->getProperties())
     {
         auto paramDesc = _block->getParamDesc(propKey);
+        const auto editMode = _block->getPropertyEditMode(propKey);
 
         //create editable widget
-        auto editWidget = new PropertyEditWidget(_block->getPropertyValue(propKey), paramDesc, this);
+        auto editWidget = new PropertyEditWidget(_block->getPropertyValue(propKey), paramDesc, editMode, this);
         connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(editWidget, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
         connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleWidgetChanged(void)));
@@ -324,6 +325,7 @@ void BlockPropertiesPanel::handleCommit(void)
         {
             propertiesModified.push_back(_block->getPropertyName(propKey));
         }
+        _block->setPropertyEditMode(propKey, _propIdToEditWidget[propKey]->editMode());
     }
 
     //was the ID changed?

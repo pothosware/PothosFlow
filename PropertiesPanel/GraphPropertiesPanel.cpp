@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2016 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -284,7 +284,7 @@ void GraphPropertiesPanel::createVariableEditWidget(const QString &name)
 
     //create edit widget
     const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
-    auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), paramDesc, this);
+    auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), paramDesc, "", this);
     connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
     //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllVariableForms(void)));
     connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));

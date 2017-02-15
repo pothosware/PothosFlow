@@ -66,6 +66,13 @@ public:
     QString getPropertyName(const QString &key) const;
     void setPropertyName(const QString &key, const QString &name);
 
+    /*!
+     * Editable widget can be in default mode "" or "raw" mode.
+     * Future modes may be possible - like multi-line support.
+     */
+    QString getPropertyEditMode(const QString &key) const;
+    void setPropertyEditMode(const QString &key, const QString &mode);
+
     //! Get the property display text: varies from actual value, enum name, error...
     QString getPropertyDisplayText(const QString &key) const;
 

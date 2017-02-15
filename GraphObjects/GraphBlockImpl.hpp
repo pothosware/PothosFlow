@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -39,6 +39,7 @@ struct GraphBlock::Impl
     std::vector<QStaticText> propertiesText;
     std::map<QString, QString> propertiesValues;
     std::map<QString, QString> propertiesNames;
+    std::map<QString, QString> propertiesEditMode;
     std::map<QString, QString> propertiesPreview;
     std::map<QString, Poco::JSON::Array::Ptr> propertiesPreviewArgs;
     std::map<QString, Poco::JSON::Object::Ptr> propertiesPreviewKwargs;

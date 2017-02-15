@@ -20,7 +20,7 @@
  */
 static const long UPDATE_TIMER_MS = 500;
 
-PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent):
+PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, const QString &editMode, QWidget *parent):
     _initialValue(initialValue),
     _editWidget(nullptr),
     _errorLabel(new QLabel(this)),
@@ -30,7 +30,8 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::
     _modeButton(new QToolButton(this)),
     _modeLayout(new QHBoxLayout()),
     _editParent(parent),
-    _forceLineWidget(false)
+    _initialEditMode(editMode),
+    _forceLineWidget(editMode == "raw")
 {
     //setup entry timer - timeout acts like widget changed
     _entryTimer->setSingleShot(true);
@@ -117,7 +118,8 @@ const QString &PropertyEditWidget::initialValue(void) const
 
 bool PropertyEditWidget::changed(void) const
 {
-    return this->value() != this->initialValue();
+    return (this->value() != this->initialValue()) or
+        (this->editMode() != this->initialEditMode());
 }
 
 QString PropertyEditWidget::value(void) const
@@ -147,6 +149,16 @@ void PropertyEditWidget::setBackgroundColor(const QColor &color)
 {
     _bgColor = color;
     this->updateInternals();
+}
+
+const QString &PropertyEditWidget::initialEditMode(void) const
+{
+    return _initialEditMode;
+}
+
+QString PropertyEditWidget::editMode(void) const
+{
+    return _forceLineWidget?"raw":"";
 }
 
 QLabel *PropertyEditWidget::makeFormLabel(const QString &text, QWidget *parent)
