@@ -10,6 +10,7 @@ Release 0.5.0 (pending)
 Release 0.4.4 (pending)
 ==========================
 
+- Fixed moving blocks with multiple signal/slot connections
 - Disable insert graph widgets menu when no widgets available
 - Added missing directory option to the FileEntry edit widget
 - Fix editable combo box detection for returnPressed() event
