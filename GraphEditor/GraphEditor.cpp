@@ -290,7 +290,7 @@ GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0,
 
 //TODO traverse breakers and find one in the node mass that already exists
 
-static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnectionEndpoint &ep)
+static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnectionEndpoint &ep, const QString &signalName)
 {
     for (auto obj : editor->getGraphObjects(GRAPH_CONNECTION))
     {
@@ -298,6 +298,11 @@ static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnection
         assert(conn != nullptr);
         if (not (conn->getOutputEndpoint().getObj()->scene() == conn->getInputEndpoint().getObj()->scene())) continue;
         if (not (conn->getOutputEndpoint() == ep)) continue;
+        if (not signalName.isEmpty()) //filter by signal name (empty on regular endpoints)
+        {
+            const auto &pairs = conn->getSigSlotPairs();
+            if (not pairs.empty() and pairs.at(0).first != signalName) continue;
+        }
         auto breaker = dynamic_cast<GraphBreaker *>(conn->getInputEndpoint().getObj().data());
         if (breaker == nullptr) continue;
         return breaker;
@@ -352,7 +357,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         if (sigSlotPairs.empty()) sigSlotPairs.resize(1); //add empty
         for (const auto &sigSlotPair : sigSlotPairs)
         {
-            auto breaker = findInputBreaker(this, epOut);
+            auto breaker = findInputBreaker(this, epOut, sigSlotPair.first);
             if (breaker != nullptr) continue;
 
             breaker = new GraphBreaker(epOut.getObj()->draw());
@@ -380,7 +385,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
         for (const auto &sigSlotPair : sigSlotPairs)
         {
             //find the existing breaker or make a new one
-            const auto name = findInputBreaker(this, epOut)->getNodeName();
+            const auto name = findInputBreaker(this, epOut, sigSlotPair.first)->getNodeName();
             GraphBreaker *breaker = nullptr;
             for (auto obj : this->getGraphObjects(GRAPH_BREAKER))
             {
