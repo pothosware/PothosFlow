@@ -1072,6 +1072,7 @@ void GraphEditor::updateGraphEditorMenus(void)
 
     menu = mainMenu->insertGraphWidgetsMenu;
     menu->clear();
+    bool hasGraphWidgetsToInsert = false;
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
         auto block = dynamic_cast<GraphBlock *>(obj);
@@ -1091,10 +1092,12 @@ void GraphEditor::updateGraphEditorMenus(void)
             auto action = menu->addAction(QString("%1 (%2)").arg(block->getTitle()).arg(block->getId()));
             connect(action, SIGNAL(triggered(void)), _insertGraphWidgetsMapper, SLOT(map(void)));
             _insertGraphWidgetsMapper->setMapping(action, block);
+            hasGraphWidgetsToInsert = true;
         }
 
         next_block: continue;
     }
+    menu->setEnabled(hasGraphWidgetsToInsert);
 }
 
 GraphDraw *GraphEditor::getGraphDraw(const int index) const
