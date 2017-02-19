@@ -12,6 +12,7 @@
 #include <QString>
 #include <QStringList>
 #include <memory>
+#include <chrono>
 
 class EnvironmentEval;
 class ThreadPoolEval;
@@ -52,6 +53,7 @@ struct BlockStatus
     Poco::JSON::Array::Ptr outPortDesc;
     Poco::JSON::Object::Ptr overlayDesc;
     std::string overlayDescStr;
+    std::chrono::high_resolution_clock::time_point overlayExpired;
 };
 
 class BlockEval : public QObject

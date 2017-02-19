@@ -16,6 +16,9 @@
 #include <QRegExp>
 #include <QSet>
 
+//! Number of milliseconds until the overlay is considered expired
+static const int OVERLAY_EXPIRED_MS = 5000;
+
 //! helper to convert the port info vector into JSON for serialization of the block
 static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
 {
@@ -229,7 +232,7 @@ bool BlockEval::evaluationProcedure(void)
 
     //query description overlay, even if in error
     //the overlay could be valuable even when a setup call fails
-    //if (_queryPortDesc)
+    if (std::chrono::high_resolution_clock::now() > _lastBlockStatus.overlayExpired or _queryPortDesc)
     {
         auto proxyBlock = this->getProxyBlock();
         if (proxyBlock) try
@@ -252,6 +255,9 @@ bool BlockEval::evaluationProcedure(void)
         {
             //the function may not exist, ignore error
         }
+
+        //no matter what happens, mark the time so we don't over query the overlay
+        _lastBlockStatus.overlayExpired = std::chrono::high_resolution_clock::now() + std::chrono::milliseconds(OVERLAY_EXPIRED_MS);
     }
 
     //load its port info
