@@ -362,7 +362,13 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 
             breaker = new GraphBreaker(epOut.getObj()->draw());
             breaker->setInput(true);
-            const auto name = QString("%1[%2]").arg(epOut.getObj()->getId(), epOut.getKey().id);
+
+            //come up with an id that could visibly represent this connection
+            auto name = epOut.getObj()->getId();
+            bool isPortNumeric; epOut.getKey().id.toInt(&isPortNumeric);
+            if (not sigSlotPair.first.isEmpty()) name = sigSlotPair.first + name;
+            else if (not isPortNumeric) name = epOut.getKey().id + name;
+
             breaker->setId(this->newId(name));
             breaker->setNodeName(breaker->getId()); //the first of its name
             breaker->setRotation(epIn.getObj()->rotation());
