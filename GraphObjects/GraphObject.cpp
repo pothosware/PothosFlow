@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphObject.hpp"
@@ -198,8 +198,13 @@ void GraphObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
     //leave all other objects selected so the menu applies to all selected
     this->setSelected(true);
     auto pos = this->draw()->mapFromScene(this->mapToScene(event->pos()));
-    emit this->draw()->customContextMenuRequested(pos);
+    //emit this->draw()->customContextMenuRequested(pos); see below...
     event->accept();
+
+    //enqueue the request so the menu is not invoked from within this event
+    //moving objects re-parents them and when done from this context
+    //can cause a second context menu to appear after the move is complete
+    QMetaObject::invokeMethod(this->draw(), "customContextMenuRequested", Qt::QueuedConnection, Q_ARG(QPoint, pos));
 }
 
 void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
