@@ -135,22 +135,26 @@ void EvalEngineImpl::submitZoneInfo(const ZoneInfos &info)
     this->evaluate();
 }
 
-std::string EvalEngineImpl::getTopologyDotMarkup(const std::string &config)
+QByteArray EvalEngineImpl::getTopologyDotMarkup(const QByteArray &configBytes)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
-    if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->toDotMarkup(config);
+    if (not _topologyEval) return QByteArray();
+    const std::string config(configBytes.data(), configBytes.size());
+    const auto markup = _topologyEval->getTopology()->toDotMarkup(config);
+    return QByteArray(markup.data(), markup.size());
 }
 
-std::string EvalEngineImpl::getTopologyJSONDump(const std::string &config)
+QByteArray EvalEngineImpl::getTopologyJSONDump(const QByteArray &configBytes)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
-    if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->dumpJSON(config);
+    if (not _topologyEval) return QByteArray();
+    const std::string config(configBytes.data(), configBytes.size());
+    const auto dump = _topologyEval->getTopology()->dumpJSON(config);
+    return QByteArray(dump.data(), dump.size());
 }
 
 QByteArray EvalEngineImpl::getTopologyJSONStats(void)

@@ -110,17 +110,17 @@ void EvalEngine::submitBlock(QObject *obj)
     QMetaObject::invokeMethod(_impl, "submitBlock", Qt::QueuedConnection, Q_ARG(BlockInfo, blockToBlockInfo(block)));
 }
 
-std::string EvalEngine::getTopologyDotMarkup(const std::string &config)
+QByteArray EvalEngine::getTopologyDotMarkup(const QByteArray &config)
 {
-    std::string result;
-    QMetaObject::invokeMethod(_impl, "getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result), Q_ARG(std::string, config));
+    QByteArray result;
+    QMetaObject::invokeMethod(_impl, "getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
     return result;
 }
 
-std::string EvalEngine::getTopologyJSONDump(const std::string &config)
+QByteArray EvalEngine::getTopologyJSONDump(const QByteArray &config)
 {
-    std::string result;
-    QMetaObject::invokeMethod(_impl, "getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result), Q_ARG(std::string, config));
+    QByteArray result;
+    QMetaObject::invokeMethod(_impl, "getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
     return result;
 }
 

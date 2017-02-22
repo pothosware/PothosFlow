@@ -55,10 +55,10 @@ public slots:
     void submitBlock(QObject *block);
 
     //! query the dot markup for the active topology
-    std::string getTopologyDotMarkup(const std::string &config);
+    QByteArray getTopologyDotMarkup(const QByteArray &config);
 
     //! query the JSON dump for the active topology
-    std::string getTopologyJSONDump(const std::string &config);
+    QByteArray getTopologyJSONDump(const QByteArray &config);
 
     //! query the JSON stats for the active topology
     QByteArray getTopologyJSONStats(void);

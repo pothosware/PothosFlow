@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -11,7 +11,6 @@
 #include <Poco/Process.h>
 #include <Poco/Environment.h>
 #include <Poco/TemporaryFile.h>
-#include <Poco/JSON/Object.h>
 #include <QComboBox>
 #include <QDialog>
 #include <QFile>
@@ -26,7 +25,7 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
-#include <sstream>
+#include <QJsonDocument>
 
 struct ImageResult
 {
@@ -34,12 +33,12 @@ struct ImageResult
     std::string errorMsg;
 };
 
-static ImageResult dotMarkupToImage(const std::string &markup)
+static ImageResult dotMarkupToImage(const QByteArray &markup)
 {
     ImageResult result;
-    if (markup.empty())
+    if (markup.isNull())
     {
-        result.errorMsg = "empty markup - is the topology active?";
+        result.errorMsg = "no markup - is the topology active?";
         return result;
     }
 
@@ -61,9 +60,8 @@ static ImageResult dotMarkupToImage(const std::string &markup)
         args, &inPipe, &outPipe, &errPipe, env));
 
     //write the markup into dot
-    Poco::PipeOutputStream os(inPipe);
-    os << markup;
-    os.close();
+    inPipe.writeBytes(markup.data(), markup.size());
+    inPipe.close();
     outPipe.close();
 
     //check for errors
@@ -81,7 +79,7 @@ static ImageResult dotMarkupToImage(const std::string &markup)
     return result;
 }
 
-static ImageResult dotMarkupToImageSafe(const std::string &markup)
+static ImageResult dotMarkupToImageSafe(const QByteArray &markup)
 {
     ImageResult result;
     try
@@ -144,13 +142,11 @@ public:
 private slots:
     void handleChange(int)
     {
-        Poco::JSON::Object::Ptr configObj(new Poco::JSON::Object());
-        configObj->set("mode", _modeOptions->itemData(_modeOptions->currentIndex()).toString().toStdString());
-        configObj->set("port", _portOptions->itemData(_portOptions->currentIndex()).toString().toStdString());
-        std::stringstream ss;
-        configObj->stringify(ss);
+        QJsonObject configObj;
+        configObj["mode"] = _modeOptions->itemData(_modeOptions->currentIndex()).toString();
+        configObj["port"] = _portOptions->itemData(_portOptions->currentIndex()).toString();
 
-        const auto markup = _evalEngine->getTopologyDotMarkup(ss.str());
+        const auto markup = _evalEngine->getTopologyDotMarkup(QJsonDocument(configObj).toJson());
         _watcher->setFuture(QtConcurrent::run(std::bind(&dotMarkupToImageSafe, markup)));
     }
 
