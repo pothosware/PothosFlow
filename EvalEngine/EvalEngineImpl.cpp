@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngineImpl.hpp"
@@ -153,13 +153,14 @@ std::string EvalEngineImpl::getTopologyJSONDump(const std::string &config)
     return _topologyEval->getTopology()->dumpJSON(config);
 }
 
-std::string EvalEngineImpl::getTopologyJSONStats(void)
+QByteArray EvalEngineImpl::getTopologyJSONStats(void)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
-    if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->queryJSONStats();
+    if (not _topologyEval) return QByteArray();
+    const auto stats = _topologyEval->getTopology()->queryJSONStats();
+    return QByteArray(stats.data(), stats.size());
 }
 
 void EvalEngineImpl::handleMonitorTimeout(void)

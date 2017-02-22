@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -67,7 +67,7 @@ public slots:
     std::string getTopologyJSONDump(const std::string &config);
 
     //! query the JSON stats for the active topology
-    std::string getTopologyJSONStats(void);
+    QByteArray getTopologyJSONStats(void);
 
     //! Cleanup and shutdown prior to destruction
     void submitCleanup(void);

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine.hpp"
@@ -124,10 +124,10 @@ std::string EvalEngine::getTopologyJSONDump(const std::string &config)
     return result;
 }
 
-std::string EvalEngine::getTopologyJSONStats(void)
+QByteArray EvalEngine::getTopologyJSONStats(void)
 {
-    std::string result;
-    QMetaObject::invokeMethod(_impl, "getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result));
+    QByteArray result;
+    QMetaObject::invokeMethod(_impl, "getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result));
     return result;
 }
 
