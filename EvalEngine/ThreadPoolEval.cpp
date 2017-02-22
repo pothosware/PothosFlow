@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ThreadPoolEval.hpp"
@@ -6,7 +6,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Poco/Logger.h>
-#include <sstream>
+#include <QJsonDocument>
 
 ThreadPoolEval::ThreadPoolEval(void):
     _failureState(false)
@@ -19,7 +19,7 @@ ThreadPoolEval::~ThreadPoolEval(void)
     return;
 }
 
-void ThreadPoolEval::acceptConfig(const Poco::JSON::Object::Ptr &config)
+void ThreadPoolEval::acceptConfig(const QJsonObject &config)
 {
     _newZoneConfig = config;
 }
@@ -31,14 +31,14 @@ void ThreadPoolEval::acceptEnvironment(const std::shared_ptr<EnvironmentEval> &e
 
 Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
 {
-    if (not _newZoneConfig) return Pothos::Proxy();
+    if (_newZoneConfig.isEmpty()) return Pothos::Proxy();
 
     auto env = _newEnvironmentEval->getEnv();
     const auto &config = _newZoneConfig;
 
     //load the args
-    std::stringstream ss; config->stringify(ss);
-    Pothos::ThreadPoolArgs args(ss.str());
+    const auto bytes = QJsonDocument(config).toJson();
+    Pothos::ThreadPoolArgs args(std::string(bytes.data(), bytes.size()));
 
     //create the thread pool
     return env->findProxy("Pothos/ThreadPool")(args);
@@ -58,16 +58,10 @@ void ThreadPoolEval::update(void)
     bool requireNewThreadPool = _newEnvironment != _lastEnvironment;
 
     //zone configuration change?
-    if (_newZoneConfig and _lastZoneConfig)
+    //a config change of any kind means a new thread pool
+    if (_newZoneConfig != _lastZoneConfig)
     {
-        //a config change of any kind means a new thread pool
-        std::stringstream oldConfig, newConfig;
-        _lastZoneConfig->stringify(oldConfig);
-        _newZoneConfig->stringify(newConfig);
-        if (oldConfig.str() != newConfig.str())
-        {
-            requireNewThreadPool = true;
-        }
+        requireNewThreadPool = true;
     }
 
     //make a new thread pool

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EnvironmentEval.hpp"
@@ -9,7 +9,6 @@
 #include <Poco/URI.h>
 #include <Poco/Net/SocketAddress.h>
 #include <Poco/Logger.h>
-#include <sstream>
 
 EnvironmentEval::EnvironmentEval(void):
     _failureState(false)
@@ -22,7 +21,7 @@ EnvironmentEval::~EnvironmentEval(void)
     return;
 }
 
-void EnvironmentEval::acceptConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)
+void EnvironmentEval::acceptConfig(const QString &zoneName, const QJsonObject &config)
 {
     _zoneName = zoneName;
     _config = config;
@@ -58,23 +57,24 @@ void EnvironmentEval::update(void)
         const auto hostUri = getHostProcFromConfig(_zoneName, _config).first;
         try
         {
-            Pothos::RemoteClient client(hostUri);
+            Pothos::RemoteClient client(hostUri.toStdString());
             _errorMsg = tr("Remote environment %1 crashed").arg(_zoneName);
         }
         catch(const Pothos::RemoteClientError &)
         {
-            _errorMsg = tr("Remote host %1 is offline").arg(QString::fromStdString(hostUri));
+            _errorMsg = tr("Remote host %1 is offline").arg(hostUri);
         }
         poco_error_f2(Poco::Logger::get("PothosGui.EnvironmentEval.update"), "%s - %s", ex.displayText(), _errorMsg.toStdString());
     }
 }
 
-HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config)
+HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, const QJsonObject &config)
 {
-    if (zoneName == "gui") return HostProcPair("gui://"+Pothos::Util::getLoopbackAddr(), "gui");
+    if (zoneName == "gui") return HostProcPair(QString::fromStdString("gui://"+Pothos::Util::getLoopbackAddr()), "gui");
 
-    auto hostUri = config?config->getValue<std::string>("hostUri"):("tcp://"+Pothos::Util::getLoopbackAddr());
-    auto processName = config?config->getValue<std::string>("processName"):"";
+    const auto uriDefault = QString::fromStdString("tcp://"+Pothos::Util::getLoopbackAddr());
+    const auto hostUri = config.value("hostUri").toString(uriDefault);
+    const auto processName = config.value("processName").toString("");
     return HostProcPair(hostUri, processName);
 }
 
@@ -82,7 +82,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
 {
     if (_zoneName == "gui") return Pothos::ProxyEnvironment::make("managed");
 
-    const auto hostUri = getHostProcFromConfig(_zoneName, _config).first;
+    const auto hostUri = getHostProcFromConfig(_zoneName, _config).first.toStdString();
 
     //connect to the remote host and spawn a server
     auto serverEnv = Pothos::RemoteClient(hostUri).makeEnvironment("managed");

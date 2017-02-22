@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -15,6 +15,7 @@
 #include <QSpinBox>
 #include <QLineEdit>
 #include <QVBoxLayout>
+#include <QJsonArray>
 #include <cassert>
 
 static const int ARBITRARY_MAX_THREADS = 4096;
@@ -149,44 +150,40 @@ void AffinityZoneEditor::selectThisUri(const QString &uri)
     this->updateCpuSelection();
 }
 
-void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
+void AffinityZoneEditor::loadFromConfig(const QJsonObject &config)
 {
-    if (config->has("color"))
+    if (config.contains("color"))
     {
-        auto color = QString::fromStdString(config->getValue<std::string>("color"));
         _colorPicker->blockSignals(true);
-        _colorPicker->setCurrentColor(QColor(color));
+        _colorPicker->setCurrentColor(QColor(config.value("color").toString()));
         _colorPicker->blockSignals(false);
     }
-    if (config->has("hostUri"))
+    if (config.contains("hostUri"))
     {
-        auto uri = QString::fromStdString(config->getValue<std::string>("hostUri"));
-        this->selectThisUri(uri);
+        this->selectThisUri(config.value("hostUri").toString());
     }
-    if (config->has("processName"))
+    if (config.contains("processName"))
     {
-        auto name = QString::fromStdString(config->getValue<std::string>("processName"));
-        _processNameEdit->setText(name);
+        _processNameEdit->setText(config.value("processName").toString());
     }
-    if (config->has("numThreads"))
+    if (config.contains("numThreads"))
     {
-        _numThreadsSpin->setValue(config->getValue<int>("numThreads"));
+        _numThreadsSpin->setValue(config.value("numThreads").toInt());
     }
-    if (config->has("priority"))
+    if (config.contains("priority"))
     {
-        _prioritySpin->setValue(int(config->getValue<double>("priority")*100));
+        _prioritySpin->setValue(int(config.value("priority").toDouble()*100));
     }
-    if (config->has("affinityMode") and config->has("affinity"))
+    if (config.contains("affinityMode") and config.contains("affinity"))
     {
-        auto mode = config->getValue<std::string>("affinityMode");
-        auto mask = config->getArray("affinity");
-        std::vector<size_t> selection;
-        for (size_t i = 0; i < mask->size(); i++) selection.push_back(mask->getElement<int>(i));
-        _cpuSelection->setup(mode, selection);
+        const auto mask = config.value("affinity").toArray();
+        std::vector<int> selection;
+        for (int i = 0; i < mask.size(); i++) selection.push_back(mask.at(i).toInt());
+        _cpuSelection->setup(config.value("affinityMode").toString(), selection);
     }
-    if (config->has("yieldMode"))
+    if (config.contains("yieldMode"))
     {
-        auto mode = QString::fromStdString(config->getValue<std::string>("yieldMode"));
+        const auto mode = config.value("yieldMode").toString();
         for (int i = 0; i < _yieldModeBox->count(); i++)
         {
             if (_yieldModeBox->itemData(i).toString() == mode) _yieldModeBox->setCurrentIndex(i);
@@ -194,20 +191,20 @@ void AffinityZoneEditor::loadFromConfig(const Poco::JSON::Object::Ptr &config)
     }
 }
 
-Poco::JSON::Object::Ptr AffinityZoneEditor::getCurrentConfig(void) const
+QJsonObject AffinityZoneEditor::getCurrentConfig(void) const
 {
-    Poco::JSON::Object::Ptr config = new Poco::JSON::Object();
-    config->set("color", _colorPicker->currentColor().name().toStdString());
-    config->set("hostUri", _hostsBox->itemText(_hostsBox->currentIndex()).toStdString());
-    config->set("processName", _processNameEdit->text().toStdString());
-    config->set("numThreads", _numThreadsSpin->value());
-    config->set("priority", _prioritySpin->value()/100.0);
+    QJsonObject config;
+    config["color"] = _colorPicker->currentColor().name();
+    config["hostUri"] = _hostsBox->itemText(_hostsBox->currentIndex());
+    config["processName"] = _processNameEdit->text();
+    config["numThreads"] = _numThreadsSpin->value();
+    config["priority"] = _prioritySpin->value()/100.0;
     assert(_cpuSelection != nullptr);
-    config->set("affinityMode", _cpuSelection->mode());
-    Poco::JSON::Array::Ptr affinity = new Poco::JSON::Array();
-    for (auto num : _cpuSelection->selection()) affinity->add(num);
-    config->set("affinity", affinity);
-    config->set("yieldMode", _yieldModeBox->itemData(_yieldModeBox->currentIndex()).toString().toStdString());
+    config["affinityMode"] = _cpuSelection->mode();
+    QJsonArray affinity;
+    for (auto num : _cpuSelection->selection()) affinity.push_back(num);
+    config["affinity"] = affinity;
+    config["yieldMode"] = _yieldModeBox->itemData(_yieldModeBox->currentIndex()).toString();
     return config;
 }
 

@@ -1,17 +1,16 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Environment.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 #include <QObject>
 #include <QString>
 #include <memory>
-#include <string>
 #include <utility>
 
-typedef std::pair<std::string, std::string> HostProcPair;
+typedef std::pair<QString, QString> HostProcPair;
 
 class EnvironmentEval : public QObject
 {
@@ -26,7 +25,7 @@ public:
      * Called under re-eval to apply the latest config.
      * This call should take the info and not process.
      */
-    void acceptConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config);
+    void acceptConfig(const QString &zoneName, const QJsonObject &config);
 
     /*!
      * Deal with changes from the latest config.
@@ -34,7 +33,7 @@ public:
     void update(void);
 
     //! Shared method to parse the zone config into host uri and process name
-    static HostProcPair getHostProcFromConfig(const QString &zoneName, const Poco::JSON::Object::Ptr &config);
+    static HostProcPair getHostProcFromConfig(const QString &zoneName, const QJsonObject &config);
 
     //! Get access to the proxy environment
     Pothos::ProxyEnvironment::Sptr getEnv(void) const
@@ -64,7 +63,7 @@ private:
     Pothos::ProxyEnvironment::Sptr makeEnvironment(void);
 
     QString _zoneName;
-    Poco::JSON::Object::Ptr _config;
+    QJsonObject _config;
     Pothos::ProxyEnvironment::Sptr _env;
     Pothos::Proxy _eval;
     bool _failureState;

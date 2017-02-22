@@ -196,7 +196,7 @@ void EvalEngineImpl::evaluate(void)
         const auto &zone = blockInfo.zone;
 
         //extract the configuration for this zone
-        Poco::JSON::Object::Ptr config;
+        QJsonObject config;
         {
             auto it = _zoneInfo.find(zone);
             if (it != _zoneInfo.end()) config = it->second;

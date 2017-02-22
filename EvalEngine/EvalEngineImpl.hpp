@@ -7,7 +7,7 @@
 #include "TopologyEval.hpp"
 #include "BlockEval.hpp"
 #include <QString>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 #include <memory>
 #include <map>
 #include <set>
@@ -21,7 +21,7 @@ class QTimer;
 class EvalEngineGuiBlockDeleter;
 
 typedef std::map<size_t, BlockInfo> BlockInfos;
-typedef std::map<QString, Poco::JSON::Object::Ptr> ZoneInfos;
+typedef std::map<QString, QJsonObject> ZoneInfos;
 
 /*!
  * The EvalEngineImpl hold eval state and performs the actual work
