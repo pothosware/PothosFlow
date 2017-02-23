@@ -86,12 +86,12 @@ private slots:
             const auto topObj = result.object();
             for (const auto &name : topObj.keys())
             {
-                const auto dataObj = topObj.value(name).toObject();
+                const auto dataObj = topObj[name].toObject();
 
                 auto &item = _statsItems[name];
                 if (item == nullptr)
                 {
-                    const auto title = dataObj.value("blockName").toString();
+                    const auto title = dataObj["blockName"].toString();
                     item = new QTreeWidgetItem(QStringList(title));
                     _statsTree->addTopLevelItem(item);
                 }

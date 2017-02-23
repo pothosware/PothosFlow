@@ -73,8 +73,8 @@ HostProcPair EnvironmentEval::getHostProcFromConfig(const QString &zoneName, con
     if (zoneName == "gui") return HostProcPair(QString::fromStdString("gui://"+Pothos::Util::getLoopbackAddr()), "gui");
 
     const auto uriDefault = QString::fromStdString("tcp://"+Pothos::Util::getLoopbackAddr());
-    const auto hostUri = config.value("hostUri").toString(uriDefault);
-    const auto processName = config.value("processName").toString("");
+    const auto hostUri = config["hostUri"].toString(uriDefault);
+    const auto processName = config["processName"].toString("");
     return HostProcPair(hostUri, processName);
 }
 

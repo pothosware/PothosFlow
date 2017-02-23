@@ -155,35 +155,35 @@ void AffinityZoneEditor::loadFromConfig(const QJsonObject &config)
     if (config.contains("color"))
     {
         _colorPicker->blockSignals(true);
-        _colorPicker->setCurrentColor(QColor(config.value("color").toString()));
+        _colorPicker->setCurrentColor(QColor(config["color"].toString()));
         _colorPicker->blockSignals(false);
     }
     if (config.contains("hostUri"))
     {
-        this->selectThisUri(config.value("hostUri").toString());
+        this->selectThisUri(config["hostUri"].toString());
     }
     if (config.contains("processName"))
     {
-        _processNameEdit->setText(config.value("processName").toString());
+        _processNameEdit->setText(config["processName"].toString());
     }
     if (config.contains("numThreads"))
     {
-        _numThreadsSpin->setValue(config.value("numThreads").toInt());
+        _numThreadsSpin->setValue(config["numThreads"].toInt());
     }
     if (config.contains("priority"))
     {
-        _prioritySpin->setValue(int(config.value("priority").toDouble()*100));
+        _prioritySpin->setValue(int(config["priority"].toDouble()*100));
     }
     if (config.contains("affinityMode") and config.contains("affinity"))
     {
-        const auto mask = config.value("affinity").toArray();
+        const auto mask = config["affinity"].toArray();
         std::vector<int> selection;
         for (int i = 0; i < mask.size(); i++) selection.push_back(mask.at(i).toInt());
-        _cpuSelection->setup(config.value("affinityMode").toString(), selection);
+        _cpuSelection->setup(config["affinityMode"].toString(), selection);
     }
     if (config.contains("yieldMode"))
     {
-        const auto mode = config.value("yieldMode").toString();
+        const auto mode = config["yieldMode"].toString();
         for (int i = 0; i < _yieldModeBox->count(); i++)
         {
             if (_yieldModeBox->itemData(i).toString() == mode) _yieldModeBox->setCurrentIndex(i);
