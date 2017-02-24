@@ -6,7 +6,7 @@
 #include <QWidget>
 #include <QString>
 #include <QPointer>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 #include <string>
 
 class QLabel;
@@ -29,12 +29,12 @@ public:
      * Make a new edit widget from a JSON description.
      * The initial value allows the widget to determine if a change occurred.
      */
-    PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, const QString &editMode, QWidget *parent);
+    PropertyEditWidget(const QString &initialValue, const QJsonObject &paramDesc, const QString &editMode, QWidget *parent);
 
     ~PropertyEditWidget(void);
 
     //! Reload internal edit widget from a param desc change
-    void reloadParamDesc(const Poco::JSON::Object::Ptr &paramDesc);
+    void reloadParamDesc(const QJsonObject &paramDesc);
 
     //! Get the initial value of the edit widget
     const QString &initialValue(void) const;
@@ -49,7 +49,7 @@ public:
     void setValue(const QString &value);
 
     //! Set the type string from an evaluation
-    void setTypeStr(const std::string &typeStr);
+    void setTypeStr(const QString &typeStr);
 
     //! Set the error message from an evaluation
     void setErrorMsg(const QString &errorMsg);
@@ -110,5 +110,5 @@ private:
     QColor _bgColor;
     QString _initialEditMode;
     QString _editMode;
-    Poco::JSON::Object::Ptr _lastParamDesc;
+    QJsonObject _lastParamDesc;
 };

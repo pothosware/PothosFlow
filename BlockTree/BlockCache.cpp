@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockTree/BlockCache.hpp"
@@ -9,8 +9,6 @@
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
 #include <iostream>
 #include <map>
@@ -18,20 +16,20 @@
 /***********************************************************************
  * Query JSON docs from node
  **********************************************************************/
-static Poco::JSON::Array::Ptr queryBlockDescs(const QString &uri)
+static QJsonArray queryBlockDescs(const QString &uri)
 {
     try
     {
         auto client = Pothos::RemoteClient(uri.toStdString());
         auto env = client.makeEnvironment("managed");
-        return env->findProxy("Pothos/Util/DocUtils").call<Poco::JSON::Array::Ptr>("dumpJson");
+        return env->findProxy("Pothos/Util/DocUtils").call<QJsonArray>("dumpJson");
     }
     catch (const Pothos::Exception &ex)
     {
         poco_warning_f2(Poco::Logger::get("PothosGui.BlockCache"), "Failed to query JSON Docs from %s - %s", uri.toStdString(), ex.displayText());
     }
 
-    return Poco::JSON::Array::Ptr(); //empty JSON array
+    return QJsonArray(); //empty JSON array
 }
 
 /***********************************************************************
@@ -47,7 +45,7 @@ BlockCache *BlockCache::global(void)
 BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     QObject(parent),
     _hostExplorerDock(hostExplorer),
-    _watcher(new QFutureWatcher<Poco::JSON::Array::Ptr>(this))
+    _watcher(new QFutureWatcher<QJsonArray>(this))
 {
     globalBlockCache = this;
     assert(_hostExplorerDock != nullptr);
@@ -56,7 +54,7 @@ BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(update(void)));
 }
 
-Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path)
+QJsonObject BlockCache::getBlockDescFromPath(const QString &path)
 {
     //look in the cache
     {
@@ -73,7 +71,7 @@ Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path
             auto client = Pothos::RemoteClient(uri.toStdString());
             auto env = client.makeEnvironment("managed");
             auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
-            return DocUtils.call<Poco::JSON::Object::Ptr>("dumpJsonAt", path);
+            return DocUtils.call<QJsonObject>("dumpJsonAt", path.toStdString());
         }
         catch (const Pothos::Exception &)
         {
@@ -81,7 +79,7 @@ Poco::JSON::Object::Ptr BlockCache::getBlockDescFromPath(const std::string &path
         }
     }
 
-    return Poco::JSON::Object::Ptr();
+    return QJsonObject();
 }
 
 void BlockCache::clear(void)
@@ -109,7 +107,7 @@ void BlockCache::handleWatcherFinished(void)
     MainSplash::global()->postMessage(tr("Block cache updated."));
 
     //remove old nodes
-    std::map<QString, Poco::JSON::Array::Ptr> newMap;
+    std::map<QString, QJsonArray> newMap;
     for (const auto &uri : _allRemoteNodeUris) newMap[uri] = _uriToBlockDescs[uri];
     _uriToBlockDescs = newMap;
 
@@ -119,23 +117,22 @@ void BlockCache::handleWatcherFinished(void)
         _pathToBlockDesc.clear();
         for (const auto &pair : _uriToBlockDescs)
         {
-            if (not pair.second) continue;
-            for (const auto &blockDescObj : *pair.second)
+            for (const auto &blockDescVal : pair.second)
             {
-                const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
-                const auto path = blockDesc->get("path").extract<std::string>();
+                const auto blockDesc = blockDescVal.toObject();
+                const auto path = blockDesc["path"].toString();
                 _pathToBlockDesc[path] = blockDesc;
             }
         }
     }
 
     //make a master block desc list
-    auto superSetBlockDescs = new Poco::JSON::Array();
+    QJsonArray superSetBlockDescs;
     {
         Poco::RWLock::ScopedReadLock lock(_mapMutex);
         for (const auto &pair : _pathToBlockDesc)
         {
-            superSetBlockDescs->add(pair.second);
+            superSetBlockDescs.push_back(pair.second);
         }
     }
 

@@ -15,8 +15,8 @@
 #include <QMimeData>
 #include <QTimer>
 #include <QPainter>
+#include <QJsonDocument>
 #include <Poco/Logger.h>
-#include <Poco/String.h>
 #include <memory>
 
 static const long UPDATE_TIMER_MS = 500;
@@ -77,7 +77,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
 
     //get the block data
     auto blockItem = dynamic_cast<BlockTreeWidgetItem *>(_dragItem);
-    if (not blockItem->getBlockDesc()) return;
+    if (blockItem->getBlockDesc().isEmpty()) return;
 
     //create a block object to render the image
     auto draw = _editorTabs->getCurrentGraphEditor()->getCurrentGraphDraw();
@@ -101,11 +101,8 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
 
     //create the drag object
     auto mimeData = new QMimeData();
-    std::ostringstream oss;
-    blockItem->getBlockDesc()->stringify(oss);
-    const std::string bytesStr(oss.str());
-    const QByteArray byteArray(bytesStr.data(), bytesStr.size());
-    mimeData->setData("text/json/pothos_block", byteArray);
+    const QJsonDocument jsonDoc(blockItem->getBlockDesc());
+    mimeData->setData("binary/json/pothos_block", jsonDoc.toBinaryData());
     auto drag = new QDrag(this);
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
@@ -113,7 +110,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     drag->exec(Qt::CopyAction | Qt::MoveAction);
 }
 
-void BlockTreeWidget::handleBlockDescUpdate(const Poco::JSON::Array::Ptr &blockDescs)
+void BlockTreeWidget::handleBlockDescUpdate(const QJsonArray &blockDescs)
 {
     _blockDescs = blockDescs;
     this->populate();
@@ -154,19 +151,19 @@ void BlockTreeWidget::handleItemDoubleClicked(QTreeWidgetItem *item, int)
 
 void BlockTreeWidget::populate(void)
 {
-    for (const auto &blockDescObj : *_blockDescs)
+    for (const auto &blockDescVal : _blockDescs)
     {
         try
         {
-            const auto blockDesc = blockDescObj.extract<Poco::JSON::Object::Ptr>();
+            const auto blockDesc = blockDescVal.toObject();
             if (not this->blockDescMatchesFilter(blockDesc)) continue;
-            const auto path = blockDesc->get("path").extract<std::string>();
-            const auto name = blockDesc->get("name").extract<std::string>();
-            if (blockDesc->isArray("categories")) for (auto categoryObj : *blockDesc->getArray("categories"))
+            const auto path = blockDesc["path"].toString();
+            const auto name = blockDesc["name"].toString();
+            for (const auto &categoryVal : blockDesc["categories"].toArray())
             {
-                const auto category = categoryObj.extract<std::string>().substr(1);
-                const auto key = category.substr(0, category.find("/"));
-                if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
+                const auto category = categoryVal.toString().mid(1);
+                const auto key = category.mid(0, category.indexOf('/'));
+                if (_rootNodes.find(key) != _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
                 _rootNodes[key]->load(blockDesc, category + "/" + name);
             }
         }
@@ -179,32 +176,31 @@ void BlockTreeWidget::populate(void)
     //sort the columns alphabetically
     this->sortByColumn(0, Qt::AscendingOrder);
 
-    emit this->blockDescEvent(Poco::JSON::Object::Ptr(), false); //unselect
+    emit this->blockDescEvent(QJsonObject(), false); //unselect
 }
 
-bool BlockTreeWidget::blockDescMatchesFilter(const Poco::JSON::Object::Ptr &blockDesc)
+bool BlockTreeWidget::blockDescMatchesFilter(const QJsonObject &blockDesc)
 {
     if (_filter.isEmpty()) return true;
 
-    const auto path = blockDesc->get("path").extract<std::string>();
-    const auto name = blockDesc->get("name").extract<std::string>();
+    const auto path = blockDesc["path"].toString();
+    const auto name = blockDesc["name"].toString();
 
     //construct a candidate string from path, name, categories, and keywords.
-    std::string candidate = path+name;
-    if (blockDesc->isArray("categories")) for (auto categoryObj : *blockDesc->getArray("categories"))
+    QString candidate = path+name;
+    for (const auto &categoryVal : blockDesc["categories"].toArray())
     {
-        candidate += categoryObj.extract<std::string>();
+        candidate += categoryVal.toString();
     }
-    if(blockDesc->isArray("keywords"))
+    for (const auto &keywordVal : blockDesc["keywords"].toArray())
     {
-        const auto keywords = blockDesc->getArray("keywords");
-        for(auto keyword : *keywords) candidate += keyword.extract<std::string>();
+        candidate += keywordVal.toString();
     }
 
     //reject if filter string not found in candidate
-    candidate = Poco::toLower(candidate);
-    const auto searchToken = Poco::toLower(_filter.toStdString());
-    return (candidate.find(searchToken) != std::string::npos);
+    candidate = candidate.toLower();
+    const auto searchToken = _filter.toLower();
+    return (candidate.indexOf(searchToken) != -1);
 }
 
 QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
@@ -214,11 +210,8 @@ QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
         auto b = dynamic_cast<BlockTreeWidgetItem *>(item);
         if (b == nullptr) continue;
         auto mimeData = new QMimeData();
-        std::ostringstream oss;
-        b->getBlockDesc()->stringify(oss);
-        const std::string bytesStr(oss.str());
-        const QByteArray byteArray(bytesStr.data(), bytesStr.size());
-        mimeData->setData("text/json/pothos_block", byteArray);
+        const QJsonDocument jsonDoc(b->getBlockDesc());
+        mimeData->setData("binary/json/pothos_block", jsonDoc.toBinaryData());
         return mimeData;
     }
     return QTreeWidget::mimeData(items);

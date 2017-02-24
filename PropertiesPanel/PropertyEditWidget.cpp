@@ -20,7 +20,7 @@
  */
 static const long UPDATE_TIMER_MS = 500;
 
-PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const Poco::JSON::Object::Ptr &paramDesc, const QString &editMode, QWidget *parent):
+PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const QJsonObject &paramDesc, const QString &editMode, QWidget *parent):
     _initialValue(initialValue),
     _editWidget(nullptr),
     _errorLabel(new QLabel(this)),
@@ -63,7 +63,7 @@ PropertyEditWidget::~PropertyEditWidget(void)
     delete _formLabel;
 }
 
-void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDesc)
+void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
 {
     _lastParamDesc = paramDesc;
 
@@ -75,15 +75,15 @@ void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDes
     delete _editWidget;
 
     //extract widget type
-    auto widgetType = paramDesc->optValue<std::string>("widgetType", "LineEdit");
-    if (paramDesc->isArray("options")) widgetType = "ComboBox";
-    if (widgetType.empty()) widgetType = "LineEdit";
-    _unitsStr = QString::fromStdString(paramDesc->optValue<std::string>("units", ""));
+    auto widgetType = paramDesc["widgetType"].toString("LineEdit");
+    if (paramDesc.contains("options")) widgetType = "ComboBox";
+    if (widgetType.isEmpty()) widgetType = "LineEdit";
+    _unitsStr = paramDesc["units"].toString();
 
     //check if the widget type exists in the plugin tree
-    if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType)))
+    if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString())))
     {
-        poco_error_f1(Poco::Logger::get("PothosGui.BlockPropertiesPanel"), "widget type %s does not exist", widgetType);
+        Poco::Logger::get("PothosGui.BlockPropertiesPanel").error("widget type %s does not exist", widgetType.toStdString());
         widgetType = "LineEdit";
     }
 
@@ -92,7 +92,7 @@ void PropertyEditWidget::reloadParamDesc(const Poco::JSON::Object::Ptr &paramDes
     if (_editMode == "raw") widgetType = "LineEdit";
 
     //lookup the plugin to get the entry widget factory
-    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType));
+    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString()));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
     _editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(_editParent));
     _editWidget->setLocale(QLocale::C);
@@ -134,7 +134,7 @@ void PropertyEditWidget::setValue(const QString &value)
     QMetaObject::invokeMethod(_editWidget, "setValue", Qt::DirectConnection, Q_ARG(QString, value));
 }
 
-void PropertyEditWidget::setTypeStr(const std::string &typeStr)
+void PropertyEditWidget::setTypeStr(const QString &typeStr)
 {
     this->setBackgroundColor(typeStrToColor(typeStr));
 }

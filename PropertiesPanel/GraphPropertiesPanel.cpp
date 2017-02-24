@@ -261,7 +261,7 @@ void GraphPropertiesPanel::updateAllVariableForms(void)
             auto obj = evalEnv.eval(name.toStdString());
             const auto typeStr = obj.getTypeString();
             const auto toString = obj.toString();
-            editWidget->setTypeStr(typeStr);
+            editWidget->setTypeStr(QString::fromStdString(typeStr));
             editWidget->setErrorMsg(""); //clear errors
             editWidget->setToolTip(QString::fromStdString(toString));
         }
@@ -283,8 +283,7 @@ void GraphPropertiesPanel::createVariableEditWidget(const QString &name)
     editLayout->setContentsMargins(QMargins());
 
     //create edit widget
-    const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
-    auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), paramDesc, "", this);
+    auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), QJsonObject(), "", this);
     connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
     //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllVariableForms(void)));
     connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));

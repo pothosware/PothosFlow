@@ -4,10 +4,10 @@
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QTreeWidget>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QString>
 #include <QList>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 #include <map>
 
 class QTimer;
@@ -24,10 +24,10 @@ public:
     BlockTreeWidget(QWidget *parent, GraphEditorTabs *editorTabs);
 
 signals:
-    void blockDescEvent(const Poco::JSON::Object::Ptr &, bool);
+    void blockDescEvent(const QJsonObject &, bool);
 
 public slots:
-    void handleBlockDescUpdate(const Poco::JSON::Array::Ptr &blockDescs);
+    void handleBlockDescUpdate(const QJsonArray &blockDescs);
 
 private slots:
     void handleFilterTimerExpired(void);
@@ -46,7 +46,7 @@ private:
 
     void populate(void);
 
-    bool blockDescMatchesFilter(const Poco::JSON::Object::Ptr &blockDesc);
+    bool blockDescMatchesFilter(const QJsonObject &blockDesc);
 
     QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const;
 
@@ -55,6 +55,6 @@ private:
     QTimer *_filttimer;
     QPoint _dragStartPos;
     QTreeWidgetItem *_dragItem;
-    Poco::JSON::Array::Ptr _blockDescs;
-    std::map<std::string, BlockTreeWidgetItem *> _rootNodes;
+    QJsonArray _blockDescs;
+    std::map<QString, BlockTreeWidgetItem *> _rootNodes;
 };

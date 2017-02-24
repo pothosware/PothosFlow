@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -17,8 +17,7 @@
 #include <QTabWidget>
 #include <QLabel>
 #include <QPainter>
-#include <sstream>
-#include <cassert>
+#include <QJsonDocument>
 
 /*!
  * We could remove the timer with the eval-background system.
@@ -57,8 +56,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
     //id
     {
-        const Poco::JSON::Object::Ptr paramDesc(new Poco::JSON::Object());
-        _idLineEdit = new PropertyEditWidget(_block->getId(), paramDesc, "", this);
+        _idLineEdit = new PropertyEditWidget(_block->getId(), QJsonObject(), "", this);
         _formLayout->addRow(_idLineEdit->makeFormLabel(tr("ID"), this), _idLineEdit);
         connect(_idLineEdit, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
         connect(_idLineEdit, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
@@ -71,11 +69,11 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _formLayout->addRow(_propertiesTabs);
     for (const auto &propKey : _block->getProperties())
     {
-        const auto tabName = _block->getParamDesc(propKey)->optValue<std::string>("tab", "");
+        const auto tabName = _block->getParamDesc(propKey)["tab"].toString();
         if (_paramLayouts.count(tabName) != 0) continue;
         auto tab = new QWidget(_propertiesTabs);
         _paramLayouts[tabName] = makeFormLayout(tab);
-        _propertiesTabs->addTab(tab, tabName.empty()? tr("Default") : QString::fromStdString(tabName));
+        _propertiesTabs->addTab(tab, tabName.isEmpty()? tr("Default") : tabName);
         _tabWidgetToTabName[tab] = tabName;
     }
 
@@ -112,7 +110,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         editWidget->setToolTip(this->getParamDocString(propKey));
 
         //install into appropriate form/tab
-        auto layout = _paramLayouts.at(paramDesc->optValue<std::string>("tab", ""));
+        auto layout = _paramLayouts.at(paramDesc["tab"].toString());
         layout->addRow(editWidget->makeFormLabel(_block->getPropertyName(propKey), this), editWidget);
     }
 
@@ -155,14 +153,14 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     _formLayout->addRow(_infoTabs);
     {
         QString output;
-        output += QString("<h1>%1</h1>").arg(QString::fromStdString(blockDesc->get("name").convert<std::string>()));
-        output += QString("<p>%1</p>").arg(QString::fromStdString(block->getBlockDescPath()));
+        output += QString("<h1>%1</h1>").arg(block->getTitle());
+        output += QString("<p>%1</p>").arg(block->getBlockDescPath());
         output += "<p>";
-        if (blockDesc->isArray("docs")) for (const auto &lineObj : *blockDesc->getArray("docs"))
+        for (const auto &lineVal : blockDesc["docs"].toArray())
         {
-            const auto line = lineObj.extract<std::string>();
-            if (line.empty()) output += "<p /><p>";
-            else output += QString::fromStdString(line)+"\n";
+            const auto line = lineVal.toString();
+            if (line.isEmpty()) output += "<p /><p>";
+            else output += line+"\n";
         }
         output += "</p>";
 
@@ -239,17 +237,16 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 QString BlockPropertiesPanel::getParamDocString(const QString &propKey)
 {
     const auto paramDesc = _block->getParamDesc(propKey);
-    assert(paramDesc);
     QString unitsStr;
-    if (paramDesc->has("units")) unitsStr = QString(" (%1)")
-        .arg(QString::fromStdString(paramDesc->getValue<std::string>("units")).toHtmlEscaped());
+    if (paramDesc.contains("units")) unitsStr = QString(" (%1)")
+        .arg(paramDesc["units"].toString().toHtmlEscaped());
     QString output;
     output += QString("<h3>%1%2</h3>").arg(_block->getPropertyName(propKey).toHtmlEscaped()).arg(unitsStr);
-    if (paramDesc->isArray("desc")) for (const auto &lineObj : *paramDesc->getArray("desc"))
+    if (paramDesc.contains("desc")) for (const auto &lineVal : paramDesc["desc"].toArray())
     {
-        const auto line = lineObj.extract<std::string>();
-        if (line.empty()) output += "<p /><p>";
-        else output += QString::fromStdString(line)+"\n";
+        const auto line = lineVal.toString();
+        if (line.isEmpty()) output += "<p /><p>";
+        else output += line+"\n";
     }
     else output += QString("<p>%1</p>").arg(tr("Undocumented"));
     return output;
@@ -292,7 +289,7 @@ void BlockPropertiesPanel::handleBlockEvalDone(void)
     this->updateAllForms();
 }
 
-void BlockPropertiesPanel::handleParamDescChanged(const QString &key, const Poco::JSON::Object::Ptr &desc)
+void BlockPropertiesPanel::handleParamDescChanged(const QString &key, const QJsonObject &desc)
 {
     _propIdToEditWidget[key]->reloadParamDesc(desc);
 }
@@ -361,9 +358,8 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
 
     if (_infoTabs->widget(index) == _jsonBlockDesc)
     {
-        std::stringstream ss;
-        _block->getBlockDesc()->stringify(ss, 4);
-        _jsonBlockDesc->setText(QString::fromStdString(ss.str()));
+        const QJsonDocument jsonDoc(_block->getBlockDesc());
+        _jsonBlockDesc->setText(jsonDoc.toJson(QJsonDocument::Indented));
     }
 
     if (_infoTabs->widget(index) == _evalTypesDesc)
@@ -376,8 +372,8 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
             for (const auto &propKey : _block->getProperties())
             {
                 const auto typeStr = _block->getPropertyTypeStr(propKey);
-                if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
-                    .arg(propKey).arg(QString::fromStdString(typeStr).toHtmlEscaped());
+                if (not typeStr.isEmpty()) output += QString("<li><b>%1</b> - %2</li>")
+                    .arg(propKey).arg(typeStr.toHtmlEscaped());
             }
             output += "</ul>";
         }
@@ -388,9 +384,9 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
             for (const auto &portKey : _block->getInputPorts())
             {
                 const auto typeStr = _block->getInputPortTypeStr(portKey);
-                if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
+                if (not typeStr.isEmpty()) output += QString("<li><b>%1</b> - %2</li>")
                     .arg(_block->getInputPortAlias(portKey).toHtmlEscaped())
-                    .arg(QString::fromStdString(typeStr).toHtmlEscaped());
+                    .arg(typeStr.toHtmlEscaped());
             }
             output += "</ul>";
         }
@@ -401,9 +397,9 @@ void BlockPropertiesPanel::handleDocTabChanged(int index)
             for (const auto &portKey : _block->getOutputPorts())
             {
                 const auto typeStr = _block->getOutputPortTypeStr(portKey);
-                if (not typeStr.empty()) output += QString("<li><b>%1</b> - %2</li>")
+                if (not typeStr.isEmpty()) output += QString("<li><b>%1</b> - %2</li>")
                     .arg(_block->getOutputPortAlias(portKey).toHtmlEscaped())
-                    .arg(QString::fromStdString(typeStr).toHtmlEscaped());
+                    .arg(typeStr.toHtmlEscaped());
             }
             output += "</ul>";
         }
