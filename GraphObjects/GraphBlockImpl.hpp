@@ -23,12 +23,12 @@ struct GraphBlock::Impl
         return;
     }
 
-    Poco::JSON::Object::Ptr blockDesc;
-    Poco::JSON::Object::Ptr overlayDesc;
-    Poco::JSON::Array::Ptr inputDesc;
-    Poco::JSON::Array::Ptr outputDesc;
+    QJsonObject blockDesc;
+    QJsonObject overlayDesc;
+    QJsonArray inputDesc;
+    QJsonArray outputDesc;
     QString affinityZone;
-    std::string activeEditTab;
+    QString activeEditTab;
 
     QStringList blockErrorMsgs;
 
@@ -41,10 +41,10 @@ struct GraphBlock::Impl
     std::map<QString, QString> propertiesNames;
     std::map<QString, QString> propertiesEditMode;
     std::map<QString, QString> propertiesPreview;
-    std::map<QString, Poco::JSON::Array::Ptr> propertiesPreviewArgs;
-    std::map<QString, Poco::JSON::Object::Ptr> propertiesPreviewKwargs;
+    std::map<QString, QJsonArray> propertiesPreviewArgs;
+    std::map<QString, QJsonObject> propertiesPreviewKwargs;
     std::map<QString, QString> propertiesErrorMsg;
-    std::map<QString, std::string> propertiesTypeStr;
+    std::map<QString, QString> propertiesTypeStr;
 
     std::map<QString, QString> inputPortsAliases;
     std::vector<QStaticText> inputPortsText;
@@ -52,7 +52,7 @@ struct GraphBlock::Impl
     std::vector<QRectF> inputPortRects;
     std::vector<QPointF> inputPortPoints;
     std::vector<QColor> inputPortColors;
-    std::map<QString, std::string> inputPortTypeStr;
+    std::map<QString, QString> inputPortTypeStr;
     std::map<QString, size_t> inputPortUseCount;
 
     std::map<QString, QString> outputPortsAliases;
@@ -61,7 +61,7 @@ struct GraphBlock::Impl
     std::vector<QRectF> outputPortRects;
     std::vector<QPointF> outputPortPoints;
     std::vector<QColor> outputPortColors;
-    std::map<QString, std::string> outputPortTypeStr;
+    std::map<QString, QString> outputPortTypeStr;
     std::map<QString, size_t> outputPortUseCount;
 
     QRectF signalPortRect;

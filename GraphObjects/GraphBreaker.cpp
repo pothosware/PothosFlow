@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBreaker.hpp"
@@ -186,22 +186,19 @@ void GraphBreaker::render(QPainter &painter)
     _impl->connectPoint = trans.map(connectionPoint);
 }
 
-Poco::JSON::Object::Ptr GraphBreaker::serialize(void) const
+QJsonObject GraphBreaker::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj->set("what", std::string("Breaker"));
-    obj->set("nodeName", this->getNodeName().toStdString());
-    obj->set("isInput", this->isInput());
+    obj["what"] = "Breaker";
+    obj["nodeName"] = this->getNodeName();
+    obj["isInput"] = this->isInput();
     return obj;
 }
 
-void GraphBreaker::deserialize(Poco::JSON::Object::Ptr obj)
+void GraphBreaker::deserialize(const QJsonObject &obj)
 {
-    auto nodeName = QString::fromStdString(obj->getValue<std::string>("nodeName"));
-    auto isInput = obj->getValue<bool>("isInput");
-
-    this->setInput(isInput);
-    this->setNodeName(nodeName);
+    this->setInput(obj["isInput"].toBool());
+    this->setNodeName(obj["nodeName"].toString());
 
     GraphObject::deserialize(obj);
 }

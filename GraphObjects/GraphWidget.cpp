@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidget.hpp"
@@ -187,13 +187,13 @@ bool GraphWidget::didWidgetStateChange(void) const
 /***********************************************************************
  * serialize/deserialize hooks
  **********************************************************************/
-Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
+QJsonObject GraphWidget::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj->set("what", std::string("Widget"));
-    obj->set("blockId", _impl->block->getId().toStdString());
-    obj->set("width", _impl->graphicsWidget->size().width());
-    obj->set("height", _impl->graphicsWidget->size().height());
+    obj["what"] = "Widget";
+    obj["blockId"] = _impl->block->getId();
+    obj["width"] = _impl->graphicsWidget->size().width();
+    obj["height"] = _impl->graphicsWidget->size().height();
 
     //query the widget state
     auto state = this->saveWidgetState();
@@ -204,22 +204,21 @@ Poco::JSON::Object::Ptr GraphWidget::serialize(void) const
         QByteArray data;
         QDataStream ds(&data, QIODevice::WriteOnly);
         ds << state;
-        data = data.toBase64();
-        obj->set("state", std::string(data.data(), data.size()));
+        obj["state"] = QString(data.toBase64());
         _impl->widgetState = state; //stash
     }
 
     return obj;
 }
 
-void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
+void GraphWidget::deserialize(const QJsonObject &obj)
 {
     auto editor = this->draw()->getGraphEditor();
 
     //locate the associated block
     if (not _impl->block)
     {
-        auto blockId = QString::fromStdString(obj->getValue<std::string>("blockId"));
+        auto blockId = obj["blockId"].toString();
         auto graphObj = editor->getObjectById(blockId, GRAPH_BLOCK);
         if (graphObj == nullptr) throw Pothos::NotFoundException("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
         auto graphBlock = dynamic_cast<GraphBlock *>(graphObj);
@@ -227,23 +226,21 @@ void GraphWidget::deserialize(Poco::JSON::Object::Ptr obj)
         this->setGraphBlock(graphBlock);
     }
 
-    if (obj->has("width") and obj->has("height"))
+    if (obj.contains("width") and obj.contains("height"))
     {
         _impl->graphicsWidget->resize(
-            obj->getValue<int>("width"),
-            obj->getValue<int>("height"));
+            obj["width"].toInt(), obj["height"].toInt());
     }
 
     //restore the widget state from JSON
-    const auto state = obj->optValue<std::string>("state", "");
-    if (state.empty()) _impl->widgetState.clear();
-    else
+    if (obj.contains("state"))
     {
-        auto data = QByteArray(state.data(), state.size());
-        data = QByteArray::fromBase64(data);
+        const auto state = obj["state"].toString();
+        auto data = QByteArray::fromBase64(state.toUtf8());
         QDataStream ds(&data, QIODevice::ReadOnly);
         ds >> _impl->widgetState;
     }
+    else _impl->widgetState.clear();
 
     //restore the widgets state when there is an active widget
     //otherwise this is also called in handleBlockEvalDone()

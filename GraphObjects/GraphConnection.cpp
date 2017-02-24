@@ -16,7 +16,7 @@
 #include <cassert>
 #include <QtMath> //qCos, radians
 
-static std::string directionToStr(const GraphConnectableDirection direction)
+static QString directionToStr(const GraphConnectableDirection direction)
 {
     switch (direction)
     {
@@ -127,7 +127,7 @@ void GraphConnection::setSigSlotPairs(const std::vector<SigSlotPair> &pairs)
 static void doSigSlotWarning(const QString &name, const GraphConnectionEndpoint &ep)
 {
     poco_warning_f3(Poco::Logger::get("PothosGui.GraphConnection.addSigSlotPair"),
-        "cant find %s '%s' in %s", directionToStr(ep.getConnectableAttrs().direction), name.toStdString(), ep.getObj()->getId().toStdString());
+        "cant find %s '%s' in %s", directionToStr(ep.getConnectableAttrs().direction).toStdString(), name.toStdString(), ep.getObj()->getId().toStdString());
 }
 
 void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
@@ -501,32 +501,32 @@ void GraphConnection::render(QPainter &painter)
 /***********************************************************************
  * serialize - connection to JSON
  **********************************************************************/
-static void endpointSerialize(Poco::JSON::Object::Ptr obj, const GraphConnectionEndpoint &ep)
+static void endpointSerialize(QJsonObject &obj, const GraphConnectionEndpoint &ep)
 {
     const auto key = directionToStr(ep.getConnectableAttrs().direction);
-    obj->set(key+"Id", ep.getObj()->getId().toStdString());
-    obj->set(key+"Key", ep.getKey().id.toStdString());
+    obj[key+"Id"] = ep.getObj()->getId();
+    obj[key+"Key"] = ep.getKey().id;
 }
 
-Poco::JSON::Object::Ptr GraphConnection::serialize(void) const
+QJsonObject GraphConnection::serialize(void) const
 {
     auto obj = GraphObject::serialize();
     assert(this->getOutputEndpoint().isValid());
     assert(this->getInputEndpoint().isValid());
-    obj->set("what", std::string("Connection"));
+    obj["what"] = "Connection";
     endpointSerialize(obj, this->getOutputEndpoint());
     endpointSerialize(obj, this->getInputEndpoint());
 
     //save signal-slots connection pairs
-    Poco::JSON::Array::Ptr sigSlots(new Poco::JSON::Array());
+    QJsonArray sigSlots;
     for (const auto &pair : this->getSigSlotPairs())
     {
-        Poco::JSON::Array::Ptr sigSlot(new Poco::JSON::Array());
-        sigSlot->add(pair.first.toStdString());
-        sigSlot->add(pair.second.toStdString());
-        sigSlots->add(sigSlot);
+        QJsonArray sigSlot;
+        sigSlot.push_back(pair.first);
+        sigSlot.push_back(pair.second);
+        sigSlots.push_back(sigSlot);
     }
-    if (sigSlots->size() > 0) obj->set("sigSlots", sigSlots);
+    if (not sigSlots.isEmpty()) obj["sigSlots"] = sigSlots;
 
     return obj;
 }
@@ -534,13 +534,13 @@ Poco::JSON::Object::Ptr GraphConnection::serialize(void) const
 /***********************************************************************
  * deserialize - JSON to connection
  **********************************************************************/
-static GraphConnectionEndpoint endpointDeserialize(GraphDraw *draw, Poco::JSON::Object::Ptr obj, const GraphConnectableDirection &direction)
+static GraphConnectionEndpoint endpointDeserialize(GraphDraw *draw, const QJsonObject &obj, const GraphConnectableDirection &direction)
 {
     const auto key = directionToStr(direction);
-    if (obj->has(key+"Id") and obj->has(key+"Key"))
+    if (obj.contains(key+"Id") and obj.contains(key+"Key"))
     {
-        auto portId = QString::fromStdString(obj->getValue<std::string>(key+"Id"));
-        auto portKey = QString::fromStdString(obj->getValue<std::string>(key+"Key"));
+        const auto portId = obj[key+"Id"].toString();
+        const auto portKey = obj[key+"Key"].toString();
         auto graphObj = draw->getObjectById(portId, ~GRAPH_CONNECTION);
         if (graphObj == nullptr) throw Pothos::NotFoundException("GraphConnection::deserialize()", "cant resolve object with ID: '"+portId.toStdString()+"'");
         return GraphConnectionEndpoint(graphObj, GraphConnectableKey(portKey, direction));
@@ -548,7 +548,7 @@ static GraphConnectionEndpoint endpointDeserialize(GraphDraw *draw, Poco::JSON::
     return GraphConnectionEndpoint();
 }
 
-void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
+void GraphConnection::deserialize(const QJsonObject &obj)
 {
     auto outputEp = endpointDeserialize(this->draw(), obj, GRAPH_CONN_OUTPUT);
     auto inputEp = endpointDeserialize(this->draw(), obj, GRAPH_CONN_INPUT);
@@ -564,17 +564,11 @@ void GraphConnection::deserialize(Poco::JSON::Object::Ptr obj)
     assert(this->getOutputEndpoint().isValid());
 
     //restore signal-slots connection pairs
-    Poco::JSON::Array::Ptr sigSlots;
-    if (obj->isArray("sigSlots")) sigSlots = obj->getArray("sigSlots");
-    if (sigSlots) for (size_t i = 0; i < sigSlots->size(); i++)
+    for (const auto &sigSlotVal : obj["sigSlots"].toArray())
     {
-        if (not sigSlots->isArray(i)) continue;
-        auto sigSlot = sigSlots->getArray(i);
-        if (sigSlot->size() != 2) continue;
-        auto pair = std::make_pair(
-            QString::fromStdString(sigSlot->getElement<std::string>(0)),
-            QString::fromStdString(sigSlot->getElement<std::string>(1)));
-        this->addSigSlotPair(pair);
+        const auto sigSlot = sigSlotVal.toArray();
+        if (sigSlot.size() != 2) continue;
+        this->addSigSlotPair(std::make_pair(sigSlot.at(0).toString(), sigSlot.at(1).toString()));
     }
 
     GraphObject::deserialize(obj);

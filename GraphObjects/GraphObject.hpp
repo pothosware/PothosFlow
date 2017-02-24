@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -8,10 +8,9 @@
 #include <QGraphicsObject>
 #include <QPointF>
 #include <QRectF>
+#include <QJsonObject>
 #include <vector>
 #include <memory>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
 
 class QObject;
 class QPainter;
@@ -77,9 +76,9 @@ public:
     bool isFlaggedForDelete(void) const;
     void flagForDelete(void);
 
-    virtual Poco::JSON::Object::Ptr serialize(void) const;
+    virtual QJsonObject serialize(void) const;
 
-    virtual void deserialize(Poco::JSON::Object::Ptr obj);
+    virtual void deserialize(const QJsonObject &obj);
 
 signals:
     void IDChanged(const QString &);

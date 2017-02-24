@@ -8,6 +8,8 @@
 #include <QObject>
 #include <QString>
 #include <QPointF>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <memory>
 #include <vector>
 
@@ -20,19 +22,19 @@ public:
     GraphBlock(QObject *parent);
 
     //! set the block description from JSON object
-    void setBlockDesc(const Poco::JSON::Object::Ptr &);
-    const Poco::JSON::Object::Ptr &getBlockDesc(void) const;
-    std::string getBlockDescPath(void) const;
+    void setBlockDesc(const QJsonObject &);
+    const QJsonObject &getBlockDesc(void) const;
+    QString getBlockDescPath(void) const;
 
     //! set the input ports description from JSON array
-    void setInputPortDesc(const Poco::JSON::Array::Ptr &);
+    void setInputPortDesc(const QJsonArray &);
 
     //! set the output ports description from JSON array
-    void setOutputPortDesc(const Poco::JSON::Array::Ptr &);
+    void setOutputPortDesc(const QJsonArray &);
 
     //! set the dynamically queried block description overlay
-    void setOverlayDesc(const Poco::JSON::Object::Ptr &);
-    const Poco::JSON::Object::Ptr &getOverlayDesc(void) const;
+    void setOverlayDesc(const QJsonObject &);
+    const QJsonObject &getOverlayDesc(void) const;
 
     //! Does this graph block represent a display widget
     bool isGraphWidget(void) const;
@@ -40,7 +42,7 @@ public:
     void setGraphWidget(QWidget *);
 
     void setTitle(const QString &title);
-    QString getTitle(void) const;
+    const QString &getTitle(void) const;
 
     QPainterPath shape(void) const;
 
@@ -58,7 +60,7 @@ public:
     const QStringList &getProperties(void) const;
 
     //! Get the param desc from the block description
-    Poco::JSON::Object::Ptr getParamDesc(const QString &key) const;
+    QJsonObject getParamDesc(const QString &key) const;
 
     QString getPropertyValue(const QString &key) const;
     void setPropertyValue(const QString &key, const QString &value);
@@ -81,13 +83,13 @@ public:
     const QString &getPropertyErrorMsg(const QString &key) const;
 
     //! Set a descriptive type string for this property
-    void setPropertyTypeStr(const QString &key, const std::string &type);
-    const std::string &getPropertyTypeStr(const QString &key) const;
+    void setPropertyTypeStr(const QString &key, const QString &type);
+    const QString &getPropertyTypeStr(const QString &key) const;
 
     bool getPropertyPreview(const QString &key) const;
     void setPropertyPreviewMode(const QString &key, const QString &value,
-        const Poco::JSON::Array::Ptr &args = Poco::JSON::Array::Ptr(),
-        const Poco::JSON::Object::Ptr &kwargs = Poco::JSON::Object::Ptr());
+        const QJsonArray &args = QJsonArray(),
+        const QJsonObject &kwargs = QJsonObject());
 
     void addInputPort(const QString &portKey, const QString &portAlias);
     const QStringList &getInputPorts(void) const;
@@ -104,28 +106,28 @@ public:
     const QStringList &getSignalPorts(void) const;
 
     //! Set a descriptive type string for input ports
-    void setInputPortTypeStr(const QString &key, const std::string &type);
-    const std::string &getInputPortTypeStr(const QString &key) const;
+    void setInputPortTypeStr(const QString &key, const QString &type);
+    const QString &getInputPortTypeStr(const QString &key) const;
 
     //! Set a descriptive type string for output ports
-    void setOutputPortTypeStr(const QString &key, const std::string &type);
-    const std::string &getOutputPortTypeStr(const QString &key) const;
+    void setOutputPortTypeStr(const QString &key, const QString &type);
+    const QString &getOutputPortTypeStr(const QString &key) const;
 
     std::vector<GraphConnectableKey> getConnectableKeys(void) const;
     GraphConnectableKey isPointingToConnectable(const QPointF &pos) const;
     GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;
 
-    Poco::JSON::Object::Ptr serialize(void) const;
+    QJsonObject serialize(void) const;
 
-    virtual void deserialize(Poco::JSON::Object::Ptr obj);
+    virtual void deserialize(const QJsonObject &obj);
 
     //! affinity zone support
     const QString &getAffinityZone(void) const;
     void setAffinityZone(const QString &zone);
 
     //! get current edit tab (empty for no selection)
-    const std::string &getActiveEditTab(void) const;
-    void setActiveEditTab(const std::string &name);
+    const QString &getActiveEditTab(void) const;
+    void setActiveEditTab(const QString &name);
 
     //! Called by Connection to track active graph connections
     void registerEndpoint(const GraphConnectionEndpoint &ep);
@@ -140,7 +142,7 @@ signals:
     void triggerEvalEvent(void);
 
     //! Called when the overlay changes the param description
-    void paramDescChanged(const QString &key, const Poco::JSON::Object::Ptr &desc);
+    void paramDescChanged(const QString &key, const QJsonObject &desc);
 
 protected:
 

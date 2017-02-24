@@ -29,31 +29,28 @@ GraphBlock::GraphBlock(QObject *parent):
     this->setFlag(QGraphicsItem::ItemIsMovable);
 }
 
-std::string GraphBlock::getBlockDescPath(void) const
+QString GraphBlock::getBlockDescPath(void) const
 {
-    return _impl->blockDesc->getValue<std::string>("path");
+    return _impl->blockDesc["path"].toString();
 }
 
-const Poco::JSON::Object::Ptr &GraphBlock::getBlockDesc(void) const
+const QJsonObject &GraphBlock::getBlockDesc(void) const
 {
     assert(_impl);
     return _impl->blockDesc;
 }
 
-static void paramKeysFromJSON(QSet<QString> &keys, const Poco::JSON::Object::Ptr &desc)
+static void paramKeysFromJSON(QSet<QString> &keys, const QJsonObject &desc)
 {
-    if (not desc) return;
-    if (not desc->isArray("params")) return;
-    if (desc and desc->isArray("params"))
-    for (const auto &paramObj : *desc->getArray("params"))
+    for (const auto &paramValue : desc["params"].toArray())
     {
-        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
-        if (not param->has("key")) continue;
-        keys.insert(QString::fromStdString(param->getValue<std::string>("key")));
+        const auto param = paramValue.toObject();
+        if (not param.contains("key")) continue;
+        keys.insert(param["key"].toString());
     }
 }
 
-void GraphBlock::setOverlayDesc(const Poco::JSON::Object::Ptr &desc)
+void GraphBlock::setOverlayDesc(const QJsonObject &desc)
 {
     assert(_impl);
 
@@ -77,7 +74,7 @@ void GraphBlock::setOverlayDesc(const Poco::JSON::Object::Ptr &desc)
     }
 }
 
-const Poco::JSON::Object::Ptr &GraphBlock::getOverlayDesc(void) const
+const QJsonObject &GraphBlock::getOverlayDesc(void) const
 {
     assert(_impl);
     return _impl->overlayDesc;
@@ -85,7 +82,7 @@ const Poco::JSON::Object::Ptr &GraphBlock::getOverlayDesc(void) const
 
 bool GraphBlock::isGraphWidget(void) const
 {
-    return this->getBlockDesc()->optValue<std::string>("mode", "") == "graphWidget";
+    return this->getBlockDesc()["mode"].toString() == "graphWidget";
 }
 
 QWidget *GraphBlock::getGraphWidget(void) const
@@ -107,7 +104,7 @@ void GraphBlock::setTitle(const QString &title)
     this->markChanged();
 }
 
-QString GraphBlock::getTitle(void) const
+const QString &GraphBlock::getTitle(void) const
 {
     return _impl->title;
 }
@@ -142,27 +139,27 @@ const QStringList &GraphBlock::getProperties(void) const
     return _properties;
 }
 
-Poco::JSON::Object::Ptr GraphBlock::getParamDesc(const QString &key) const
+QJsonObject GraphBlock::getParamDesc(const QString &key) const
 {
-    Poco::JSON::Object::Ptr paramDesc;
-    for (const auto &paramObj : *this->getBlockDesc()->getArray("params"))
+    QJsonObject paramDesc;
+    for (const auto &paramValue : this->getBlockDesc()["params"].toArray())
     {
-        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
-        if (param->getValue<std::string>("key") == key.toStdString()) paramDesc = param;
+        const auto param = paramValue.toObject();
+        if (param["key"].toString() == key) paramDesc = param;
     }
 
     //try to apply the overlay if it exists
     const auto overlayDesc = this->getOverlayDesc();
-    if (paramDesc and overlayDesc and overlayDesc->isArray("params"))
+    if (not paramDesc.isEmpty() and not overlayDesc.isEmpty())
     {
-        const auto key = paramDesc->optValue<std::string>("key", "");
-        for (const auto &paramObj : *overlayDesc->getArray("params"))
+        const auto key = paramDesc["key"].toString();
+        for (const auto &paramValue : overlayDesc["params"].toArray())
         {
-            const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
-            if (param->optValue<std::string>("key", "") != key) continue;
-            for (const auto &pair : *param)
+            const auto param = paramValue.toObject();
+            if (param["key"].toString() != key) continue;
+            for (const auto &key : param.keys())
             {
-                paramDesc->set(pair.first, pair.second);
+                paramDesc[key] = param[key];
             }
         }
     }
@@ -174,15 +171,12 @@ QString GraphBlock::getPropertyDisplayText(const QString &key) const
 {
     auto value = this->getPropertyValue(key);
     auto paramDesc = this->getParamDesc(key);
-    if (paramDesc and paramDesc->isArray("options"))
+    for (const auto &optionVal : paramDesc["options"].toArray())
     {
-        for (const auto &optionObj : *paramDesc->getArray("options"))
+        const auto option = optionVal.toObject();
+        if (value == option["value"].toString())
         {
-            const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
-            if (value == QString::fromStdString(option->getValue<std::string>("value")))
-            {
-                return QString::fromStdString(option->getValue<std::string>("name"));
-            }
+            return option["name"].toString();
         }
     }
 
@@ -278,16 +272,23 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
         //A particular parameter, specified by the enum key,
         //is compared against a list of arguments.
         //A match means do the preview, otherwise hide it.
-        if (not _impl->propertiesPreviewArgs.at(key)) return true;
-        if (not _impl->propertiesPreviewKwargs.at(key)) return true;
-        if (not _impl->propertiesPreviewKwargs.at(key)->has("enum")) return true;
-        const auto eumParamKey = _impl->propertiesPreviewKwargs.at(key)->getValue<std::string>("enum");
-        auto eumParamValue = this->getPropertyValue(QString::fromStdString(eumParamKey)).toStdString();
-        for (const auto &arg : *_impl->propertiesPreviewArgs.at(key))
+        if (_impl->propertiesPreviewArgs.at(key).isEmpty()) return true;
+        if (_impl->propertiesPreviewKwargs.at(key).isEmpty()) return true;
+        if (not _impl->propertiesPreviewKwargs.at(key).contains("enum")) return true;
+        const auto enumParamKey = _impl->propertiesPreviewKwargs.at(key)["enum"].toString();
+        const auto enumParamValue = this->getPropertyValue(enumParamKey);
+        for (const auto &argVal : _impl->propertiesPreviewArgs.at(key))
         {
-            //note: Poco::Dynamic::Var::toString gives the JSON format
-            //which means that it includes the quotes if this is a string
-            if (Poco::Dynamic::Var::toString(arg) == eumParamValue) return true;
+            auto argStr = argVal.toVariant().toString();
+
+            //add quotes when the argument has no quotes and the enum value does
+            if (not enumParamValue.isEmpty() and enumParamValue.startsWith('"')
+                and not argStr.isEmpty() and not argStr.startsWith('"'))
+            {
+                argStr += "\"" + argStr + "\"";
+            }
+
+            if (argStr == enumParamValue) return true;
         }
         return false;
     }
@@ -295,7 +296,7 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
 }
 
 void GraphBlock::setPropertyPreviewMode(const QString &key, const QString &value,
-    const Poco::JSON::Array::Ptr &args, const Poco::JSON::Object::Ptr &kwargs)
+    const QJsonArray &args, const QJsonObject &kwargs)
 {
     if (_impl->propertiesPreview[key] == value) return;
     _impl->propertiesPreview[key] = value;
@@ -316,14 +317,14 @@ const QString &GraphBlock::getPropertyErrorMsg(const QString &key) const
     return _impl->propertiesErrorMsg[key];
 }
 
-void GraphBlock::setPropertyTypeStr(const QString &key, const std::string &type)
+void GraphBlock::setPropertyTypeStr(const QString &key, const QString &type)
 {
     if (_impl->propertiesTypeStr[key] == type) return;
     _impl->propertiesTypeStr[key] = type;
     this->markChanged();
 }
 
-const std::string &GraphBlock::getPropertyTypeStr(const QString &key) const
+const QString &GraphBlock::getPropertyTypeStr(const QString &key) const
 {
     return _impl->propertiesTypeStr[key];
 }
@@ -384,26 +385,26 @@ const QStringList &GraphBlock::getSignalPorts(void) const
     return _signalPorts;
 }
 
-void GraphBlock::setInputPortTypeStr(const QString &key, const std::string &type)
+void GraphBlock::setInputPortTypeStr(const QString &key, const QString &type)
 {
     if (_impl->inputPortTypeStr[key] == type) return;
     _impl->inputPortTypeStr[key] = type;
     this->markChanged();
 }
 
-const std::string &GraphBlock::getInputPortTypeStr(const QString &key) const
+const QString &GraphBlock::getInputPortTypeStr(const QString &key) const
 {
     return _impl->inputPortTypeStr[key];
 }
 
-void GraphBlock::setOutputPortTypeStr(const QString &key, const std::string &type)
+void GraphBlock::setOutputPortTypeStr(const QString &key, const QString &type)
 {
     if (_impl->outputPortTypeStr[key] == type) return;
     _impl->outputPortTypeStr[key] = type;
     this->markChanged();
 }
 
-const std::string &GraphBlock::getOutputPortTypeStr(const QString &key) const
+const QString &GraphBlock::getOutputPortTypeStr(const QString &key) const
 {
     return _impl->outputPortTypeStr[key];
 }
@@ -420,12 +421,12 @@ void GraphBlock::setAffinityZone(const QString &zone)
     this->markChanged();
 }
 
-const std::string &GraphBlock::getActiveEditTab(void) const
+const QString &GraphBlock::getActiveEditTab(void) const
 {
     return _impl->activeEditTab;
 }
 
-void GraphBlock::setActiveEditTab(const std::string &name)
+void GraphBlock::setActiveEditTab(const QString &name)
 {
     _impl->activeEditTab = name;
 }
@@ -911,38 +912,38 @@ void GraphBlock::render(QPainter &painter)
     }
 }
 
-Poco::JSON::Object::Ptr GraphBlock::serialize(void) const
+QJsonObject GraphBlock::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj->set("what", std::string("Block"));
-    obj->set("path", this->getBlockDescPath());
-    obj->set("affinityZone", this->getAffinityZone().toStdString());
-    if (not this->getActiveEditTab().empty())
+    obj["what"] = "Block";
+    obj["path"] = this->getBlockDescPath();
+    obj["affinityZone"] = this->getAffinityZone();
+    if (not this->getActiveEditTab().isEmpty())
     {
-        obj->set("activeEditTab", this->getActiveEditTab());
+        obj["activeEditTab"] = this->getActiveEditTab();
     }
 
-    Poco::JSON::Array::Ptr jPropsObj(new Poco::JSON::Array);
+    QJsonArray jPropsObj;
     for (const auto &propKey : this->getProperties())
     {
-        Poco::JSON::Object::Ptr jPropObj(new Poco::JSON::Object);
-        jPropObj->set("key", propKey.toStdString());
-        jPropObj->set("value", this->getPropertyValue(propKey).toStdString());
-        auto editMode = this->getPropertyEditMode(propKey).toStdString();
-        if (not editMode.empty()) jPropObj->set("editMode", editMode);
-        jPropsObj->add(jPropObj);
+        QJsonObject jPropObj;
+        jPropObj["key"] = propKey;
+        jPropObj["value"] = this->getPropertyValue(propKey);
+        auto editMode = this->getPropertyEditMode(propKey);
+        if (not editMode.isEmpty()) jPropObj["editMode"] = editMode;
+        jPropsObj.push_back(jPropObj);
     }
-    obj->set("properties", jPropsObj);
+    obj["properties"] = jPropsObj;
 
-    if (_impl->inputDesc) obj->set("inputDesc", _impl->inputDesc);
-    if (_impl->outputDesc) obj->set("outputDesc", _impl->outputDesc);
+    if (not _impl->inputDesc.isEmpty()) obj["inputDesc"] = _impl->inputDesc;
+    if (not _impl->outputDesc.isEmpty()) obj["outputDesc"] = _impl->outputDesc;
     return obj;
 }
 
-void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
+void GraphBlock::deserialize(const QJsonObject &obj)
 {
-    auto path = obj->getValue<std::string>("path");
-    auto properties = obj->getArray("properties");
+    const auto path = obj["path"].toString();
+    const auto properties = obj["properties"].toArray();
 
     //init the block with the description
     auto blockDesc = BlockCache::global()->getBlockDescFromPath(path);
@@ -950,50 +951,39 @@ void GraphBlock::deserialize(Poco::JSON::Object::Ptr obj)
     //Can't find the block description?
     //Generate a pseudo description so that the block will appear
     //in the editor with the same properties and connections.
-    if (not blockDesc)
+    if (blockDesc.isEmpty())
     {
-        blockDesc = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
-        blockDesc->set("path", path);
-        blockDesc->set("name", obj->getValue<std::string>("id"));
-        blockDesc->set("args", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
-        blockDesc->set("calls", Poco::JSON::Array::Ptr(new Poco::JSON::Array()));
+        blockDesc = QJsonObject();
+        blockDesc["path"] = path;
+        blockDesc["name"] = obj["id"];
 
-        if (obj->has("properties") and obj->isArray("properties"))
+        QJsonArray blockParams;
+        for (const auto &propValue : properties)
         {
-            auto blockParams = Poco::JSON::Array::Ptr(new Poco::JSON::Array());
-            blockDesc->set("params", blockParams);
-            const auto propsObj = obj->getArray("properties");
-            for (size_t i = 0; i < propsObj->size(); i++)
-            {
-                const auto propObj = propsObj->getObject(i);
-                auto paramObj = Poco::JSON::Object::Ptr(new Poco::JSON::Object());
-                paramObj->set("key", propObj->getValue<std::string>("key"));
-                blockParams->add(paramObj);
-            }
+            QJsonObject paramObj;
+            paramObj["key"] = propValue.toObject()["key"].toString();
+            blockParams.push_back(paramObj);
         }
-        poco_error(Poco::Logger::get("PothosGui.GraphBlock.init"), "Cant find block factory with path: '"+path+"'");
+        blockDesc["params"] = blockParams;
+        Poco::Logger::get("PothosGui.GraphBlock.init").error("Cant find block factory with path: '%s'", path.toStdString());
     }
 
     this->setBlockDesc(blockDesc);
 
-    if (obj->has("affinityZone")) this->setAffinityZone(
-        QString::fromStdString(obj->getValue<std::string>("affinityZone")));
+    if (obj.contains("affinityZone")) this->setAffinityZone(obj["affinityZone"].toString());
+    if (obj.contains("activeEditTab")) this->setActiveEditTab(obj["activeEditTab"].toString());
 
-    if (obj->has("activeEditTab")) this->setActiveEditTab(
-        obj->getValue<std::string>("activeEditTab"));
-
-    assert(properties);
-    for (size_t i = 0; i < properties->size(); i++)
+    for (const auto &propValue : properties)
     {
-        const auto jPropObj = properties->getObject(i);
-        const auto propKey = QString::fromStdString(jPropObj->getValue<std::string>("key"));
-        this->setPropertyValue(propKey, QString::fromStdString(jPropObj->getValue<std::string>("value")));
-        this->setPropertyEditMode(propKey, QString::fromStdString(jPropObj->optValue<std::string>("editMode", "")));
+        const auto jPropObj = propValue.toObject();
+        const auto propKey = jPropObj["key"].toString();
+        this->setPropertyValue(propKey, jPropObj["value"].toString());
+        this->setPropertyEditMode(propKey, jPropObj["editMode"].toString());
     }
 
     //load port description and init from it -- in the case eval fails
-    if (obj->isArray("inputDesc")) this->setInputPortDesc(obj->getArray("inputDesc"));
-    if (obj->isArray("outputDesc")) this->setOutputPortDesc(obj->getArray("outputDesc"));
+    this->setInputPortDesc(obj["inputDesc"].toArray());
+    this->setOutputPortDesc(obj["outputDesc"].toArray());
 
     GraphObject::deserialize(obj);
 }
