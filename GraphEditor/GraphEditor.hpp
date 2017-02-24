@@ -1,15 +1,14 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
-#include <Poco/JSON/Object.h>
 #include <Poco/Logger.h>
+#include <QJsonObject>
 #include <QTabWidget>
 #include <QPointer>
-#include <ios>
 
 class GraphConnection;
 class GraphDraw;
@@ -31,9 +30,9 @@ public:
     //! Restore evaluator and from a plugin reload
     void restartEvaluation(void);
 
-    void dumpState(std::ostream &os) const;
+    QByteArray dumpState(void) const;
 
-    void loadState(std::istream &os);
+    void loadState(const QByteArray &data);
 
     /*!
      * Generate a new ID that is unique to the graph,
@@ -70,7 +69,7 @@ public:
         return not _stateManager->isCurrentSaved();
     }
 
-    void handleAddBlock(const Poco::JSON::Object::Ptr &, const QPointF &);
+    void handleAddBlock(const QJsonObject &, const QPointF &);
 
     //! force a re-rendering of the graph page
     void render(void);
@@ -122,7 +121,7 @@ private slots:
     void handleRenameGraphPage(void);
     void handleDeleteGraphPage(void);
     void handleMoveGraphObjects(const int index);
-    void handleAddBlock(const Poco::JSON::Object::Ptr &);
+    void handleAddBlock(const QJsonObject &);
     void handleCreateBreaker(const bool isInput);
     void handleCreateInputBreaker(void);
     void handleCreateOutputBreaker(void);

@@ -1,46 +1,51 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 
 /***********************************************************************
  * Serialization routine
  **********************************************************************/
-void GraphEditor::dumpState(std::ostream &os) const
+QByteArray GraphEditor::dumpState(void) const
 {
-    Poco::JSON::Object topObj;
+    QJsonObject topObj;
 
     //store global variables
-    Poco::JSON::Array globals;
+    QJsonArray globals;
     for (const auto &name : this->listGlobals())
     {
         const auto &value = this->getGlobalExpression(name);
-        Poco::JSON::Object globalObj;
-        globalObj.set("name", name.toStdString());
-        globalObj.set("value", value.toStdString());
-        globals.add(globalObj);
+        QJsonObject globalObj;
+        globalObj["name"] = name;
+        globalObj["value"] = value;
+        globals.push_back(globalObj);
     }
-    topObj.set("globals", globals);
+    if (not globals.isEmpty()) topObj["globals"] = globals;
 
     //store pages
-    Poco::JSON::Array pages;
+    QJsonArray pages;
     for (int pageNo = 0; pageNo < this->count(); pageNo++)
     {
-        Poco::JSON::Object page;
-        Poco::JSON::Array graphObjects;
-        page.set("pageName", this->tabText(pageNo).toStdString());
-        page.set("selected", this->currentIndex() == pageNo);
+        QJsonObject page;
+        QJsonArray graphObjects;
+        page["pageName"] = this->tabText(pageNo);
+        page["selected"] = (this->currentIndex() == pageNo);
 
         for (auto graphObj : this->getGraphDraw(pageNo)->getGraphObjects())
         {
-            graphObjects.add(graphObj->serialize());
+            graphObjects.push_back(graphObj->serialize());
         }
 
-        page.set("graphObjects", graphObjects);
-        pages.add(page);
+        page["graphObjects"] = graphObjects;
+        pages.push_back(page);
     }
-    topObj.set("pages", pages);
+    topObj["pages"] = pages;
 
-    topObj.stringify(os, 4/*indent*/);
+    //export to byte array
+    const QJsonDocument jsonDoc(topObj);
+    return jsonDoc.toJson(QJsonDocument::Indented);
 }

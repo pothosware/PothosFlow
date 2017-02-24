@@ -9,7 +9,7 @@
 #include "PropertiesPanel/PropertiesPanelDock.hpp"
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
-#include <Poco/JSON/Parser.h>
+#include <QJsonDocument>
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QMenu>
@@ -94,8 +94,8 @@ void GraphDraw::handleGraphDebugViewChange(void)
 
 void GraphDraw::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (event->mimeData()->hasFormat("text/json/pothos_block") and
-        not event->mimeData()->data("text/json/pothos_block").isEmpty())
+    if (event->mimeData()->hasFormat("binary/json/pothos_block") and
+        not event->mimeData()->data("binary/json/pothos_block").isEmpty())
     {
         event->acceptProposedAction();
     }
@@ -109,8 +109,8 @@ void GraphDraw::dragLeaveEvent(QDragLeaveEvent *event)
 
 void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasFormat("text/json/pothos_block") and
-        not event->mimeData()->data("text/json/pothos_block").isEmpty())
+    if (event->mimeData()->hasFormat("binary/json/pothos_block") and
+        not event->mimeData()->data("binary/json/pothos_block").isEmpty())
     {
         event->acceptProposedAction();
     }
@@ -119,10 +119,8 @@ void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 
 void GraphDraw::dropEvent(QDropEvent *event)
 {
-    const auto byteArray = event->mimeData()->data("text/json/pothos_block");
-    const auto result = Poco::JSON::Parser().parse(std::string(byteArray.constData(), byteArray.size()));
-    const auto blockDesc = result.extract<Poco::JSON::Object::Ptr>();
-
+    const auto byteArray = event->mimeData()->data("binary/json/pothos_block");
+    const auto blockDesc = QJsonDocument::fromBinaryData(byteArray).object();
     this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()));
     event->acceptProposedAction();
 }

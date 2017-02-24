@@ -15,6 +15,9 @@
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainSplash.hpp"
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QFile>
 #include <QTabBar>
 #include <QInputDialog>
 #include <QAction>
@@ -30,11 +33,9 @@
 #include <iostream>
 #include <cassert>
 #include <set>
-#include <sstream>
 #include <Poco/Path.h>
 #include <Poco/UUID.h>
 #include <Poco/UUIDGenerator.h>
-#include <Poco/JSON/Parser.h>
 #include <Pothos/Exception.hpp>
 #include <algorithm> //min/max
 
@@ -73,7 +74,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(actions->cutAction, SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
     connect(actions->copyAction, SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
     connect(actions->pasteAction, SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(BlockTreeDock::global(), SIGNAL(addBlockEvent(const Poco::JSON::Object::Ptr &)), this, SLOT(handleAddBlock(const Poco::JSON::Object::Ptr &)));
+    connect(BlockTreeDock::global(), SIGNAL(addBlockEvent(const QJsonObject &)), this, SLOT(handleAddBlock(const QJsonObject &)));
     connect(actions->selectAllAction, SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
     connect(actions->deleteAction, SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
     connect(actions->rotateLeftAction, SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
@@ -427,7 +428,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
     handleStateChange(GraphState("transform-move", desc));
 }
 
-void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
+void GraphEditor::handleAddBlock(const QJsonObject &blockDesc)
 {
     if (not this->isVisible()) return;
     QPointF where(std::rand()%100, std::rand()%100);
@@ -439,9 +440,9 @@ void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc)
     this->handleAddBlock(blockDesc, where);
 }
 
-void GraphEditor::handleAddBlock(const Poco::JSON::Object::Ptr &blockDesc, const QPointF &where)
+void GraphEditor::handleAddBlock(const QJsonObject &blockDesc, const QPointF &where)
 {
-    if (not blockDesc) return;
+    if (blockDesc.isEmpty()) return;
     auto draw = this->getCurrentGraphDraw();
     auto block = new GraphBlock(draw);
     block->setBlockDesc(blockDesc);
@@ -551,20 +552,20 @@ void GraphEditor::handleCopy(void)
 
     //load the clipboard
     auto mimeData = new QMimeData();
-    mimeData->setData("text/json/pothos_object_array", byteArray);
+    mimeData->setData("binary/json/pothos_object_array", byteArray);
     QApplication::clipboard()->setMimeData(mimeData);
 }
 
 /*!
  * paste only one object type so handlePaste can control the order of creation
  */
-static GraphObjectList handlePasteType(GraphDraw *draw, const Poco::JSON::Array::Ptr &graphObjects, const std::string &type)
+static GraphObjectList handlePasteType(GraphDraw *draw, const QJsonArray &graphObjects, const QString &type)
 {
     GraphObjectList newObjects;
-    for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
+    for (const auto &jGraphVal : graphObjects)
     {
-        const auto jGraphObj = graphObjects->getObject(objIndex);
-        const auto what = jGraphObj->getValue<std::string>("what");
+        const auto jGraphObj = jGraphVal.toObject();
+        const auto what = jGraphObj["what"].toString();
         GraphObject *obj = nullptr;
         if (what != type) continue;
         if (what == "Block") obj = new GraphBlock(draw);
@@ -590,43 +591,43 @@ void GraphEditor::handlePaste(void)
     auto draw = this->getCurrentGraphDraw();
 
     auto mimeData = QApplication::clipboard()->mimeData();
-    const bool canPaste = mimeData->hasFormat("text/json/pothos_object_array") and
-                      not mimeData->data("text/json/pothos_object_array").isEmpty();
+    const bool canPaste = mimeData->hasFormat("binary/json/pothos_object_array") and
+                      not mimeData->data("binary/json/pothos_object_array").isEmpty();
     if (not canPaste) return;
 
     //extract object array
-    const auto data = mimeData->data("text/json/pothos_object_array");
-    const std::string dataStr(data.constData(), data.size());
-    std::istringstream iss(dataStr);
-    const auto result = Poco::JSON::Parser().parse(iss);
-    auto graphObjects = result.extract<Poco::JSON::Array::Ptr>();
-    assert(graphObjects);
+    const auto data = mimeData->data("binary/json/pothos_object_array");
+    const auto jsonDoc = QJsonDocument::fromBinaryData(data);
+    auto graphObjects = jsonDoc.array();
 
     //rewrite ids
-    std::map<std::string, std::string> oldIdToNew;
+    std::map<QString, QString> oldIdToNew;
     QStringList pastedIds; //prevents duplicates
-    for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
+    for (const auto &graphObjVal : graphObjects)
     {
-        const auto jGraphObj = graphObjects->getObject(objIndex);
-        const auto oldId = jGraphObj->getValue<std::string>("id");
-        const auto newId = this->newId(QString::fromStdString(oldId), pastedIds);
+        const auto jGraphObj = graphObjVal.toObject();
+        const auto oldId = jGraphObj["id"].toString();
+        const auto newId = this->newId(oldId, pastedIds);
         pastedIds.push_back(newId);
-        oldIdToNew[oldId] = newId.toStdString();
+        oldIdToNew[oldId] = newId;
     }
-    for (size_t objIndex = 0; objIndex < graphObjects->size();)
+    for (int objIndex = 0; objIndex < graphObjects.size();)
     {
-        for (auto &pair : *graphObjects->getObject(objIndex))
+        auto jGraphObj = graphObjects[objIndex].toObject();
+        for (const auto &objKey : jGraphObj.keys())
         {
-            if (QString::fromStdString(pair.first).endsWith("id", Qt::CaseInsensitive))
+            if (objKey.endsWith("id", Qt::CaseInsensitive))
             {
                 //if not in oldIdToNew, remove from list
-                if (oldIdToNew.count(pair.second) == 0)
+                const auto value = jGraphObj[objKey].toString();
+                if (oldIdToNew.count(value) == 0)
                 {
-                    graphObjects->remove(objIndex);
+                    graphObjects.removeAt(objIndex);
                     goto nextObj;
                 }
-                pair.second = oldIdToNew[pair.second];
+                jGraphObj[objKey] = oldIdToNew[value];
             }
+            graphObjects[objIndex] = jGraphObj; //write it back
         }
         objIndex++;
         nextObj: continue;
@@ -856,9 +857,7 @@ void GraphEditor::handleResetState(int stateNo)
     const int lastPageNo = _stateToLastTabIndex.at(stateNo);
 
     _stateManager->resetTo(stateNo);
-    const auto dump = _stateManager->current().dump;
-    std::istringstream iss(std::string(dump.constData(), dump.size()));
-    this->loadState(iss);
+    this->loadState(_stateManager->current().dump);
     this->setCurrentIndex(lastPageNo);
     this->updateGraphEditorMenus();
     this->render();
@@ -902,11 +901,8 @@ void GraphEditor::handleStateChange(const GraphState &state)
     }
 
     //serialize the graph into the state manager
-    std::ostringstream oss;
-    this->dumpState(oss);
-    GraphState stateWithDump = state;
-    const std::string bytesStr(oss.str());
-    stateWithDump.dump = QByteArray(bytesStr.data(), bytesStr.size());
+    GraphState stateWithDump(state);
+    stateWithDump.dump = this->dumpState();
     _stateManager->post(stateWithDump);
     this->render();
 
@@ -955,7 +951,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
         for (const auto &propKey : block->getProperties())
         {
             auto paramDesc = block->getParamDesc(propKey);
-            if (paramDesc->has("widgetType") and paramDesc->getValue<std::string>("widgetType") == "SpinBox")
+            if (paramDesc["widgetType"].toString() == "SpinBox")
             {
                 const auto newValue = block->getPropertyValue(propKey).toInt() + adj;
                 block->setPropertyValue(propKey, QString("%1").arg(newValue));
@@ -988,18 +984,13 @@ void GraphEditor::save(void)
 {
     assert(not this->getCurrentFilePath().isEmpty());
 
-    auto fileName = this->getCurrentFilePath().toStdString();
-    try
+    const auto fileName = this->getCurrentFilePath();
+    _logger.information("Saving %s", fileName.toStdString());
+
+    QFile jsonFile(fileName);
+    if (not jsonFile.open(QFile::WriteOnly) or jsonFile.write(this->dumpState()) == -1)
     {
-        poco_information_f1(_logger, "Saving %s", fileName);
-        std::ofstream outFile(fileName.c_str());
-        if (not outFile.is_open()) throw std::runtime_error("failed to open");
-        this->dumpState(outFile);
-        if (not outFile) throw std::runtime_error("failed to write");
-    }
-    catch (const std::exception &ex)
-    {
-        poco_error_f2(_logger, "Error saving %s: %s", fileName, std::string(ex.what()));
+        _logger.error("Error saving %s: %s", fileName.toStdString(), jsonFile.errorString().toStdString());
     }
 
     _stateManager->saveCurrent();
@@ -1008,9 +999,9 @@ void GraphEditor::save(void)
 
 void GraphEditor::load(void)
 {
-    auto fileName = this->getCurrentFilePath().toStdString();
+    auto fileName = this->getCurrentFilePath();
 
-    if (fileName.empty())
+    if (fileName.isEmpty())
     {
         _stateManager->resetToDefault();
         handleStateChange(GraphState("document-new", tr("Create new topology")));
@@ -1019,19 +1010,16 @@ void GraphEditor::load(void)
         return;
     }
 
-    try
+    _logger.information("Loading %s", fileName.toStdString());
+    MainSplash::global()->postMessage(tr("Loading %1").arg(fileName));
+
+    QFile jsonFile(fileName);
+    QByteArray data;
+    if (not jsonFile.open(QFile::ReadOnly) or (data = jsonFile.readAll()).isEmpty())
     {
-        poco_information_f1(_logger, "Loading %s", fileName);
-        MainSplash::global()->postMessage(tr("Loading %1").arg(QString::fromStdString(fileName)));
-        std::ifstream inFile(fileName.c_str());
-        if (not inFile.is_open()) throw std::runtime_error("failed to open");
-        this->loadState(inFile);
-        if (not inFile) throw std::runtime_error("failed to read");
+        _logger.error("Error loading %s: %s", fileName.toStdString(), jsonFile.errorString().toStdString());
     }
-    catch (const std::exception &ex)
-    {
-        poco_error_f2(_logger, "Error loading %s: %s", fileName, std::string(ex.what()));
-    }
+    else this->loadState(data);
 
     _stateManager->resetToDefault();
     handleStateChange(GraphState("document-new", tr("Load topology from file")));

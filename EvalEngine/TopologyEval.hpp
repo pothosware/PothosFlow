@@ -6,7 +6,7 @@
 #include "GraphObjects/GraphObject.hpp"
 #include <Pothos/Proxy/Proxy.hpp>
 #include <QObject>
-#include <string>
+#include <QString>
 #include <vector>
 #include <memory>
 #include <map>
@@ -29,7 +29,7 @@ struct ConnectionInfo
         srcBlockUID(0),
         dstBlockUID(0){}
     size_t srcBlockUID, dstBlockUID;
-    std::string srcPort, dstPort;
+    QString srcPort, dstPort;
 };
 
 bool operator==(const ConnectionInfo &lhs, const ConnectionInfo &rhs);
