@@ -58,8 +58,8 @@ void TopologyEval::update(void)
         try
         {
             _topology->disconnect(
-                src->getProxyBlock(), conn.srcPort,
-                dst->getProxyBlock(), conn.dstPort);
+                src->getProxyBlock(), conn.srcPort.toStdString(),
+                dst->getProxyBlock(), conn.dstPort.toStdString());
             std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
         }
         catch (const Pothos::Exception &ex)
@@ -91,8 +91,8 @@ void TopologyEval::update(void)
         try
         {
             _topology->connect(
-                src->getProxyBlock(), conn.srcPort,
-                dst->getProxyBlock(), conn.dstPort);
+                src->getProxyBlock(), conn.srcPort.toStdString(),
+                dst->getProxyBlock(), conn.dstPort.toStdString());
             std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
             _currentConnections.push_back(conn);
         }

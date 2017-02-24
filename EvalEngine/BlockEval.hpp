@@ -6,7 +6,8 @@
 #include <Pothos/Proxy/Proxy.hpp>
 #include <Pothos/Proxy/Environment.hpp>
 #include <Pothos/Exception.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QObject>
 #include <QPointer>
 #include <QString>
@@ -37,8 +38,8 @@ struct BlockInfo
     std::map<QString, QString> properties;
     QStringList constantNames; //preserves order
     std::map<QString, QString> constants;
-    std::map<QString, Poco::JSON::Object::Ptr> paramDescs;
-    Poco::JSON::Object::Ptr desc;
+    std::map<QString, QJsonObject> paramDescs;
+    QJsonObject desc;
 };
 
 //! values to pass back to the gui thread to update the block
@@ -46,13 +47,13 @@ struct BlockStatus
 {
     QPointer<GraphBlock> block;
     QPointer<QWidget> widget;
-    std::map<QString, std::string> propertyTypeInfos;
+    std::map<QString, QString> propertyTypeInfos;
     std::map<QString, QString> propertyErrorMsgs;
     QStringList blockErrorMsgs;
-    Poco::JSON::Array::Ptr inPortDesc;
-    Poco::JSON::Array::Ptr outPortDesc;
-    Poco::JSON::Object::Ptr overlayDesc;
-    std::string overlayDescStr;
+    QJsonArray inPortDesc;
+    QJsonArray outPortDesc;
+    QJsonObject overlayDesc;
+    QByteArray overlayDescStr;
     std::chrono::high_resolution_clock::time_point overlayExpired;
 };
 
@@ -90,7 +91,7 @@ public:
      * This is used by the topology evaluation logic to check
      * before making a connection.
      */
-    bool portExists(const std::string &name, const bool isInput) const;
+    bool portExists(const QString &name, const bool isInput) const;
 
     /*!
      * Get the remote proxy block from the evaluator
@@ -139,7 +140,7 @@ private:
     bool hasCriticalChange(void) const;
 
     //! any setters that changed so we can re-call them
-    std::vector<Poco::JSON::Object::Ptr> settersChangedList(void) const;
+    std::vector<QJsonObject> settersChangedList(void) const;
 
     //! detect a change in properties before vs after
     bool didPropKeyHaveChange(const QString &key) const;
@@ -184,7 +185,7 @@ private:
     bool evaluationProcedure(void);
 
     //! Internal helper for error message formatting
-    void reportError(const std::string &action, const Pothos::Exception &ex);
+    void reportError(const QString &action, const Pothos::Exception &ex);
 
     //Tracking state for the eval environment:
     //Also stash the actual proxy environment here.

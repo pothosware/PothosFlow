@@ -8,7 +8,7 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
-#include <Poco/JSON/Parser.h>
+#include <QJsonDocument>
 #include <QWidget>
 #include <cassert>
 #include <iostream>
@@ -20,18 +20,18 @@
 static const int OVERLAY_EXPIRED_MS = 5000;
 
 //! helper to convert the port info vector into JSON for serialization of the block
-static Poco::JSON::Array::Ptr portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
+static QJsonArray portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
 {
-    Poco::JSON::Array::Ptr array = new Poco::JSON::Array();
+    QJsonArray array;
     for (const auto &info : infos)
     {
-        Poco::JSON::Object::Ptr portInfo = new Poco::JSON::Object();
-        portInfo->set("name", info.name);
-        portInfo->set("alias", info.alias);
-        portInfo->set("isSigSlot", info.isSigSlot);
-        portInfo->set("size", info.dtype.size());
-        portInfo->set("dtype", info.dtype.toMarkup());
-        array->add(portInfo);
+        QJsonObject portInfo;
+        portInfo["name"] = QString::fromStdString(info.name);
+        portInfo["alias"] = QString::fromStdString(info.alias);
+        portInfo["isSigSlot"] = info.isSigSlot;
+        portInfo["size"] = int(info.dtype.size());
+        portInfo["dtype"] = QString::fromStdString(info.dtype.toMarkup());
+        array.push_back(portInfo);
     }
     return array;
 }
@@ -51,9 +51,9 @@ BlockEval::~BlockEval(void)
 bool BlockEval::isInfoMatch(const BlockInfo &info) const
 {
     if (info.id != _newBlockInfo.id) return false;
-    if (not info.desc) return false;
-    if (not _newBlockInfo.desc) return false;
-    return info.desc->getValue<std::string>("path") == _newBlockInfo.desc->getValue<std::string>("path");
+    if (info.desc.isEmpty()) return false;
+    if (_newBlockInfo.desc.isEmpty()) return false;
+    return info.desc["path"] == _newBlockInfo.desc["path"];
 }
 
 bool BlockEval::isReady(void) const
@@ -67,19 +67,15 @@ bool BlockEval::isReady(void) const
         if (not pair.second.isEmpty()) return false;
     }
 
-    if (not _lastBlockStatus.inPortDesc) return false;
-
-    if (not _lastBlockStatus.outPortDesc) return false;
-
     return true;
 }
 
-bool BlockEval::portExists(const std::string &name, const bool isInput) const
+bool BlockEval::portExists(const QString &name, const bool isInput) const
 {
-    const auto desc = isInput?_lastBlockStatus.inPortDesc:_lastBlockStatus.outPortDesc;
-    for (size_t i = 0; i < desc->size(); i++)
+    const auto portDesc = isInput?_lastBlockStatus.inPortDesc:_lastBlockStatus.outPortDesc;
+    for (const auto &val : portDesc)
     {
-        if (desc->getObject(i)->getValue<std::string>("name") == name) return true;
+        if (val.toObject()["name"].toString() == name) return true;
     }
     return false;
 }
@@ -92,7 +88,6 @@ Pothos::Proxy BlockEval::getProxyBlock(void) const
 void BlockEval::acceptInfo(const BlockInfo &info)
 {
     _newBlockInfo = info;
-    assert(_newBlockInfo.desc);
     _lastBlockStatus.block = _newBlockInfo.block;
 }
 
@@ -185,7 +180,7 @@ bool BlockEval::evaluationProcedure(void)
             }
             catch (const Pothos::Exception &ex)
             {
-                this->reportError(setter->getValue<std::string>("name"), ex);
+                this->reportError(setter["name"].toString(), ex);
                 setterError = true;
                 break;
             }
@@ -238,18 +233,23 @@ bool BlockEval::evaluationProcedure(void)
         if (proxyBlock) try
         {
             const auto overlayStr = proxyBlock.call<std::string>("overlay");
-            if (overlayStr != _lastBlockStatus.overlayDescStr)
+            const QByteArray overlayBytes(overlayStr.data(), overlayStr.size());
+            if (overlayBytes != _lastBlockStatus.overlayDescStr)
             {
-                const auto result = Poco::JSON::Parser().parse(overlayStr);
-                _lastBlockStatus.overlayDesc = result.extract<Poco::JSON::Object::Ptr>();
-                _lastBlockStatus.overlayDescStr = overlayStr;
+                QJsonParseError errorParser;
+                const auto jsonDoc = QJsonDocument::fromJson(overlayBytes, &errorParser);
+                if (jsonDoc.isNull())
+                {
+                    poco_warning_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"),
+                        "Failed to parse JSON description overlay from %s: %s",
+                        _newBlockInfo.id.toStdString(), errorParser.errorString().toStdString());
+                }
+                else
+                {
+                    _lastBlockStatus.overlayDesc = jsonDoc.object();
+                    _lastBlockStatus.overlayDescStr = overlayBytes;
+                }
             }
-        }
-        catch (const Poco::Exception &ex)
-        {
-            poco_warning_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"),
-                "Failed to parse JSON description overlay from %s: %s",
-                _newBlockInfo.id.toStdString(), ex.displayText());
         }
         catch (...)
         {
@@ -349,11 +349,8 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
     {
         block->addBlockErrorMsg(errMsg);
     }
-    if (status.inPortDesc and status.outPortDesc)
-    {
-        block->setInputPortDesc(status.inPortDesc);
-        block->setOutputPortDesc(status.outPortDesc);
-    }
+    block->setInputPortDesc(status.inPortDesc);
+    block->setOutputPortDesc(status.outPortDesc);
     block->setGraphWidget(status.widget);
     block->setOverlayDesc(status.overlayDesc);
 
@@ -368,39 +365,38 @@ bool BlockEval::hasCriticalChange(void) const
 {
     const auto &blockDesc = _newBlockInfo.desc;
 
-    if (blockDesc->isArray("args")) for (auto arg : *blockDesc->getArray("args"))
+    for (const auto &arg : blockDesc["args"].toArray())
     {
-        const auto propKey = arg.extract<std::string>();
+        const auto propKey = arg.toString();
         if (propKey == "remoteEnv") {}
-        else if (didPropKeyHaveChange(QString::fromStdString(propKey))) return true;
+        else if (didPropKeyHaveChange(propKey)) return true;
     }
-    if (blockDesc->isArray("calls")) for (auto call : *blockDesc->getArray("calls"))
+    for (const auto &callVal : blockDesc["calls"].toArray())
     {
-        const auto callObj = call.extract<Poco::JSON::Object::Ptr>();
-        if (callObj->getValue<std::string>("type") != "initializer") continue;
-        for (auto arg : *callObj->getArray("args"))
+        const auto callObj = callVal.toObject();
+        if (callObj["type"].toString() != "initializer") continue;
+        for (const auto &arg : callObj["args"].toArray())
         {
-            const auto propKey = arg.extract<std::string>();
-            if (didPropKeyHaveChange(QString::fromStdString(propKey))) return true;
+            const auto propKey = arg.toString();
+            if (didPropKeyHaveChange(propKey)) return true;
         }
     }
     return false;
 }
 
-std::vector<Poco::JSON::Object::Ptr> BlockEval::settersChangedList(void) const
+std::vector<QJsonObject> BlockEval::settersChangedList(void) const
 {
     const auto &blockDesc = _newBlockInfo.desc;
 
-    std::vector<Poco::JSON::Object::Ptr> changedList;
-    if (blockDesc->isArray("calls")) for (auto call : *blockDesc->getArray("calls"))
+    std::vector<QJsonObject> changedList;
+    for (const auto &callVal : blockDesc["calls"].toArray())
     {
-        const auto callObj = call.extract<Poco::JSON::Object::Ptr>();
-        if (callObj->getValue<std::string>("type") != "setter") continue;
-        for (auto arg : *callObj->getArray("args"))
+        const auto callObj = callVal.toObject();
+        if (callObj["type"].toString() != "setter") continue;
+        for (const auto &arg : callObj["args"].toArray())
         {
-            if (not arg.isString()) continue;
-            const auto propKey = arg.extract<std::string>();
-            if (didPropKeyHaveChange(QString::fromStdString(propKey)))
+            const auto propKey = arg.toString();
+            if (didPropKeyHaveChange(propKey))
             {
                 changedList.push_back(callObj);
             }
@@ -512,7 +508,7 @@ bool BlockEval::updateAllProperties(void)
         try
         {
             auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), propVal.toStdString());
-            _lastBlockStatus.propertyTypeInfos[propKey] = obj.call<std::string>("getTypeString");
+            _lastBlockStatus.propertyTypeInfos[propKey] = QString::fromStdString(obj.call<std::string>("getTypeString"));
         }
         catch (const Pothos::Exception &ex)
         {
@@ -556,13 +552,13 @@ bool BlockEval::applyConstants(void)
     return true;
 }
 
-void BlockEval::reportError(const std::string &action, const Pothos::Exception &ex)
+void BlockEval::reportError(const QString &action, const Pothos::Exception &ex)
 {
     //poco_error_f2(Poco::Logger::get("PothosGui.BlockEval."+action),
     //    "%s(...) - %s", _newBlockInfo.id.toStdString(), ex.message());
     _lastBlockStatus.blockErrorMsgs.push_back(tr("%1::%2(...) - %3")
         .arg(_newBlockInfo.id)
-        .arg(QString::fromStdString(action))
+        .arg(action)
         .arg(QString::fromStdString(ex.message())));
 }
 
