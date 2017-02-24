@@ -1,9 +1,9 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 #include <QAbstractItemView>
 #include <QHBoxLayout>
 #include <QComboBox>
@@ -131,28 +131,27 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeDTypeChooser(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
+static QWidget *makeDTypeChooser(const QJsonObject &paramDesc, QWidget *parent)
 {
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
+    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
 
-    const bool editDimension = widgetKwargs->optValue<bool>("dim", false);
+    const bool editDimension = widgetKwargs["dim"].toBool(false);
 
     auto dtypeChooser = new DTypeChooser(parent, editDimension);
     auto comboBox = dtypeChooser->comboBox();
     for (int mode = 0; mode <= 1; mode++)
     {
-        const std::string keyPrefix((mode == 0)? "c":"");
+        const QString keyPrefix((mode == 0)? "c":"");
         const QString namePrefix((mode == 0)? "Complex ":"");
         const QString aliasPrefix((mode == 0)? "complex_":"");
         for (int bytes = 64; bytes >= 32; bytes /= 2)
         {
-            if (widgetKwargs->has(keyPrefix+"float")) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
+            if (widgetKwargs.contains(keyPrefix+"float")) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
         }
         for (int bytes = 64; bytes >= 8; bytes /= 2)
         {
-            if (widgetKwargs->has(keyPrefix+"int")) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
-            if (widgetKwargs->has(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
+            if (widgetKwargs.contains(keyPrefix+"int")) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
+            if (widgetKwargs.contains(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
         }
     }
     return dtypeChooser;

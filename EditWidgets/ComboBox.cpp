@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QAbstractItemView>
 #include <QComboBox>
 #include <QLineEdit>
@@ -92,19 +93,16 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeComboBox(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
+static QWidget *makeComboBox(const QJsonObject &paramDesc, QWidget *parent)
 {
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
+    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
 
     auto comboBox = new ComboBox(parent);
-    comboBox->setEditable(widgetKwargs->optValue<bool>("editable", false));
-    if (paramDesc->isArray("options")) for (const auto &optionObj : *paramDesc->getArray("options"))
+    comboBox->setEditable(widgetKwargs["editable"].toBool(false));
+    for (const auto &optionVal : paramDesc["options"].toArray())
     {
-        const auto option = optionObj.extract<Poco::JSON::Object::Ptr>();
-        comboBox->addItem(
-            QString::fromStdString(option->getValue<std::string>("name")),
-            QString::fromStdString(option->getValue<std::string>("value")));
+        const auto option = optionVal.toObject();
+        comboBox->addItem(option["name"].toString(), option["value"].toString());
     }
     comboBox->doneAddingItems();
     return comboBox;
