@@ -140,7 +140,7 @@ private:
     bool hasCriticalChange(void) const;
 
     //! any setters that changed so we can re-call them
-    std::vector<QJsonObject> settersChangedList(void) const;
+    QStringList settersChangedList(void) const;
 
     //! detect a change in properties before vs after
     bool didPropKeyHaveChange(const QString &key) const;

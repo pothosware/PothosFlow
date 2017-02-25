@@ -15,6 +15,7 @@
 struct GraphBlock::Impl
 {
     Impl(void):
+        isGraphWidget(false),
         signalPortUseCount(0),
         slotPortUseCount(0),
         showPortNames(false),
@@ -23,6 +24,7 @@ struct GraphBlock::Impl
         return;
     }
 
+    bool isGraphWidget;
     QJsonObject blockDesc;
     QJsonObject overlayDesc;
     QJsonArray inputDesc;

@@ -82,7 +82,8 @@ const QJsonObject &GraphBlock::getOverlayDesc(void) const
 
 bool GraphBlock::isGraphWidget(void) const
 {
-    return this->getBlockDesc()["mode"].toString() == "graphWidget";
+    assert(_impl);
+    return _impl->isGraphWidget;
 }
 
 QWidget *GraphBlock::getGraphWidget(void) const
@@ -946,29 +947,30 @@ void GraphBlock::deserialize(const QJsonObject &obj)
     const auto properties = obj["properties"].toArray();
 
     //init the block with the description
-    auto blockDesc = BlockCache::global()->getBlockDescFromPath(path);
+    const auto blockDesc = BlockCache::global()->getBlockDescFromPath(path);
 
     //Can't find the block description?
     //Generate a pseudo description so that the block will appear
     //in the editor with the same properties and connections.
     if (blockDesc.isEmpty())
     {
-        blockDesc = QJsonObject();
-        blockDesc["path"] = path;
-        blockDesc["name"] = obj["id"];
+        QJsonObject blockDescFallback;
+        blockDescFallback["path"] = path;
+        blockDescFallback["name"] = obj["id"];
 
         QJsonArray blockParams;
-        for (const auto &propValue : properties)
+        for (const auto &propVal : properties)
         {
             QJsonObject paramObj;
-            paramObj["key"] = propValue.toObject()["key"].toString();
+            paramObj["key"] = propVal.toObject()["key"].toString();
             blockParams.push_back(paramObj);
         }
-        blockDesc["params"] = blockParams;
+        blockDescFallback["params"] = blockParams;
         Poco::Logger::get("PothosGui.GraphBlock.init").error("Cant find block factory with path: '%s'", path.toStdString());
+        this->setBlockDesc(blockDescFallback);
     }
 
-    this->setBlockDesc(blockDesc);
+    else this->setBlockDesc(blockDesc);
 
     if (obj.contains("affinityZone")) this->setAffinityZone(obj["affinityZone"].toString());
     if (obj.contains("activeEditTab")) this->setActiveEditTab(obj["activeEditTab"].toString());

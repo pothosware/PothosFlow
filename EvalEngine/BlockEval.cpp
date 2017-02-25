@@ -176,11 +176,11 @@ bool BlockEval::evaluationProcedure(void)
         {
             try
             {
-                _blockEval.callVoid("handleCall", setter);
+                _blockEval.callVoid("handleCall", setter.toStdString());
             }
             catch (const Pothos::Exception &ex)
             {
-                this->reportError(setter["name"].toString(), ex);
+                this->reportError(setter, ex);
                 setterError = true;
                 break;
             }
@@ -200,7 +200,7 @@ bool BlockEval::evaluationProcedure(void)
         }
         else try
         {
-            _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+            _blockEval.callProxy("eval", _newBlockInfo.id.toStdString());
             _proxyBlock = _blockEval.callProxy("getProxyBlock");
         }
         catch(const Pothos::Exception &ex)
@@ -349,8 +349,14 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
     {
         block->addBlockErrorMsg(errMsg);
     }
-    block->setInputPortDesc(status.inPortDesc);
-    block->setOutputPortDesc(status.outPortDesc);
+    if (not status.inPortDesc.isEmpty())
+    {
+        block->setInputPortDesc(status.inPortDesc);
+    }
+    if (not status.outPortDesc.isEmpty())
+    {
+        block->setOutputPortDesc(status.outPortDesc);
+    }
     block->setGraphWidget(status.widget);
     block->setOverlayDesc(status.overlayDesc);
 
@@ -384,11 +390,11 @@ bool BlockEval::hasCriticalChange(void) const
     return false;
 }
 
-std::vector<QJsonObject> BlockEval::settersChangedList(void) const
+QStringList BlockEval::settersChangedList(void) const
 {
     const auto &blockDesc = _newBlockInfo.desc;
 
-    std::vector<QJsonObject> changedList;
+    QStringList changedList;
     for (const auto &callVal : blockDesc["calls"].toArray())
     {
         const auto callObj = callVal.toObject();
@@ -398,7 +404,7 @@ std::vector<QJsonObject> BlockEval::settersChangedList(void) const
             const auto propKey = arg.toString();
             if (didPropKeyHaveChange(propKey))
             {
-                changedList.push_back(callObj);
+                changedList.push_back(callObj["name"].toString());
             }
         }
     }
@@ -487,7 +493,7 @@ bool BlockEval::updateAllProperties(void)
             evalEnv = _newEnvironmentEval->getEval();
         }
         auto BlockEval = evalEnv.getEnvironment()->findProxy("Pothos/Util/BlockEval");
-        _blockEval = BlockEval(evalEnv);
+        _blockEval = BlockEval(_newBlockInfo.desc["path"].toString().toStdString(), evalEnv);
         _lastThreadPoolEval.reset();
     }
     catch (const Pothos::Exception &ex)
@@ -567,7 +573,7 @@ bool BlockEval::blockEvalInGUIContext(void)
     try
     {
         _blockEval.callProxy("setProperty", "remoteEnv", _newEnvironmentEval->getEval().getEnvironment());
-        _blockEval.callProxy("eval", _newBlockInfo.id.toStdString(), _newBlockInfo.desc);
+        _blockEval.callProxy("eval", _newBlockInfo.id.toStdString());
         _proxyBlock = _blockEval.callProxy("getProxyBlock");
         _lastBlockStatus.widget = _proxyBlock.call<QWidget *>("widget");
         return true;

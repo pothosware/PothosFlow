@@ -21,6 +21,7 @@ void GraphBlock::setBlockDesc(const QJsonObject &blockDesc)
         return;
     }
     this->setTitle(blockDesc["name"].toString());
+    _impl->isGraphWidget = (blockDesc["mode"].toString() == "graphWidget");
 
     //reload properties description, clear the old first
     _properties.clear();
@@ -35,7 +36,7 @@ void GraphBlock::setBlockDesc(const QJsonObject &blockDesc)
             return;
         }
         const auto key = param["key"].toString();
-        const auto name = param["name"].toString();
+        const auto name = param["name"].toString(key);
         this->addProperty(key);
         this->setPropertyName(key, name);
 
