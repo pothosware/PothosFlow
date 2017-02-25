@@ -228,8 +228,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
     connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
     connect(_block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
-    connect(_block, SIGNAL(paramDescChanged(const QString &, const Poco::JSON::Object::Ptr &)),
-            this, SLOT(handleParamDescChanged(const QString &, const Poco::JSON::Object::Ptr &)));
+    connect(_block, SIGNAL(paramDescChanged(const QString &, const QJsonObject &)),
+            this, SLOT(handleParamDescChanged(const QString &, const QJsonObject &)));
     this->updateAllForms();
     _ignoreChanges = false;
 }

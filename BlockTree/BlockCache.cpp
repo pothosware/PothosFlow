@@ -6,6 +6,7 @@
 #include "MainWindow/MainSplash.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
+#include <QJsonDocument>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
@@ -22,7 +23,11 @@ static QJsonArray queryBlockDescs(const QString &uri)
     {
         auto client = Pothos::RemoteClient(uri.toStdString());
         auto env = client.makeEnvironment("managed");
-        return env->findProxy("Pothos/Util/DocUtils").call<QJsonArray>("dumpJson");
+        const auto json = env->findProxy("Pothos/Util/DocUtils").call<std::string>("dumpJson");
+        QJsonParseError errorParser;
+        const auto jsonDoc = QJsonDocument::fromJson(QByteArray(json.data(), json.size()), &errorParser);
+        if (jsonDoc.isNull()) throw Pothos::Exception(errorParser.errorString().toStdString());
+        return jsonDoc.array();
     }
     catch (const Pothos::Exception &ex)
     {
@@ -71,7 +76,11 @@ QJsonObject BlockCache::getBlockDescFromPath(const QString &path)
             auto client = Pothos::RemoteClient(uri.toStdString());
             auto env = client.makeEnvironment("managed");
             auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
-            return DocUtils.call<QJsonObject>("dumpJsonAt", path.toStdString());
+            const auto json = DocUtils.call<std::string>("dumpJsonAt", path.toStdString());
+            QJsonParseError errorParser;
+            const auto jsonDoc = QJsonDocument::fromJson(QByteArray(json.data(), json.size()), &errorParser);
+            if (jsonDoc.isNull()) throw Pothos::Exception(errorParser.errorString().toStdString());
+            return jsonDoc.object();
         }
         catch (const Pothos::Exception &)
         {

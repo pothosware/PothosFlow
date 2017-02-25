@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -39,10 +39,10 @@ BlockTreeDock::BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEdito
     layout->addWidget(_searchBox);
 
     _blockTree = new BlockTreeWidget(this->widget(), editorTabs);
-    connect(blockCache, SIGNAL(blockDescUpdate(const Poco::JSON::Array::Ptr &)),
-        _blockTree, SLOT(handleBlockDescUpdate(const Poco::JSON::Array::Ptr &)));
-    connect(_blockTree, SIGNAL(blockDescEvent(const Poco::JSON::Object::Ptr &, bool)),
-        this, SLOT(handleBlockDescEvent(const Poco::JSON::Object::Ptr &, bool)));
+    connect(blockCache, SIGNAL(blockDescUpdate(const QJsonArray &)),
+        _blockTree, SLOT(handleBlockDescUpdate(const QJsonArray &)));
+    connect(_blockTree, SIGNAL(blockDescEvent(const QJsonObject &, bool)),
+        this, SLOT(handleBlockDescEvent(const QJsonObject &, bool)));
     connect(_searchBox, SIGNAL(textChanged(const QString &)), _blockTree, SLOT(handleFilter(const QString &)));
     layout->addWidget(_blockTree);
 
@@ -67,9 +67,9 @@ void BlockTreeDock::handleAdd(void)
     emit addBlockEvent(_blockDesc);
 }
 
-void BlockTreeDock::handleBlockDescEvent(const Poco::JSON::Object::Ptr &blockDesc, bool add)
+void BlockTreeDock::handleBlockDescEvent(const QJsonObject &blockDesc, bool add)
 {
     _blockDesc = blockDesc;
-    _addButton->setEnabled(bool(blockDesc));
+    _addButton->setEnabled(not blockDesc.isEmpty());
     if (add) emit addBlockEvent(_blockDesc);
 }

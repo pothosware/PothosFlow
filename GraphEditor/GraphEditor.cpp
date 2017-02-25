@@ -538,21 +538,19 @@ void GraphEditor::handleCopy(void)
     if (not this->isVisible()) return;
     auto draw = this->getCurrentGraphDraw();
 
-    Poco::JSON::Array jsonObjs;
+    QJsonArray jsonObjs;
     for (auto obj : draw->getObjectsSelected())
     {
-        jsonObjs.add(obj->serialize());
+        jsonObjs.push_back(obj->serialize());
     }
 
     //to byte array
-    std::ostringstream oss;
-    jsonObjs.stringify(oss);
-    const std::string bytesStr(oss.str());
-    const QByteArray byteArray(bytesStr.data(), bytesStr.size());
+    const QJsonDocument jsonDoc(jsonObjs);
+    const auto data = jsonDoc.toBinaryData();
 
     //load the clipboard
     auto mimeData = new QMimeData();
-    mimeData->setData("binary/json/pothos_object_array", byteArray);
+    mimeData->setData("binary/json/pothos_object_array", data);
     QApplication::clipboard()->setMimeData(mimeData);
 }
 

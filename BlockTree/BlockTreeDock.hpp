@@ -1,10 +1,10 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QDockWidget>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 
 class QPushButton;
 class QLineEdit;
@@ -24,7 +24,7 @@ public:
     BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEditorTabs *editorTabs);
 
 signals:
-    void addBlockEvent(const Poco::JSON::Object::Ptr &);
+    void addBlockEvent(const QJsonObject &);
 
 public slots:
     void activateFind(void);
@@ -32,11 +32,11 @@ public slots:
 private slots:
     void handleAdd(void);
 
-    void handleBlockDescEvent(const Poco::JSON::Object::Ptr &blockDesc, bool add);
+    void handleBlockDescEvent(const QJsonObject &blockDesc, bool add);
 
 private:
     QPushButton *_addButton;
     QLineEdit *_searchBox;
-    Poco::JSON::Object::Ptr _blockDesc;
+    QJsonObject _blockDesc;
     BlockTreeWidget *_blockTree;
 };

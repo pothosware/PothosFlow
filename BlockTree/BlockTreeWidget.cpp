@@ -163,7 +163,7 @@ void BlockTreeWidget::populate(void)
             {
                 const auto category = categoryVal.toString().mid(1);
                 const auto key = category.mid(0, category.indexOf('/'));
-                if (_rootNodes.find(key) != _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
+                if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
                 _rootNodes[key]->load(blockDesc, category + "/" + name);
             }
         }
