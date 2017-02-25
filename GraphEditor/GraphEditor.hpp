@@ -162,6 +162,8 @@ private:
     Poco::Logger &_logger;
     QTabWidget *_parentTabWidget;
 
+    void loadPages(const QJsonArray &pages, const QString &type);
+
     void updateGraphEditorMenus(void);
 
     void makeDefaultPage(void);

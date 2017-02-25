@@ -8,10 +8,10 @@
 #include <Pothos/Util/Network.hpp>
 #include <Poco/URI.h>
 #include <Poco/Net/SocketAddress.h>
-#include <Poco/Logger.h>
 
 EnvironmentEval::EnvironmentEval(void):
-    _failureState(false)
+    _failureState(false),
+    _logger(Poco::Logger::get("PothosGui.EnvironmentEval"))
 {
     return;
 }
@@ -64,7 +64,7 @@ void EnvironmentEval::update(void)
         {
             _errorMsg = tr("Remote host %1 is offline").arg(hostUri);
         }
-        poco_error_f2(Poco::Logger::get("PothosGui.EnvironmentEval.update"), "%s - %s", ex.displayText(), _errorMsg.toStdString());
+        _logger.error("zone[%s]: %s - %s", _zoneName.toStdString(), ex.displayText(), _errorMsg.toStdString());
     }
 }
 
@@ -123,8 +123,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
         //otherwise warn because the forwarding will not work
         else
         {
-            poco_warning_f1(Poco::Logger::get("PothosGui.EnvironmentEval.make"),
-                "Log forwarding not supported over IPv6: %s", logSource);
+            _logger.warning("Log forwarding not supported over IPv6: %s", logSource);
             return env;
         }
     }

@@ -83,7 +83,8 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
     //check if the widget type exists in the plugin tree
     if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString())))
     {
-        Poco::Logger::get("PothosGui.BlockPropertiesPanel").error("widget type %s does not exist", widgetType.toStdString());
+        static auto &logger = Poco::Logger::get("PothosGui.BlockPropertiesPanel");
+        logger.error("widget type %s does not exist", widgetType.toStdString());
         widgetType = "LineEdit";
     }
 

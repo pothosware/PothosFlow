@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
@@ -66,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent):
     _splash->postMessage(tr("Creating message window..."));
     auto messageWindowDock = new MessageWindowDock(this);
     this->addDockWidget(Qt::BottomDockWidgetArea, messageWindowDock);
-    poco_information_f1(_logger, "Welcome to Pothos v%s", Pothos::System::getLibVersion());
+    _logger.information("Welcome to Pothos v%s", Pothos::System::getLibVersion());
 
     //create graph actions dock
     _splash->postMessage(tr("Creating actions dock..."));
@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent):
 
 MainWindow::~MainWindow(void)
 {
-    poco_information(_logger, "Save application state");
+    _logger.information("Save application state");
     this->handleFullScreenViewAction(false); //undo if set -- so we dont save full mode below
     _settings->setValue("MainWindow/geometry", this->saveGeometry());
     _settings->setValue("MainWindow/state", this->saveState());
@@ -152,12 +152,12 @@ MainWindow::~MainWindow(void)
 
     //cleanup widgets which may use plugins or the server
     //this includes active graph blocks and eval engines
-    poco_information(_logger, "Shutdown graph editor");
+    _logger.information("Shutdown graph editor");
     delete _editorTabs;
 
     //unload the plugins
     //increase the log level to avoid deinit verbose
-    poco_information(_logger, "Unload Pothos plugins");
+    _logger.information("Unload Pothos plugins");
     Poco::Logger::get("").setLevel(Poco::Message::PRIO_INFORMATION);
     Pothos::deinit();
 
@@ -169,7 +169,7 @@ void MainWindow::handleInitDone(void)
 {
     _splash->postMessage(tr("Completing initialization..."));
     _splash->finish(this);
-    poco_information(_logger, "Initialization complete");
+    _logger.information("Initialization complete");
 }
 
 void MainWindow::handleNewTitleSubtext(const QString &s)
@@ -256,7 +256,7 @@ void MainWindow::handleReloadPlugins(void)
         if (editor != nullptr) editor->restartEvaluation();
     }
 
-    poco_information(Poco::Logger::get("PothosGui.MainWindow"), "Reload plugins complete");
+    _logger.information("Reload plugins complete");
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

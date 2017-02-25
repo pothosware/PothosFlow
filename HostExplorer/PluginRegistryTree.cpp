@@ -58,7 +58,8 @@ static Pothos::PluginRegistryInfoDump getRegistryDump(const std::string &uriStr)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.PluginRegistryTree"), "Failed to dump registry %s - %s", uriStr, ex.displayText());
+        static auto &logger = Poco::Logger::get("PothosGui.PluginRegistryTree");
+        logger.error("Failed to dump registry %s - %s", uriStr, ex.displayText());
     }
     return Pothos::PluginRegistryInfoDump();
 }

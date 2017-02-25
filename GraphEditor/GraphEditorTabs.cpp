@@ -297,7 +297,8 @@ void GraphEditorTabs::loadState(void)
         if (files.at(i).isEmpty()) continue; //skip empty files
         if (not QFile::exists(files.at(i)))
         {
-            poco_error_f1(Poco::Logger::get("PothosGui.GraphEditorTabs.loadState"), "File %s does not exist", files.at(i).toStdString());
+            static auto &logger = Poco::Logger::get("PothosGui.GraphEditorTabs");
+            logger.error("File %s does not exist", files.at(i).toStdString());
             continue;
         }
         auto editor = new GraphEditor(this);

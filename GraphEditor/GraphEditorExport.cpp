@@ -13,7 +13,7 @@
 
 void GraphEditor::exportToJSONTopology(const QString &fileName)
 {
-    poco_information_f1(_logger, "Exporting %s", fileName.toStdString());
+    _logger.information("Exporting %s", fileName.toStdString());
     QJsonObject topObj;
 
     //all graph objects excluding widgets which are not exported

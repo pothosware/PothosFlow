@@ -9,6 +9,7 @@
 #include <QString>
 #include <memory>
 #include <utility>
+#include <Poco/Logger.h>
 
 typedef std::pair<QString, QString> HostProcPair;
 
@@ -68,4 +69,5 @@ private:
     Pothos::Proxy _eval;
     bool _failureState;
     QString _errorMsg;
+    Poco::Logger &_logger;
 };

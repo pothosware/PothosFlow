@@ -169,7 +169,8 @@ void BlockTreeWidget::populate(void)
         }
         catch (const Poco::Exception &ex)
         {
-            poco_error_f1(Poco::Logger::get("PothosGui.BlockTree"), "Failed JSON Doc parse %s", ex.displayText());
+            static auto &logger = Poco::Logger::get("PothosGui.BlockTree");
+            logger.error("Failed JSON Doc parse %s", ex.displayText());
         }
     }
 

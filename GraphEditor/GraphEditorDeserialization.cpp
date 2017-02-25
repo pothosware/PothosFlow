@@ -17,23 +17,23 @@
 /***********************************************************************
  * Per-type creation routine
  **********************************************************************/
-static void loadPages(GraphEditor *editor, const QJsonArray &pages, const QString &type)
+void GraphEditor::loadPages(const QJsonArray &pages, const QString &type)
 {
     for (int pageNo = 0; pageNo < pages.size(); pageNo++)
     {
         const auto pageObj = pages.at(pageNo).toObject();
         const auto graphObjects = pageObj["graphObjects"].toArray();
-        auto parent = editor->widget(pageNo);
+        auto parent = this->widget(pageNo);
 
         for (const auto &graphVal : graphObjects)
         {
             GraphObject *obj = nullptr;
+            const auto jGraphObj = graphVal.toObject();
+            if (jGraphObj.isEmpty()) continue;
+            const auto what = jGraphObj["what"].toString();
+            if (what != type) continue;
             POTHOS_EXCEPTION_TRY
             {
-                const auto jGraphObj = graphVal.toObject();
-                if (jGraphObj.isEmpty()) continue;
-                const auto what = jGraphObj["what"].toString();
-                if (what != type) continue;
                 if (type == "Block") obj = new GraphBlock(parent);
                 if (type == "Breaker") obj = new GraphBreaker(parent);
                 if (type == "Connection") obj = new GraphConnection(parent);
@@ -42,7 +42,8 @@ static void loadPages(GraphEditor *editor, const QJsonArray &pages, const QStrin
             }
             POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
             {
-                poco_error(Poco::Logger::get("PothosGui.GraphEditor.loadState"), ex.displayText());
+                _logger.error("Error creating %s(%s): %s", type.toStdString(),
+                    jGraphObj["what"].toString().toStdString(), ex.displayText());
                 delete obj;
             }
         }
@@ -58,13 +59,13 @@ void GraphEditor::loadState(const QByteArray &data)
     const auto jsonDoc = QJsonDocument::fromJson(data, &parseError);
     if (jsonDoc.isNull())
     {
-        Poco::Logger::get("PothosGui.GraphEditor.loadState").error("Error parsing JSON: %s", parseError.errorString().toStdString());
+        _logger.error("Error parsing JSON: %s", parseError.errorString().toStdString());
         return;
     }
 
     //extract topObj, old style is page array only
     QJsonObject topObj;
-    if (jsonDoc.isArray())  topObj["pages"] = jsonDoc.array();
+    if (jsonDoc.isArray()) topObj["pages"] = jsonDoc.array();
     else topObj = jsonDoc.object();
 
     //extract global variables
@@ -107,8 +108,8 @@ void GraphEditor::loadState(const QByteArray &data)
     ////////////////////////////////////////////////////////////////////
     // create graph objects
     ////////////////////////////////////////////////////////////////////
-    loadPages(this, pages, "Block");
-    loadPages(this, pages, "Breaker");
-    loadPages(this, pages, "Connection");
-    loadPages(this, pages, "Widget");
+    this->loadPages(pages, "Block");
+    this->loadPages(pages, "Breaker");
+    this->loadPages(pages, "Connection");
+    this->loadPages(pages, "Widget");
 }

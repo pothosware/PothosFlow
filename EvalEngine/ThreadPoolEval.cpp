@@ -77,7 +77,8 @@ void ThreadPoolEval::update(void)
         }
         catch (const Pothos::Exception &ex)
         {
-            poco_error(Poco::Logger::get("PothosGui.ThreadPoolEval.update"), ex.displayText());
+            static auto &logger = Poco::Logger::get("PothosGui.ThreadPoolEval");
+            logger.error("Error updating: %s", ex.displayText());
             _errorMsg = QString::fromStdString(ex.displayText());
             _failureState = true;
         }

@@ -20,7 +20,6 @@
 #include <iostream>
 #include <cassert>
 #include <algorithm> //min/max
-#include <Poco/Logger.h>
 
 GraphBlock::GraphBlock(QObject *parent):
     GraphObject(parent),
@@ -966,7 +965,7 @@ void GraphBlock::deserialize(const QJsonObject &obj)
             blockParams.push_back(paramObj);
         }
         blockDescFallback["params"] = blockParams;
-        Poco::Logger::get("PothosGui.GraphBlock.init").error("Cant find block factory with path: '%s'", path.toStdString());
+        _impl->logger.error("Cant find block factory with path: '%s'", path.toStdString());
         this->setBlockDesc(blockDescFallback);
     }
 

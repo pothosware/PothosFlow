@@ -126,8 +126,10 @@ void GraphConnection::setSigSlotPairs(const std::vector<SigSlotPair> &pairs)
 
 static void doSigSlotWarning(const QString &name, const GraphConnectionEndpoint &ep)
 {
-    poco_warning_f3(Poco::Logger::get("PothosGui.GraphConnection.addSigSlotPair"),
-        "cant find %s '%s' in %s", directionToStr(ep.getConnectableAttrs().direction).toStdString(), name.toStdString(), ep.getObj()->getId().toStdString());
+    static auto &logger = Poco::Logger::get("PothosGui.GraphConnection");
+    logger.warning("cant find %s '%s' in %s when connecting signal/slot pair",
+        directionToStr(ep.getConnectableAttrs().direction).toStdString(),
+        name.toStdString(), ep.getObj()->getId().toStdString());
 }
 
 void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)

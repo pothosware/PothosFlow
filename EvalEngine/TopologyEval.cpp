@@ -4,12 +4,12 @@
 #include "TopologyEval.hpp"
 #include "BlockEval.hpp"
 #include <Pothos/Framework.hpp>
-#include <Poco/Logger.h>
 #include <algorithm> //std::remove
 
 TopologyEval::TopologyEval(void):
     _topology(new Pothos::Topology()),
-    _failureState(false)
+    _failureState(false),
+    _logger(Poco::Logger::get("PothosGui.TopologyEval"))
 {
     return;
 }
@@ -64,7 +64,7 @@ void TopologyEval::update(void)
         }
         catch (const Pothos::Exception &ex)
         {
-            poco_error(Poco::Logger::get("PothosGui.TopologyEval.disconnect"), ex.displayText());
+            _logger.error("Failed to disconnect: %s", ex.displayText());
             _failureState = true;
             return;
         }
@@ -98,7 +98,7 @@ void TopologyEval::update(void)
         }
         catch (const Pothos::Exception &ex)
         {
-            poco_error(Poco::Logger::get("PothosGui.TopologyEval.connect"), ex.displayText());
+            _logger.error("Failed to connect: %s", ex.displayText());
             _failureState = true;
             return;
         }
@@ -114,7 +114,7 @@ void TopologyEval::update(void)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error(Poco::Logger::get("PothosGui.TopologyEval.commit"), ex.displayText());
+        _logger.error("Failed to commit: %s", ex.displayText());
         _failureState = true;
         return;
     }

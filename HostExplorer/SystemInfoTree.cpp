@@ -31,7 +31,8 @@ static InfoResult getInfo(const std::string &uriStr)
     }
     POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.SystemInfoTree"), "Failed to query system info %s - %s", uriStr, ex.displayText());
+        static auto &logger = Poco::Logger::get("PothosGui.SystemInfoTree");
+        logger.error("Failed to query system info %s - %s", uriStr, ex.displayText());
     }
     return info;
 }

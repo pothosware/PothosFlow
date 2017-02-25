@@ -14,6 +14,7 @@
 #include <QStringList>
 #include <memory>
 #include <chrono>
+#include <Poco/Logger.h>
 
 class EnvironmentEval;
 class ThreadPoolEval;
@@ -215,4 +216,6 @@ private:
     Pothos::Proxy _blockEval;
     Pothos::Proxy _proxyBlock;
     bool _queryPortDesc;
+
+    Poco::Logger &_logger;
 };

@@ -7,7 +7,6 @@
 #include "EnvironmentEval.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework.hpp>
-#include <Poco/Logger.h>
 #include <QJsonDocument>
 #include <QWidget>
 #include <cassert>
@@ -37,7 +36,8 @@ static QJsonArray portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
 }
 
 BlockEval::BlockEval(void):
-    _queryPortDesc(false)
+    _queryPortDesc(false),
+    _logger(Poco::Logger::get("PothosGui.BlockEval"))
 {
     qRegisterMetaType<BlockStatus>("BlockStatus");
     this->moveToThread(QApplication::instance()->thread());
@@ -240,8 +240,7 @@ bool BlockEval::evaluationProcedure(void)
                 const auto jsonDoc = QJsonDocument::fromJson(overlayBytes, &errorParser);
                 if (jsonDoc.isNull())
                 {
-                    poco_warning_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"),
-                        "Failed to parse JSON description overlay from %s: %s",
+                    _logger.warning("Failed to parse JSON description overlay from %s: %s",
                         _newBlockInfo.id.toStdString(), errorParser.errorString().toStdString());
                 }
                 else
@@ -560,8 +559,6 @@ bool BlockEval::applyConstants(void)
 
 void BlockEval::reportError(const QString &action, const Pothos::Exception &ex)
 {
-    //poco_error_f2(Poco::Logger::get("PothosGui.BlockEval."+action),
-    //    "%s(...) - %s", _newBlockInfo.id.toStdString(), ex.message());
     _lastBlockStatus.blockErrorMsgs.push_back(tr("%1::%2(...) - %3")
         .arg(_newBlockInfo.id)
         .arg(action)
@@ -580,7 +577,7 @@ bool BlockEval::blockEvalInGUIContext(void)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.BlockEval.guiEval"), "%s-%s", _newBlockInfo.id.toStdString(), ex.displayText());
+        _logger.error("Failed to eval in GUI context %s-%s", _newBlockInfo.id.toStdString(), ex.displayText());
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Failed to eval in GUI context %1-%2").arg(_newBlockInfo.id).arg(QString::fromStdString(ex.message())));
         return false;
     }

@@ -11,10 +11,12 @@
 #include <QStaticText>
 #include <vector>
 #include <map>
+#include <Poco/Logger.h>
 
 struct GraphBlock::Impl
 {
     Impl(void):
+        logger(Poco::Logger::get("PothosGui.GraphBlock")),
         isGraphWidget(false),
         signalPortUseCount(0),
         slotPortUseCount(0),
@@ -24,6 +26,7 @@ struct GraphBlock::Impl
         return;
     }
 
+    Poco::Logger &logger;
     bool isGraphWidget;
     QJsonObject blockDesc;
     QJsonObject overlayDesc;

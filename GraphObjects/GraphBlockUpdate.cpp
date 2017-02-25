@@ -4,7 +4,6 @@
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include <QWidget>
 #include <Pothos/Proxy.hpp>
-#include <Poco/Logger.h>
 
 /***********************************************************************
  * initialize the block's properties
@@ -17,7 +16,7 @@ void GraphBlock::setBlockDesc(const QJsonObject &blockDesc)
     //extract the name or title from the description
     if (not blockDesc.contains("name"))
     {
-        poco_error(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block missing 'name'");
+        _impl->logger.error("Block '%s' missing 'name'", this->getBlockDescPath().toStdString());
         return;
     }
     this->setTitle(blockDesc["name"].toString());
@@ -32,7 +31,7 @@ void GraphBlock::setBlockDesc(const QJsonObject &blockDesc)
         const auto param = paramValue.toObject();
         if (not param.contains("key"))
         {
-            Poco::Logger::get("PothosGui.GraphBlock.init").error("Block '%s' param missing 'key'", this->getTitle().toStdString());
+            _impl->logger.error("Block '%s' param missing 'key'", this->getTitle().toStdString());
             return;
         }
         const auto key = param["key"].toString();
@@ -49,7 +48,7 @@ void GraphBlock::setBlockDesc(const QJsonObject &blockDesc)
             auto opt0 = param["options"].toArray().at(0).toObject();
             if (not opt0.contains("value"))
             {
-                Poco::Logger::get("PothosGui.GraphBlock.init").warning("Block '%s' [param %s] missing 'value'", this->getTitle().toStdString(), name.toStdString());
+                _impl->logger.warning("Block '%s' [param %s] missing 'value'", this->getTitle().toStdString(), name.toStdString());
             }
             else this->setPropertyValue(key, opt0["value"].toString());
         }

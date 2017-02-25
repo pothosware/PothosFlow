@@ -161,8 +161,8 @@ AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneNam
         }
         else
         {
-            poco_error_f2(Poco::Logger::get("PothosGui.AffinityZonesDock"),
-                "Failed to load editor for zone '%s' -- %s",
+            static auto &logger = Poco::Logger::get("PothosGui.AffinityZonesDock");
+            logger.error("Failed to load editor for zone '%s' -- %s",
                 zoneName.toStdString(), parseError.errorString().toStdString());
         }
     }

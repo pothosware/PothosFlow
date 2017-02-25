@@ -146,7 +146,7 @@ void EvalEngine::handleEvalThreadHeartBeat(void)
     if (_flaggedLockUp)
     {
         _flaggedLockUp = false;
-        poco_notice(_logger, "Evaluation thread has recovered. Perhaps a call is taking too long.");
+        _logger.notice("Evaluation thread has recovered. Perhaps a call is taking too long.");
     }
 
     _lastHeartBeat = std::chrono::system_clock::now();
@@ -162,6 +162,6 @@ void EvalEngine::handleMonitorTimeout(void)
     {
         _flaggedLockUp = true;
         _monitorTimer->stop(); //stop so the error messages will not continue
-        poco_fatal(_logger, "Detected evaluation thread lock-up. The evaluator will not function.");
+        _logger.fatal("Detected evaluation thread lock-up. The evaluator will not function.");
     }
 }
