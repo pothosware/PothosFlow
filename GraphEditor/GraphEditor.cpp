@@ -29,13 +29,11 @@
 #include <QMimeData>
 #include <QRegExp>
 #include <QTimer>
-#include <fstream>
+#include <QUuid>
+#include <QFileInfo>
 #include <iostream>
 #include <cassert>
 #include <set>
-#include <Poco/Path.h>
-#include <Poco/UUID.h>
-#include <Poco/UUIDGenerator.h>
 #include <Pothos/Exception.hpp>
 #include <algorithm> //min/max
 
@@ -150,8 +148,7 @@ QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) co
     QString idBase = hint;
     if (idBase.isEmpty())
     {
-        Poco::UUIDGenerator &generator = Poco::UUIDGenerator::defaultGenerator();
-        idBase = QString::fromStdString(generator.createRandom().toString());
+        idBase = QUuid::createUuid().toString();
     }
 
     //find a reasonable name and index
@@ -1032,8 +1029,7 @@ void GraphEditor::render(void)
     QString title = tr("untitled");
     if (not this->getCurrentFilePath().isEmpty())
     {
-        auto name = Poco::Path(this->getCurrentFilePath().toStdString()).getBaseName();
-        title = QString::fromStdString(name);
+        title = QFileInfo(this->getCurrentFilePath()).baseName();
     }
     if (this->hasUnsavedChanges()) title += "*";
 

@@ -11,9 +11,8 @@
 #include <QJsonArray>
 #include <map>
 
-#include <Poco/RWLock.h>
-
 class HostExplorerDock;
+class QReadWriteLock;
 
 class BlockCache : public QObject
 {
@@ -24,6 +23,8 @@ public:
     static BlockCache *global(void);
 
     BlockCache(QObject *parent, HostExplorerDock *hostExplorer);
+
+    ~BlockCache(void);
 
     //! Get a block description given the block registry path
     QJsonObject getBlockDescFromPath(const QString &path);
@@ -47,7 +48,7 @@ private:
     QFutureWatcher<QJsonArray> *_watcher;
 
     //storage structures
-    Poco::RWLock _mapMutex;
+    QReadWriteLock *_mapMutex;
     std::map<QString, QJsonArray> _uriToBlockDescs;
     std::map<QString, QJsonObject> _pathToBlockDesc;
 };

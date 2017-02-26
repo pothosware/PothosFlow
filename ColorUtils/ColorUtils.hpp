@@ -6,19 +6,13 @@
 #include <QIcon>
 #include <QColor>
 #include <QString>
-#include <string>
 #include <map>
 
 //! Convert the type name to a displayable color
-QColor typeStrToColor(const std::string &typeStr);
-
-inline QColor typeStrToColor(const QString &typeStr)
-{
-    return typeStrToColor(typeStr.toStdString());
-}
+QColor typeStrToColor(const QString &typeStr);
 
 //! Get the map of known type strings to colors
-std::map<std::string, QColor> getTypeStrToColorMap(void);
+std::map<QString, QColor> getTypeStrToColorMap(void);
 
 //! Create a decorative icon of the color
 QIcon colorToWidgetIcon(const QColor &color);

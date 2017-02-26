@@ -9,6 +9,7 @@
 #include <QJsonDocument>
 #include <QFuture>
 #include <QFutureWatcher>
+#include <QReadWriteLock>
 #include <QtConcurrent/QtConcurrent>
 #include <Poco/Logger.h>
 #include <iostream>
@@ -51,7 +52,8 @@ BlockCache *BlockCache::global(void)
 BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     QObject(parent),
     _hostExplorerDock(hostExplorer),
-    _watcher(new QFutureWatcher<QJsonArray>(this))
+    _watcher(new QFutureWatcher<QJsonArray>(this)),
+    _mapMutex(new QReadWriteLock())
 {
     globalBlockCache = this;
     assert(_hostExplorerDock != nullptr);
@@ -60,11 +62,16 @@ BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
     connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(update(void)));
 }
 
+BlockCache::~BlockCache(void)
+{
+    delete _mapMutex;
+}
+
 QJsonObject BlockCache::getBlockDescFromPath(const QString &path)
 {
     //look in the cache
     {
-        Poco::RWLock::ScopedReadLock lock(_mapMutex);
+        QReadLocker lock(_mapMutex);
         auto it = _pathToBlockDesc.find(path);
         if (it != _pathToBlockDesc.end()) return it->second;
     }
@@ -94,7 +101,7 @@ QJsonObject BlockCache::getBlockDescFromPath(const QString &path)
 
 void BlockCache::clear(void)
 {
-    Poco::RWLock::ScopedWriteLock lock(_mapMutex);
+    QWriteLocker lock(_mapMutex);
     _pathToBlockDesc.clear();
 }
 
@@ -123,7 +130,7 @@ void BlockCache::handleWatcherFinished(void)
 
     //map paths to block descs
     {
-        Poco::RWLock::ScopedWriteLock lock(_mapMutex);
+        QWriteLocker lock(_mapMutex);
         _pathToBlockDesc.clear();
         for (const auto &pair : _uriToBlockDescs)
         {
@@ -139,7 +146,7 @@ void BlockCache::handleWatcherFinished(void)
     //make a master block desc list
     QJsonArray superSetBlockDescs;
     {
-        Poco::RWLock::ScopedReadLock lock(_mapMutex);
+        QReadLocker lock(_mapMutex);
         for (const auto &pair : _pathToBlockDesc)
         {
             superSetBlockDescs.push_back(pair.second);
