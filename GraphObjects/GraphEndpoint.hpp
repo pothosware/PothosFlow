@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -6,7 +6,7 @@
 #include <QPointer>
 #include <QString>
 #include <QPointF>
-#include <functional> //std::hash
+#include <QHash>
 
 class GraphObject;
 
@@ -56,8 +56,7 @@ namespace std
 
         value_type operator()(argument_type const& s) const
         {
-            return std::hash<std::string>()(s.id.toStdString()) ^
-            (std::hash<int>()(s.direction) << 1);
+            return qHash(s.id) ^ (qHash(s.direction) << 1);
         }
     };
 }
