@@ -16,7 +16,6 @@
 #include <QTimer>
 #include <QPainter>
 #include <QJsonDocument>
-#include <Poco/Logger.h>
 #include <memory>
 
 static const long UPDATE_TIMER_MS = 500;
@@ -153,24 +152,16 @@ void BlockTreeWidget::populate(void)
 {
     for (const auto &blockDescVal : _blockDescs)
     {
-        try
+        const auto blockDesc = blockDescVal.toObject();
+        if (not this->blockDescMatchesFilter(blockDesc)) continue;
+        const auto path = blockDesc["path"].toString();
+        const auto name = blockDesc["name"].toString();
+        for (const auto &categoryVal : blockDesc["categories"].toArray())
         {
-            const auto blockDesc = blockDescVal.toObject();
-            if (not this->blockDescMatchesFilter(blockDesc)) continue;
-            const auto path = blockDesc["path"].toString();
-            const auto name = blockDesc["name"].toString();
-            for (const auto &categoryVal : blockDesc["categories"].toArray())
-            {
-                const auto category = categoryVal.toString().mid(1);
-                const auto key = category.mid(0, category.indexOf('/'));
-                if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
-                _rootNodes[key]->load(blockDesc, category + "/" + name);
-            }
-        }
-        catch (const Poco::Exception &ex)
-        {
-            static auto &logger = Poco::Logger::get("PothosGui.BlockTree");
-            logger.error("Failed JSON Doc parse %s", ex.displayText());
+            const auto category = categoryVal.toString().mid(1);
+            const auto key = category.mid(0, category.indexOf('/'));
+            if (_rootNodes.find(key) == _rootNodes.end()) _rootNodes[key] = new BlockTreeWidgetItem(this, key);
+            _rootNodes[key]->load(blockDesc, category + "/" + name);
         }
     }
 

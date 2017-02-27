@@ -7,22 +7,17 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainter>
-#include <Poco/SingletonHolder.h>
 #include <cassert>
 #include <atomic>
 #include <iostream>
 
-static std::atomic<size_t> &getUIDAtomic(void)
-{
-    static Poco::SingletonHolder<std::atomic<size_t>> sh;
-    return *sh.get();
-}
+Q_GLOBAL_STATIC(std::atomic<size_t>, getUIDAtomic)
 
 struct GraphObject::Impl
 {
     Impl(void):
         deleteFlag(false),
-        uid(getUIDAtomic()++),
+        uid((*getUIDAtomic())++),
         enabled(true),
         changed(true)
     {

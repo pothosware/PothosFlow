@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ColorUtils/ColorUtils.hpp"
-#include <Poco/SingletonHolder.h>
 #include <Poco/Types.h>
 #include <Pothos/Framework.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
@@ -38,12 +37,6 @@ static QColor __typeStrToColor(const QString &typeStr)
 /***********************************************************************
  * color map cache structures
  **********************************************************************/
-static QReadWriteLock *getLookupMutex(void)
-{
-    static Poco::SingletonHolder<QReadWriteLock> sh;
-    return sh.get();
-}
-
 struct ColorMap : std::map<QString, QColor>
 {
     ColorMap(void);
@@ -82,11 +75,8 @@ struct ColorMap : std::map<QString, QColor>
     }
 };
 
-static ColorMap &getColorMap(void)
-{
-    static Poco::SingletonHolder<ColorMap> sh;
-    return *sh.get();
-}
+Q_GLOBAL_STATIC(QReadWriteLock, getLookupMutex)
+Q_GLOBAL_STATIC(ColorMap, getColorMap)
 
 /*!
  * Initialize color map with some predefined colors.
@@ -153,19 +143,19 @@ QColor typeStrToColor(const QString &typeStr_)
     //check the cache
     {
         QReadLocker lock(getLookupMutex());
-        auto it = getColorMap().find(typeStr);
-        if (it != getColorMap().end()) return it->second;
+        auto it = getColorMap()->find(typeStr);
+        if (it != getColorMap()->end()) return it->second;
     }
 
     //create a new entry
     QWriteLocker lock(getLookupMutex());
-    return (getColorMap()[typeStr] = __typeStrToColor(typeStr));
+    return (getColorMap()->at(typeStr) = __typeStrToColor(typeStr));
 }
 
 std::map<QString, QColor> getTypeStrToColorMap(void)
 {
     QReadLocker lock(getLookupMutex());
-    return getColorMap();
+    return *getColorMap();
 }
 
 QIcon colorToWidgetIcon(const QColor &color)

@@ -18,7 +18,6 @@
 #include <Pothos/System.hpp>
 #include <Pothos/Util/Network.hpp>
 #include <Poco/DateTimeFormatter.h>
-#include <Poco/SingletonHolder.h>
 #include <map>
 #include <iostream>
 #include <functional> //std::bind
