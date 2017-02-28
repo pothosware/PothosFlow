@@ -138,9 +138,9 @@ void GraphEditorTabs::handleSave(GraphEditor *editor)
 
 static QString defaultSavePath(void)
 {
-    const auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation) + "/untitled.pothos";
+    const auto defaultPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     assert(!defaultPath.isEmpty());
-    return QDir(defaultPath).absolutePath();
+    return QDir(defaultPath).absoluteFilePath("untitled.pothos");
 }
 
 void GraphEditorTabs::handleSaveAs(void)
