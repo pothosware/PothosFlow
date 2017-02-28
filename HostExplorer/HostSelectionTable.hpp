@@ -1,11 +1,11 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QTableWidget>
 #include <QFutureWatcher>
-#include <Poco/Timestamp.h>
+#include <QDateTime>
 #include <QString>
 #include <vector>
 #include <map>
@@ -19,20 +19,14 @@ class QTimer;
 struct NodeInfo
 {
     NodeInfo(void):
-        isOnline(false),
-        lastAccess(Poco::Timestamp::fromEpochTime(0))
+        isOnline(false)
     {}
     QString uri;
     bool isOnline;
-    Poco::Timestamp lastAccess;
+    QDateTime lastAccess;
     QString nodeName;
 
     void update(void);
-
-    bool neverAccessed(void) const
-    {
-        return this->lastAccess == Poco::Timestamp::fromEpochTime(0);
-    }
 };
 
 //! widget to selection and edit available hosts
