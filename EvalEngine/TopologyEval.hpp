@@ -92,6 +92,7 @@ private:
 
     //! The topology object thats executing this design
     Pothos::Topology *_topology;
+    ConnectionInfos _currentConnections;
 
     bool _failureState;
 };

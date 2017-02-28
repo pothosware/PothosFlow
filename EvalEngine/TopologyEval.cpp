@@ -5,6 +5,7 @@
 #include "BlockEval.hpp"
 #include <Pothos/Framework.hpp>
 #include <Poco/Logger.h>
+#include <algorithm> //std::remove
 
 TopologyEval::TopologyEval(void):
     _topology(new Pothos::Topology()),
@@ -32,8 +33,8 @@ void TopologyEval::update(void)
 {
     if (this->isFailureState()) return;
 
-    const auto removedConnections = diffConnectionInfos(_lastConnectionInfo, _newConnectionInfo);
-    const auto addedConnections = diffConnectionInfos(_newConnectionInfo, _lastConnectionInfo);
+    const auto removedConnections = diffConnectionInfos(_currentConnections, _newConnectionInfo);
+    const auto addedConnections = diffConnectionInfos(_newConnectionInfo, _currentConnections);
     if ((removedConnections.size() + addedConnections.size()) == 0) return; //nothing to do
 
     //remove connections from the topology
@@ -59,6 +60,7 @@ void TopologyEval::update(void)
             _topology->disconnect(
                 src->getProxyBlock(), conn.srcPort,
                 dst->getProxyBlock(), conn.dstPort);
+            std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
         }
         catch (const Pothos::Exception &ex)
         {
@@ -91,6 +93,8 @@ void TopologyEval::update(void)
             _topology->connect(
                 src->getProxyBlock(), conn.srcPort,
                 dst->getProxyBlock(), conn.dstPort);
+            std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
+            _currentConnections.push_back(conn);
         }
         catch (const Pothos::Exception &ex)
         {
