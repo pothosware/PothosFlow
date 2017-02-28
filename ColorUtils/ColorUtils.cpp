@@ -148,8 +148,9 @@ QColor typeStrToColor(const QString &typeStr_)
     }
 
     //create a new entry
+    const auto color = __typeStrToColor(typeStr);
     QWriteLocker lock(getLookupMutex());
-    return (getColorMap()->at(typeStr) = __typeStrToColor(typeStr));
+    return getColorMap()->emplace(typeStr, color).first->second;
 }
 
 std::map<QString, QColor> getTypeStrToColorMap(void)
