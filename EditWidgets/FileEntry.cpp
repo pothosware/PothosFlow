@@ -3,6 +3,7 @@
 
 #include <Pothos/Plugin.hpp>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
@@ -81,11 +82,9 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeFileEntry(const QJsonObject &paramDesc, QWidget *parent)
+static QWidget *makeFileEntry(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-
-    return new FileEntry(widgetKwargs["mode"].toString("save"), parent);
+    return new FileEntry(kwargs["mode"].toString("save"), parent);
 }
 
 pothos_static_block(registerFileEntry)

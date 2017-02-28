@@ -93,13 +93,11 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeComboBox(const QJsonObject &paramDesc, QWidget *parent)
+static QWidget *makeComboBox(const QJsonArray &args, const QJsonObject &kwargs, QWidget *parent)
 {
-    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-
     auto comboBox = new ComboBox(parent);
-    comboBox->setEditable(widgetKwargs["editable"].toBool(false));
-    for (const auto &optionVal : paramDesc["options"].toArray())
+    comboBox->setEditable(kwargs["editable"].toBool(false));
+    for (const auto &optionVal : args)
     {
         const auto option = optionVal.toObject();
         comboBox->addItem(option["name"].toString(), option["value"].toString());

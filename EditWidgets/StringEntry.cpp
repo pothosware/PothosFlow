@@ -3,6 +3,7 @@
 
 #include <Pothos/Plugin.hpp>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QLineEdit>
 
 /***********************************************************************
@@ -51,7 +52,7 @@ private slots:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeStringEntry(const QJsonObject &, QWidget *parent)
+static QWidget *makeStringEntry(const QJsonArray &, const QJsonObject &, QWidget *parent)
 {
     return new StringEntry(parent);
 }

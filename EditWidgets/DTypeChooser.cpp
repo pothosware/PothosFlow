@@ -4,6 +4,7 @@
 #include <Pothos/Framework/DType.hpp>
 #include <Pothos/Plugin.hpp>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QAbstractItemView>
 #include <QHBoxLayout>
 #include <QComboBox>
@@ -131,11 +132,9 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeDTypeChooser(const QJsonObject &paramDesc, QWidget *parent)
+static QWidget *makeDTypeChooser(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-
-    const bool editDimension = widgetKwargs["dim"].toBool(false);
+    const bool editDimension = kwargs["dim"].toBool(false);
 
     auto dtypeChooser = new DTypeChooser(parent, editDimension);
     auto comboBox = dtypeChooser->comboBox();
@@ -146,12 +145,12 @@ static QWidget *makeDTypeChooser(const QJsonObject &paramDesc, QWidget *parent)
         const QString aliasPrefix((mode == 0)? "complex_":"");
         for (int bytes = 64; bytes >= 32; bytes /= 2)
         {
-            if (widgetKwargs.contains(keyPrefix+"float")) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs.contains(keyPrefix+"float")) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
         }
         for (int bytes = 64; bytes >= 8; bytes /= 2)
         {
-            if (widgetKwargs.contains(keyPrefix+"int")) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
-            if (widgetKwargs.contains(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs.contains(keyPrefix+"int")) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs.contains(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
         }
     }
     return dtypeChooser;

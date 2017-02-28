@@ -9,6 +9,8 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <Pothos/Plugin.hpp>
 #include <Poco/Logger.h>
 
@@ -63,6 +65,15 @@ PropertyEditWidget::~PropertyEditWidget(void)
     delete _formLabel;
 }
 
+static QWidget *editWidgetFactory(const QString &widgetType, const QJsonObject &paramDesc, QWidget *parent)
+{
+    const auto widgetArgs = paramDesc["widgetArgs"].toArray(paramDesc["options"].toArray());
+    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
+    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString()));
+    const auto &factory = plugin.getObject().extract<Pothos::Callable>();
+    return factory.call<QWidget *>(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
+}
+
 void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
 {
     _lastParamDesc = paramDesc;
@@ -80,25 +91,25 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
     if (widgetType.isEmpty()) widgetType = "LineEdit";
     _unitsStr = paramDesc["units"].toString();
 
-    //check if the widget type exists in the plugin tree
-    if (not Pothos::PluginRegistry::exists(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString())))
+    //lookup the plugin to get the entry widget factory
+    try
+    {
+        _editWidget = editWidgetFactory(widgetType, paramDesc, _editParent);
+    }
+    catch(const Pothos::Exception &ex)
     {
         static auto &logger = Poco::Logger::get("PothosGui.BlockPropertiesPanel");
-        logger.error("widget type %s does not exist", widgetType.toStdString());
+        logger.error("Error creating '%s' widget:\n%s", widgetType.toStdString(), ex.displayText());
         widgetType = "LineEdit";
+        _editWidget = editWidgetFactory(widgetType, paramDesc, _editParent);
     }
+    _editWidget->setLocale(QLocale::C);
+    _editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
+    _modeLayout->insertWidget(0, _editWidget, 1);
 
     //use line the line edit when forced by the button
     _modeButton->setVisible(widgetType != "LineEdit");
     if (_editMode == "raw") widgetType = "LineEdit";
-
-    //lookup the plugin to get the entry widget factory
-    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString()));
-    const auto &factory = plugin.getObject().extract<Pothos::Callable>();
-    _editWidget = factory.call<QWidget *>(paramDesc, static_cast<QWidget *>(_editParent));
-    _editWidget->setLocale(QLocale::C);
-    _editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
-    _modeLayout->insertWidget(0, _editWidget, 1);
 
     //initialize value
     this->setValue(newValue);

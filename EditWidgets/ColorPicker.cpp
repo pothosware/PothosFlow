@@ -3,6 +3,7 @@
 
 #include <Pothos/Plugin.hpp>
 #include <QJsonObject>
+#include <QJsonArray>
 #define QT_QTCOLORPICKER_IMPORT
 #include <QtColorPicker>
 #include <stdexcept>
@@ -75,11 +76,9 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeColorPicker(const QJsonObject &paramDesc, QWidget *parent)
+static QWidget *makeColorPicker(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-
-    return new ColorPicker(parent, widgetKwargs["mode"].toString("default"));
+    return new ColorPicker(parent, kwargs["mode"].toString("default"));
 }
 
 pothos_static_block(registerColorPicker)

@@ -3,6 +3,7 @@
 
 #include <Pothos/Plugin.hpp>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QDoubleSpinBox>
 #include <limits>
 
@@ -54,15 +55,13 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeDoubleSpinBox(const QJsonObject &paramDesc, QWidget *parent)
+static QWidget *makeDoubleSpinBox(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-
     auto spinBox = new DoubleSpinBox(parent);
-    spinBox->setMinimum(widgetKwargs["minimum"].toDouble(-1e12));
-    spinBox->setMaximum(widgetKwargs["maximum"].toDouble(+1e12));
-    spinBox->setSingleStep(widgetKwargs["step"].toDouble(0.01));
-    spinBox->setDecimals(widgetKwargs["decimals"].toInt(2));
+    spinBox->setMinimum(kwargs["minimum"].toDouble(-1e12));
+    spinBox->setMaximum(kwargs["maximum"].toDouble(+1e12));
+    spinBox->setSingleStep(kwargs["step"].toDouble(0.01));
+    spinBox->setDecimals(kwargs["decimals"].toInt(2));
     return spinBox;
 }
 
