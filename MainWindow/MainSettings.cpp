@@ -1,9 +1,9 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainSettings.hpp"
 #include <Pothos/System.hpp>
-#include <Poco/Path.h>
+#include <QDir>
 
 static MainSettings *globalMainSettings = nullptr;
 
@@ -14,9 +14,9 @@ MainSettings *MainSettings::global(void)
 
 static QString getSettingsPath(void)
 {
-    Poco::Path path(Pothos::System::getUserConfigPath());
-    path.append("PothosGui.conf");
-    return QString::fromStdString(path.toString());
+    const auto confPath = Pothos::System::getUserConfigPath();
+    const QDir confDir(QString::fromStdString(confPath));
+    return confDir.absoluteFilePath("PothosGui.conf");
 }
 
 MainSettings::MainSettings(QObject *parent):

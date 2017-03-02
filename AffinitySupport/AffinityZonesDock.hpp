@@ -1,12 +1,11 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QDockWidget>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 #include <QStringList>
+#include <QJsonObject>
 #include <QColor>
 
 class QMenu;
@@ -42,7 +41,7 @@ public:
     QColor zoneToColor(const QString &zone);
 
     //! Get the config for a particular zone
-    Poco::JSON::Object::Ptr zoneToConfig(const QString &zone);
+    QJsonObject zoneToConfig(const QString &zone);
 
 signals:
 

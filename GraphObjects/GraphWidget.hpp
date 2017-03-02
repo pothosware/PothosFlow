@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -30,9 +30,9 @@ public:
 
     QPainterPath shape(void) const;
 
-    Poco::JSON::Object::Ptr serialize(void) const;
+    QJsonObject serialize(void) const;
 
-    virtual void deserialize(Poco::JSON::Object::Ptr obj);
+    virtual void deserialize(const QJsonObject &obj);
 
     /*!
      * Get the saved state of the internal widget.

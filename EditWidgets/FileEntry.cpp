@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
@@ -81,13 +82,9 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeFileEntry(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
+static QWidget *makeFileEntry(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
-
-    const auto mode = widgetKwargs->optValue<std::string>("mode", "save");
-    return new FileEntry(QString::fromStdString(mode), parent);
+    return new FileEntry(kwargs["mode"].toString("save"), parent);
 }
 
 pothos_static_block(registerFileEntry)

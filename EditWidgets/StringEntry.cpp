@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QLineEdit>
 
 /***********************************************************************
@@ -51,7 +52,7 @@ private slots:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeStringEntry(const Poco::JSON::Object::Ptr &, QWidget *parent)
+static QWidget *makeStringEntry(const QJsonArray &, const QJsonObject &, QWidget *parent)
 {
     return new StringEntry(parent);
 }

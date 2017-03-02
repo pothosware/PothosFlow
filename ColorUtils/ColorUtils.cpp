@@ -1,16 +1,15 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ColorUtils/ColorUtils.hpp"
-#include <Poco/SingletonHolder.h>
-#include <Poco/MD5Engine.h>
-#include <Poco/RWLock.h>
-#include <Poco/Types.h>
 #include <Pothos/Framework.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <QPixmap>
+#include <QCryptographicHash>
+#include <QReadWriteLock>
 #include <type_traits>
 #include <complex>
+#include <cstdint>
 
 /***********************************************************************
  * color map helper utilities
@@ -22,13 +21,14 @@ static QColor pastelize(const QColor &c)
     return QColor::fromHsv(c.hue(), int(c.saturationF()*128), int(c.valueF()*64)+191);
 }
 
-static QColor __typeStrToColor(const std::string &typeStr)
+static QColor __typeStrToColor(const QString &typeStr)
 {
     //This first part does nothing more than create 3 random 8bit numbers
     //by mapping a chunk of a repeatable hash function to a color hex code.
-    Poco::MD5Engine md5; md5.update(typeStr);
-    const auto hexHash = Poco::DigestEngine::digestToHex(md5.digest());
-    QColor c(QString::fromStdString("#" + hexHash.substr(0, 6)));
+    QCryptographicHash hasher(QCryptographicHash::Md5);
+    hasher.addData(typeStr.toUtf8());
+    const auto hexHash = hasher.result().toHex();
+    QColor c("#" + QString(hexHash).mid(0, 6));
 
     //Use the 3 random numbers to create a pastel color.
     return pastelize(c);
@@ -37,20 +37,19 @@ static QColor __typeStrToColor(const std::string &typeStr)
 /***********************************************************************
  * color map cache structures
  **********************************************************************/
-static Poco::RWLock &getLookupMutex(void)
-{
-    static Poco::SingletonHolder<Poco::RWLock> sh;
-    return *sh.get();
-}
-
-struct ColorMap : std::map<std::string, QColor>
+struct ColorMap : std::map<QString, QColor>
 {
     ColorMap(void);
+
+    void registerName(const std::string &name, const QColor &color)
+    {
+        (*this)[QString::fromStdString(name)] = color;
+    }
 
     template <typename Type>
     void registerDType(const QColor &color)
     {
-        (*this)[Pothos::DType(typeid(Type)).toString()] = color;
+        this->registerName(Pothos::DType(typeid(Type)).toString(), color);
     }
 
     template <typename Type>
@@ -72,15 +71,12 @@ struct ColorMap : std::map<std::string, QColor>
     template <typename Type>
     void registerRType(const QColor &color)
     {
-        (*this)[Pothos::Util::typeInfoToString(typeid(Type))] = color;
+        this->registerName(Pothos::Util::typeInfoToString(typeid(Type)), color);
     }
 };
 
-static ColorMap &getColorMap(void)
-{
-    static Poco::SingletonHolder<ColorMap> sh;
-    return *sh.get();
-}
+Q_GLOBAL_STATIC(QReadWriteLock, getLookupMutex)
+Q_GLOBAL_STATIC(ColorMap, getColorMap)
 
 /*!
  * Initialize color map with some predefined colors.
@@ -89,19 +85,14 @@ static ColorMap &getColorMap(void)
 ColorMap::ColorMap(void)
 {
     //the unspecified type
-    (*this)[Pothos::DType().name()] = Qt::gray;
+    this->registerName(Pothos::DType().name(), Qt::gray);
 
     //integer types
-    registerIntType<char>(Qt::magenta);
-    registerIntType<short>(Qt::yellow);
-    registerIntType<int>(Qt::green);
+    registerIntType<int8_t>(Qt::magenta);
+    registerIntType<int16_t>(Qt::yellow);
+    registerIntType<int32_t>(Qt::green);
     static const QColor orange("#FF7F00");
-    #ifndef POCO_LONG_IS_64_BIT
-    registerIntType<long>(Qt::green);
-    #else
-    registerIntType<long>(orange);
-    #endif
-    registerIntType<long long>(orange);
+    registerIntType<int64_t>(orange);
 
     //floating point
     registerFloatType<float>(Qt::red);
@@ -125,37 +116,42 @@ ColorMap::ColorMap(void)
 /***********************************************************************
  * color utils functions
  **********************************************************************/
-QColor typeStrToColor(const std::string &typeStr_)
+QColor typeStrToColor(const QString &typeStr_)
 {
     auto typeStr = typeStr_;
-    if (typeStr.empty()) return Qt::white; //not specified
+    if (typeStr.isEmpty()) return Qt::white; //not specified
 
     //try to pass it through DType to get a "nice" name
     try
     {
-        Pothos::DType dtype(typeStr);
+        Pothos::DType dtype(typeStr.toStdString());
         //use a darker color for multiple dimensions of primitive types
-        if (dtype.dimension() > 1) return typeStrToColor(dtype.name()).darker(120);
-        typeStr = dtype.toMarkup();
+        if (dtype.dimension() > 1)
+        {
+            const auto name1d = Pothos::DType::fromDType(dtype, 1).toMarkup();
+            return typeStrToColor(QString::fromStdString(name1d)).darker(120);
+        }
+        typeStr = QString::fromStdString(dtype.toMarkup());
     }
     catch (const Pothos::DTypeUnknownError &){}
 
     //check the cache
     {
-        Poco::RWLock::ScopedReadLock lock(getLookupMutex());
-        auto it = getColorMap().find(typeStr);
-        if (it != getColorMap().end()) return it->second;
+        QReadLocker lock(getLookupMutex());
+        auto it = getColorMap()->find(typeStr);
+        if (it != getColorMap()->end()) return it->second;
     }
 
     //create a new entry
-    Poco::RWLock::ScopedWriteLock lock(getLookupMutex());
-    return (getColorMap()[typeStr] = __typeStrToColor(typeStr));
+    const auto color = __typeStrToColor(typeStr);
+    QWriteLocker lock(getLookupMutex());
+    return getColorMap()->emplace(typeStr, color).first->second;
 }
 
-std::map<std::string, QColor> getTypeStrToColorMap(void)
+std::map<QString, QColor> getTypeStrToColorMap(void)
 {
-    Poco::RWLock::ScopedReadLock lock(getLookupMutex());
-    return getColorMap();
+    QReadLocker lock(getLookupMutex());
+    return *getColorMap();
 }
 
 QIcon colorToWidgetIcon(const QColor &color)

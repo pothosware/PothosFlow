@@ -7,22 +7,17 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsView>
 #include <QPainter>
-#include <Poco/SingletonHolder.h>
 #include <cassert>
 #include <atomic>
 #include <iostream>
 
-static std::atomic<size_t> &getUIDAtomic(void)
-{
-    static Poco::SingletonHolder<std::atomic<size_t>> sh;
-    return *sh.get();
-}
+Q_GLOBAL_STATIC(std::atomic<size_t>, getUIDAtomic)
 
 struct GraphObject::Impl
 {
     Impl(void):
         deleteFlag(false),
-        uid(getUIDAtomic()++),
+        uid((*getUIDAtomic())++),
         enabled(true),
         changed(true)
     {
@@ -232,25 +227,25 @@ const GraphConnectableKey &GraphObject::currentTrackedConnectable(void) const
     return _impl->trackedKey;
 }
 
-Poco::JSON::Object::Ptr GraphObject::serialize(void) const
+QJsonObject GraphObject::serialize(void) const
 {
-    Poco::JSON::Object::Ptr obj(new Poco::JSON::Object());
-    obj->set("id", this->getId().toStdString());
-    obj->set("zValue", double(this->zValue()));
-    obj->set("positionX", double(this->pos().x()));
-    obj->set("positionY", double(this->pos().y()));
-    obj->set("rotation", double(this->rotation()));
-    obj->set("selected", this->isSelected());
-    obj->set("enabled", this->isEnabled());
+    QJsonObject obj;
+    obj["id"] = this->getId();
+    obj["zValue"] = this->zValue();
+    obj["positionX"] = this->pos().x();
+    obj["positionY"] = this->pos().y();
+    obj["rotation"] = this->rotation();
+    obj["selected"] = this->isSelected();
+    obj["enabled"] = this->isEnabled();
     return obj;
 }
 
-void GraphObject::deserialize(Poco::JSON::Object::Ptr obj)
+void GraphObject::deserialize(const QJsonObject &obj)
 {
-    this->setId(QString::fromStdString(obj->getValue<std::string>("id")));
-    this->setZValue(obj->optValue<double>("zValue", 0.0));
-    this->setPos(QPointF(obj->optValue<double>("positionX", 0.0), obj->optValue<double>("positionY", 0.0)));
-    this->setRotation(obj->optValue<double>("rotation", 0.0));
-    this->setSelected(obj->optValue<bool>("selected", false));
-    this->setEnabled(obj->optValue<bool>("enabled", true));
+    this->setId(obj["id"].toString());
+    this->setZValue(obj["zValue"].toDouble(0.0));
+    this->setPos(QPointF(obj["positionX"].toDouble(0.0), obj["positionY"].toDouble(0.0)));
+    this->setRotation(obj["rotation"].toDouble(0.0));
+    this->setSelected(obj["selected"].toBool(false));
+    this->setEnabled(obj["enabled"].toBool(true));
 }

@@ -3,6 +3,8 @@ This this the changelog file for the Pothos GUI toolkit.
 Release 0.5.0 (pending)
 ==========================
 
+- Require 0.5.0 Pothos framework for DocUtil and BlockEval
+- Switch over to Qt classes for JSON, time, processes, etc...
 - Parameter edit mode to switch between default and line entry
 - Finer grained connection management in Topology evaluator
 - Support for querying and applying block description overlays

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
@@ -12,6 +12,20 @@
 #include <QDir>
 #include <stdexcept>
 #include <cstdlib> //EXIT_FAILURE
+
+static void myQLogHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    Poco::Message::Priority prio(Poco::Message::PRIO_INFORMATION);
+    switch (type) {
+    case QtDebugMsg: prio = Poco::Message::PRIO_DEBUG; break;
+    case QtInfoMsg: prio = Poco::Message::PRIO_INFORMATION; break;
+    case QtWarningMsg: prio = Poco::Message::PRIO_WARNING; break;
+    case QtCriticalMsg: prio = Poco::Message::PRIO_CRITICAL; break;
+    case QtFatalMsg: prio = Poco::Message::PRIO_FATAL; break;
+    }
+    const Poco::Message message(context.category, msg.toStdString(), prio, context.file, context.line);
+    Poco::Logger::get(context.category).log(message);
+}
 
 struct MyScopedSyslogListener
 {
@@ -29,6 +43,7 @@ struct MyScopedSyslogListener
 
 int main(int argc, char **argv)
 {
+    qInstallMessageHandler(myQLogHandler);
     MyScopedSyslogListener syslogListener;
 
     //did the user specified files on the command line?

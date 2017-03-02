@@ -1,11 +1,11 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <Pothos/Proxy/Proxy.hpp>
 #include <Pothos/Proxy/Environment.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 #include <QObject>
 #include <QString>
 #include <memory>
@@ -26,7 +26,7 @@ public:
      * Called under re-eval to apply the latest config.
      * This call should take the info and not process.
      */
-    void acceptConfig(const Poco::JSON::Object::Ptr &config);
+    void acceptConfig(const QJsonObject &config);
 
     /*!
      * Called under re-eval to apply the latest environment.
@@ -72,8 +72,8 @@ private:
 
     //Tracking state for the thread pool configuration.
     //A change in config merritts making a new thread pool.
-    Poco::JSON::Object::Ptr _newZoneConfig;
-    Poco::JSON::Object::Ptr _lastZoneConfig;
+    QJsonObject _newZoneConfig;
+    QJsonObject _lastZoneConfig;
 
     Pothos::Proxy _threadPool;
     bool _failureState;

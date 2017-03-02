@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MessageWindow/LoggerChannel.hpp"
@@ -14,7 +14,7 @@ LoggerChannel::LoggerChannel(QObject *parent):
 {
     _logger.setLevel(Poco::Message::PRIO_TRACE); //lowest level -> shows everything
     if (_splitter) _splitter->addChannel(this);
-    else poco_error(Poco::Logger::get("PothosGui.LoggerChannel"), "expected SplitterChannel");
+    else Poco::Logger::get("PothosGui.LoggerChannel").error("expected SplitterChannel");
 }
 
 LoggerChannel::~LoggerChannel(void)

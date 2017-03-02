@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngineImpl.hpp"
@@ -135,31 +135,36 @@ void EvalEngineImpl::submitZoneInfo(const ZoneInfos &info)
     this->evaluate();
 }
 
-std::string EvalEngineImpl::getTopologyDotMarkup(const std::string &config)
+QByteArray EvalEngineImpl::getTopologyDotMarkup(const QByteArray &configBytes)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
-    if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->toDotMarkup(config);
+    if (not _topologyEval) return QByteArray();
+    const std::string config(configBytes.data(), configBytes.size());
+    const auto markup = _topologyEval->getTopology()->toDotMarkup(config);
+    return QByteArray(markup.data(), markup.size());
 }
 
-std::string EvalEngineImpl::getTopologyJSONDump(const std::string &config)
+QByteArray EvalEngineImpl::getTopologyJSONDump(const QByteArray &configBytes)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
-    if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->dumpJSON(config);
+    if (not _topologyEval) return QByteArray();
+    const std::string config(configBytes.data(), configBytes.size());
+    const auto dump = _topologyEval->getTopology()->dumpJSON(config);
+    return QByteArray(dump.data(), dump.size());
 }
 
-std::string EvalEngineImpl::getTopologyJSONStats(void)
+QByteArray EvalEngineImpl::getTopologyJSONStats(void)
 {
     //have to do this in case this call compressed an eval-worthy event
     this->evaluate();
 
-    if (not _topologyEval) return "";
-    return _topologyEval->getTopology()->queryJSONStats();
+    if (not _topologyEval) return QByteArray();
+    const auto stats = _topologyEval->getTopology()->queryJSONStats();
+    return QByteArray(stats.data(), stats.size());
 }
 
 void EvalEngineImpl::handleMonitorTimeout(void)
@@ -191,7 +196,7 @@ void EvalEngineImpl::evaluate(void)
         const auto &zone = blockInfo.zone;
 
         //extract the configuration for this zone
-        Poco::JSON::Object::Ptr config;
+        QJsonObject config;
         {
             auto it = _zoneInfo.find(zone);
             if (it != _zoneInfo.end()) config = it->second;

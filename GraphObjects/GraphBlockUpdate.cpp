@@ -1,74 +1,62 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBlockImpl.hpp"
 #include <QWidget>
 #include <Pothos/Proxy.hpp>
-#include <Poco/Logger.h>
 
 /***********************************************************************
  * initialize the block's properties
  **********************************************************************/
-void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
+void GraphBlock::setBlockDesc(const QJsonObject &blockDesc)
 {
-    assert(blockDesc);
     if (_impl->blockDesc == blockDesc) return;
     _impl->blockDesc = blockDesc;
 
     //extract the name or title from the description
-    const auto name = blockDesc->getValue<std::string>("name");
-    if (not blockDesc->has("name"))
+    if (not blockDesc.contains("name"))
     {
-        poco_error(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block missing 'name'");
+        _impl->logger.error("Block '%s' missing 'name'", this->getBlockDescPath().toStdString());
         return;
     }
-    this->setTitle(QString::fromStdString(name));
+    this->setTitle(blockDesc["name"].toString());
+    _impl->isGraphWidget = (blockDesc["mode"].toString() == "graphWidget");
 
     //reload properties description, clear the old first
     _properties.clear();
 
     //extract the params or properties from the description
-    if (blockDesc->isArray("params")) for (const auto &paramObj : *blockDesc->getArray("params"))
+    for (const auto &paramValue : blockDesc["params"].toArray())
     {
-        const auto param = paramObj.extract<Poco::JSON::Object::Ptr>();
-        if (not param->has("key"))
+        const auto param = paramValue.toObject();
+        if (not param.contains("key"))
         {
-            poco_error_f1(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block '%s' param missing 'key'", name);
+            _impl->logger.error("Block '%s' param missing 'key'", this->getTitle().toStdString());
             return;
         }
-        const auto key = QString::fromStdString(param->getValue<std::string>("key"));
-        const auto name = QString::fromStdString(param->optValue<std::string>("name", key.toStdString()));
+        const auto key = param["key"].toString();
+        const auto name = param["name"].toString(key);
         this->addProperty(key);
         this->setPropertyName(key, name);
 
-        if (param->has("default"))
+        if (param.contains("default"))
         {
-            this->setPropertyValue(key, QString::fromStdString(
-                param->getValue<std::string>("default")));
+            this->setPropertyValue(key, param["default"].toString());
         }
-        else if (param->isArray("options") and param->getArray("options")->size() > 0)
+        else if (not param["options"].toArray().isEmpty())
         {
-            auto opt0 = param->getArray("options")->getObject(0);
-            if (not opt0->has("value"))
+            auto opt0 = param["options"].toArray().at(0).toObject();
+            if (not opt0.contains("value"))
             {
-                poco_warning_f2(Poco::Logger::get("PothosGui.GraphBlock.init"), "Block '%s' [param %s] missing 'value'", name, name.toStdString());
+                _impl->logger.warning("Block '%s' [param %s] missing 'value'", this->getTitle().toStdString(), name.toStdString());
             }
-            else this->setPropertyValue(key, QString::fromStdString(opt0->getValue<std::string>("value")));
+            else this->setPropertyValue(key, opt0["value"].toString());
         }
 
-        if (param->has("preview"))
+        if (param.contains("preview"))
         {
-            const auto prevMode = param->getValue<std::string>("preview");
-
-            Poco::JSON::Array::Ptr args;
-            if (param->has("previewArgs") and param->isArray("previewArgs"))
-                args = param->getArray("previewArgs");
-
-            Poco::JSON::Object::Ptr kwargs;
-            if (param->has("previewKwargs") and param->isObject("previewKwargs"))
-                kwargs = param->getObject("previewKwargs");
-
-            this->setPropertyPreviewMode(key, QString::fromStdString(prevMode), args, kwargs);
+            this->setPropertyPreviewMode(key, param["preview"].toString(),
+                param["previewArgs"].toArray(), param["previewKwargs"].toObject());
         }
     }
 }
@@ -76,9 +64,8 @@ void GraphBlock::setBlockDesc(const Poco::JSON::Object::Ptr &blockDesc)
 /***********************************************************************
  * initialize the block's input ports
  **********************************************************************/
-void GraphBlock::setInputPortDesc(const Poco::JSON::Array::Ptr &inputDesc)
+void GraphBlock::setInputPortDesc(const QJsonArray &inputDesc)
 {
-    if (not inputDesc) return;
     if (_impl->inputDesc == inputDesc) return;
     _impl->inputDesc = inputDesc;
 
@@ -87,24 +74,22 @@ void GraphBlock::setInputPortDesc(const Poco::JSON::Array::Ptr &inputDesc)
     _slotPorts.clear();
 
     //reload inputs (and slots)
-    for (const auto &inputPortDesc : *inputDesc)
+    for (const auto &inputPortDesc : inputDesc)
     {
-        const auto &info = inputPortDesc.extract<Poco::JSON::Object::Ptr>();
-        auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
-        QString portAlias = portKey;
-        if (info->has("alias")) portAlias = QString::fromStdString(info->getValue<std::string>("alias"));
-        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSlotPort(portKey);
+        const auto &info = inputPortDesc.toObject();
+        auto portKey = info["name"].toString();
+        const auto portAlias = info["alias"].toString(portKey);
+        if (info["isSigSlot"].toBool(false)) this->addSlotPort(portKey);
         else this->addInputPort(portKey, portAlias);
-        if (info->has("dtype")) this->setInputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
+        if (info.contains("dtype")) this->setInputPortTypeStr(portKey, info["dtype"].toString());
     }
 }
 
 /***********************************************************************
  * initialize the block's output ports
  **********************************************************************/
-void GraphBlock::setOutputPortDesc(const Poco::JSON::Array::Ptr &outputDesc)
+void GraphBlock::setOutputPortDesc(const QJsonArray &outputDesc)
 {
-    if (not outputDesc) return;
     if (_impl->outputDesc == outputDesc) return;
     _impl->outputDesc = outputDesc;
 
@@ -113,14 +98,13 @@ void GraphBlock::setOutputPortDesc(const Poco::JSON::Array::Ptr &outputDesc)
     _signalPorts.clear();
 
     //reload outputs (and signals)
-    for (const auto &outputPortDesc : *outputDesc)
+    for (const auto &outputPortDesc : outputDesc)
     {
-        const auto &info = outputPortDesc.extract<Poco::JSON::Object::Ptr>();
-        auto portKey = QString::fromStdString(info->getValue<std::string>("name"));
-        QString portAlias = portKey;
-        if (info->has("alias")) portAlias = QString::fromStdString(info->getValue<std::string>("alias"));
-        if (info->has("isSigSlot") and info->getValue<bool>("isSigSlot")) this->addSignalPort(portKey);
+        const auto &info = outputPortDesc.toObject();
+        auto portKey = info["name"].toString();
+        const auto portAlias = info["alias"].toString(portKey);
+        if (info["isSigSlot"].toBool(false)) this->addSignalPort(portKey);
         else this->addOutputPort(portKey, portAlias);
-        if (info->has("dtype")) this->setOutputPortTypeStr(portKey, info->getValue<std::string>("dtype"));
+        if (info.contains("dtype")) this->setOutputPortTypeStr(portKey, info["dtype"].toString());
     }
 }

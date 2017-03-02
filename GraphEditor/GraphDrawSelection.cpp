@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphDraw.hpp"
@@ -293,12 +293,13 @@ bool GraphDraw::tryToMakeConnection(const GraphConnectionEndpoint &thisEp)
         }
         catch (const Pothos::Exception &ex)
         {
-            poco_warning(Poco::Logger::get("PothosGui.GraphDraw.connect"), Poco::format("Cannot connect port %s[%s] to port %s[%s]: %s",
+            static auto &logger = Poco::Logger::get("PothosGui.GraphDraw");
+            logger.warning("Cannot connect port %s[%s] to port %s[%s]: %s",
                 _lastClickSelectEp.getObj()->getId().toStdString(),
                 _lastClickSelectEp.getKey().id.toStdString(),
                 thisEp.getObj()->getId().toStdString(),
                 thisEp.getKey().id.toStdString(),
-                ex.message()));
+                ex.message());
         }
 
         //cleanup regardless of failure

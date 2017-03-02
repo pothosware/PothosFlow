@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,13 +7,12 @@
 #include <QString>
 #include <QStringList>
 #include <QFutureWatcher>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <map>
-#include <string>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/RWLock.h>
 
 class HostExplorerDock;
+class QReadWriteLock;
 
 class BlockCache : public QObject
 {
@@ -25,11 +24,13 @@ public:
 
     BlockCache(QObject *parent, HostExplorerDock *hostExplorer);
 
+    ~BlockCache(void);
+
     //! Get a block description given the block registry path
-    Poco::JSON::Object::Ptr getBlockDescFromPath(const std::string &path);
+    QJsonObject getBlockDescFromPath(const QString &path);
 
 signals:
-    void blockDescUpdate(const Poco::JSON::Array::Ptr &);
+    void blockDescUpdate(const QJsonArray &);
     void blockDescReady(void);
 
 public slots:
@@ -44,10 +45,10 @@ private slots:
 private:
     HostExplorerDock *_hostExplorerDock;
     QStringList _allRemoteNodeUris;
-    QFutureWatcher<Poco::JSON::Array::Ptr> *_watcher;
+    QFutureWatcher<QJsonArray> *_watcher;
 
     //storage structures
-    Poco::RWLock _mapMutex;
-    std::map<QString, Poco::JSON::Array::Ptr> _uriToBlockDescs;
-    std::map<std::string, Poco::JSON::Object::Ptr> _pathToBlockDesc;
+    QReadWriteLock *_mapMutex;
+    std::map<QString, QJsonArray> _uriToBlockDescs;
+    std::map<QString, QJsonObject> _pathToBlockDesc;
 };

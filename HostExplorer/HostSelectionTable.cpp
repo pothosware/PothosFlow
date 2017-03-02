@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -17,8 +17,6 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System.hpp>
 #include <Pothos/Util/Network.hpp>
-#include <Poco/DateTimeFormatter.h>
-#include <Poco/SingletonHolder.h>
 #include <map>
 #include <iostream>
 #include <functional> //std::bind
@@ -41,8 +39,8 @@ void NodeInfo::update(void)
             settings->setValue("HostExplorer/"+this->uri+"/nodeName", this->nodeName);
         }
         this->isOnline = true;
-        this->lastAccess = Poco::Timestamp();
-        settings->setValue("HostExplorer/"+this->uri+"/lastAccess", int(this->lastAccess.epochTime()));
+        this->lastAccess = QDateTime::currentDateTime();
+        settings->setValue("HostExplorer/"+this->uri+"/lastAccess", this->lastAccess);
     }
     //otherwise, fetch the information from the settings cache
     catch(const Pothos::RemoteClientError &)
@@ -52,7 +50,7 @@ void NodeInfo::update(void)
         {
             this->nodeName = settings->value("HostExplorer/"+this->uri+"/nodeName").toString();
         }
-        this->lastAccess = Poco::Timestamp::fromEpochTime(std::time_t(settings->value("HostExplorer/"+this->uri+"/lastAccess").toInt()));
+        this->lastAccess = settings->value("HostExplorer/"+this->uri+"/lastAccess").toDateTime();
     }
 }
 
@@ -298,9 +296,8 @@ void HostSelectionTable::reloadRows(const std::vector<NodeInfo> &nodeInfos)
         _uriToInfo[info.uri] = info;
 
         //gather information
-        auto ldt = Poco::LocalDateTime(Poco::DateTime(info.lastAccess));
-        auto timeStr = Poco::DateTimeFormatter::format(ldt, "%h:%M:%S %A - %b %e %Y");
-        auto accessTimeStr = QString(info.neverAccessed()? tr("Never") : QString::fromStdString(timeStr));
+        const auto timeStr = info.lastAccess.toString("h:mm:ss AP - MMM d yyyy");
+        const auto accessTimeStr = QString(info.lastAccess.isNull()? tr("Never") : timeStr);
         QIcon statusIcon = makeIconFromTheme(
             info.isOnline?"network-transmit-receive":"network-offline");
 

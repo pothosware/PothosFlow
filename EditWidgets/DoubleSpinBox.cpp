@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QDoubleSpinBox>
 #include <limits>
 
@@ -54,16 +55,13 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeDoubleSpinBox(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
+static QWidget *makeDoubleSpinBox(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
-
     auto spinBox = new DoubleSpinBox(parent);
-    spinBox->setMinimum(widgetKwargs->optValue<double>("minimum", -1e12));
-    spinBox->setMaximum(widgetKwargs->optValue<double>("maximum", +1e12));
-    spinBox->setSingleStep(widgetKwargs->optValue<double>("step", 0.01));
-    spinBox->setDecimals(widgetKwargs->optValue<int>("decimals", 2));
+    spinBox->setMinimum(kwargs["minimum"].toDouble(-1e12));
+    spinBox->setMaximum(kwargs["maximum"].toDouble(+1e12));
+    spinBox->setSingleStep(kwargs["step"].toDouble(0.01));
+    spinBox->setDecimals(kwargs["decimals"].toInt(2));
     return spinBox;
 }
 

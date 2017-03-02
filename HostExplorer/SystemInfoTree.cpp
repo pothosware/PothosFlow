@@ -1,23 +1,22 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/SystemInfoTree.hpp"
 #include <Pothos/Remote.hpp>
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System.hpp>
+#include <QJsonDocument>
 #include <QFuture>
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <Poco/Logger.h>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
 
 /***********************************************************************
  * information aquisition
  **********************************************************************/
 static InfoResult getInfo(const std::string &uriStr)
 {
+    static auto &logger = Poco::Logger::get("PothosGui.SystemInfoTree");
     InfoResult info;
     POTHOS_EXCEPTION_TRY
     {
@@ -25,12 +24,18 @@ static InfoResult getInfo(const std::string &uriStr)
         info.hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
         info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
         auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
-        const auto result = Poco::JSON::Parser().parse(deviceInfo);
-        info.deviceInfo = result.extract<Poco::JSON::Array::Ptr>();
+        const QByteArray devInfoBytes(deviceInfo.data(), deviceInfo.size());
+        QJsonParseError errorParser;
+        const auto jsonDoc = QJsonDocument::fromJson(devInfoBytes, &errorParser);
+        if (jsonDoc.isNull())
+        {
+            logger.error("Failed to parse device info %s - %s", uriStr, errorParser.errorString().toStdString());
+        }
+        else info.deviceInfo = jsonDoc.array();
     }
     POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.SystemInfoTree"), "Failed to query system info %s - %s", uriStr, ex.displayText());
+        logger.error("Failed to query system info %s - %s", uriStr, ex.displayText());
     }
     return info;
 }
@@ -72,12 +77,12 @@ void SystemInfoTree::handleWatcherDone(void)
         columns.push_back(tr("Host Info"));
         auto rootItem = new QTreeWidgetItem(this, columns);
         rootItem->setExpanded(true);
-        makeEntry(rootItem, "OS Name", hostInfo.osName);
-        makeEntry(rootItem, "OS Version", hostInfo.osVersion);
-        makeEntry(rootItem, "OS Architecture", hostInfo.osArchitecture);
-        makeEntry(rootItem, "Node Name", hostInfo.nodeName);
-        makeEntry(rootItem, "Node ID", hostInfo.nodeId);
-        makeEntry(rootItem, "Processors", std::to_string(hostInfo.processorCount), "CPUs");
+        makeEntry(rootItem, "OS Name", QString::fromStdString(hostInfo.osName));
+        makeEntry(rootItem, "OS Version", QString::fromStdString(hostInfo.osVersion));
+        makeEntry(rootItem, "OS Architecture", QString::fromStdString(hostInfo.osArchitecture));
+        makeEntry(rootItem, "Node Name", QString::fromStdString(hostInfo.nodeName));
+        makeEntry(rootItem, "Node ID", QString::fromStdString(hostInfo.nodeId));
+        makeEntry(rootItem, "Processors", QString::number(hostInfo.processorCount), "CPUs");
     }
 
     for (const auto &numaInfo : info.numaInfo)
@@ -86,13 +91,13 @@ void SystemInfoTree::handleWatcherDone(void)
         columns.push_back(tr("NUMA Node %1 Info").arg(numaInfo.nodeNumber));
         auto rootItem = new QTreeWidgetItem(this, columns);
         rootItem->setExpanded(numaInfo.nodeNumber == 0);
-        if (numaInfo.totalMemory != 0) makeEntry(rootItem, "Total Memory", std::to_string(numaInfo.totalMemory/1024/1024), "MB");
-        if (numaInfo.freeMemory != 0) makeEntry(rootItem, "Free Memory", std::to_string(numaInfo.freeMemory/1024/1024), "MB");
-        std::string cpuStr;
+        if (numaInfo.totalMemory != 0) makeEntry(rootItem, "Total Memory", QString::number(numaInfo.totalMemory/1024/1024), "MB");
+        if (numaInfo.freeMemory != 0) makeEntry(rootItem, "Free Memory", QString::number(numaInfo.freeMemory/1024/1024), "MB");
+        QString cpuStr;
         for (auto i : numaInfo.cpus)
         {
-            if (not cpuStr.empty()) cpuStr += ", ";
-            cpuStr += std::to_string(i);
+            if (not cpuStr.isEmpty()) cpuStr += ", ";
+            cpuStr += QString::number(i);
         }
         makeEntry(rootItem, "CPUs", cpuStr);
     }
@@ -100,9 +105,9 @@ void SystemInfoTree::handleWatcherDone(void)
     //adjust value column before arbitrary values from device info
     this->resizeColumnToContents(1);
 
-    if (info.deviceInfo) for (size_t i = 0; i < info.deviceInfo->size(); i++)
+    for (const auto &infoVal : info.deviceInfo)
     {
-        this->loadJsonObject(this, "", info.deviceInfo->getObject(i), true/*expand*/);
+        this->loadJsonObject(this, "", infoVal.toObject(), true/*expand*/);
     }
 
     //adjust names and units columns after all information is loaded

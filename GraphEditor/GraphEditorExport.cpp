@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2016 Josh Blum
+// Copyright (c) 2016-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -6,37 +6,38 @@
 #include "GraphEditor/Constants.hpp"
 #include "EvalEngine/TopologyEval.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
-#include <fstream>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
 
 void GraphEditor::exportToJSONTopology(const QString &fileName)
 {
-    poco_information_f1(_logger, "Exporting %s", fileName.toStdString());
-    Poco::JSON::Object topObj;
+    _logger.information("Exporting %s", fileName.toStdString());
+    QJsonObject topObj;
 
     //all graph objects excluding widgets which are not exported
     //we will have to filter out graphical blocks as well
     const auto graphObjects = this->getGraphObjects(~GRAPH_WIDGET);
 
     //global variables
-    Poco::JSON::Array globals;
+    QJsonArray globals;
     for (const auto &name : this->listGlobals())
     {
         const auto &value = this->getGlobalExpression(name);
-        Poco::JSON::Object globalObj;
-        globalObj.set("name", name.toStdString());
-        globalObj.set("value", value.toStdString());
-        globals.add(globalObj);
+        QJsonObject globalObj;
+        globalObj["name"] = name;
+        globalObj["value"] = value;
+        globals.push_back(globalObj);
     }
-    if (globals.size() > 0) topObj.set("globals", globals);
+    if (not globals.isEmpty()) topObj["globals"] = globals;
 
     //thread pools (filled in by blocks loop)
-    Poco::JSON::Object threadPools;
+    QJsonObject threadPools;
     auto affinityZones = AffinityZonesDock::global();
 
     //blocks
-    Poco::JSON::Array blocks;
+    QJsonArray blocks;
     std::map<size_t, const GraphBlock*> uidToBlock;
     for (const auto *obj : graphObjects)
     {
@@ -46,53 +47,53 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
         uidToBlock[block->uid()] = block;
 
         //copy in the the id and path
-        Poco::JSON::Object blockObj;
-        blockObj.set("id", block->getId().toStdString());
-        blockObj.set("path", block->getBlockDescPath());
+        QJsonObject blockObj;
+        blockObj["id"] = block->getId();
+        blockObj["path"] = block->getBlockDescPath();
 
         //setup the thread pool when specified
         const auto affinityZone = block->getAffinityZone();
         if (not affinityZone.isEmpty() and affinityZone != "gui")
         {
             const auto config = affinityZones->zoneToConfig(affinityZone);
-            threadPools.set(affinityZone.toStdString(), config);
-            blockObj.set("threadPool", affinityZone.toStdString());
+            threadPools[affinityZone] = config;
+            blockObj["threadPool"] = affinityZone;
         }
 
         //block description args are in the same format
         const auto desc = block->getBlockDesc();
-        if (desc->has("args")) blockObj.set("args", desc->get("args"));
+        if (desc.contains("args")) blockObj["args"] = desc["args"];
 
         //copy in the named calls in array format
-        Poco::JSON::Array calls;
-        if (desc->isArray("calls")) for (const auto &elem : *desc->getArray("calls"))
+        QJsonArray calls;
+        for (const auto &callVal : desc["calls"].toArray())
         {
-            const auto callObj = elem.extract<Poco::JSON::Object::Ptr>();
-            Poco::JSON::Array call;
-            call.add(callObj->get("name"));
-            for (const auto &arg : *callObj->getArray("args")) call.add(arg);
-            calls.add(call);
+            const auto callObj = callVal.toObject();
+            QJsonArray call;
+            call.push_back(callObj["name"]);
+            for (const auto &arg : callObj["args"].toArray()) call.push_back(arg);
+            calls.push_back(call);
         }
-        blockObj.set("calls", calls);
+        blockObj["calls"] = calls;
 
         //copy in the parameters as local variables
-        Poco::JSON::Array locals;
+        QJsonArray locals;
         for (const auto &name : block->getProperties())
         {
-            Poco::JSON::Object local;
-            local.set("name", name.toStdString());
-            local.set("value", block->getPropertyValue(name).toStdString());
-            locals.add(local);
+            QJsonObject local;
+            local["name"] = name;
+            local["value"] = block->getPropertyValue(name);
+            locals.push_back(local);
         }
-        blockObj.set("locals", locals);
+        blockObj["locals"] = locals;
 
-        blocks.add(blockObj);
+        blocks.push_back(blockObj);
     }
-    topObj.set("blocks", blocks);
-    if (threadPools.size() > 0) topObj.set("threadPools", threadPools);
+    topObj["blocks"] = blocks;
+    if (not threadPools.isEmpty()) topObj["threadPools"] = threadPools;
 
     //connections
-    Poco::JSON::Array connections;
+    QJsonArray connections;
     for (const auto &connInfo : TopologyEval::getConnectionInfo(graphObjects))
     {
         //the block may have been filtered out
@@ -103,23 +104,23 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
         if (dstIt == uidToBlock.end()) continue;
 
         //create the connection information in order
-        Poco::JSON::Array connArr;
-        connArr.add(srcIt->second->getId().toStdString());
-        connArr.add(connInfo.srcPort);
-        connArr.add(dstIt->second->getId().toStdString());
-        connArr.add(connInfo.dstPort);
-        connections.add(connArr);
+        QJsonArray connArr;
+        connArr.push_back(srcIt->second->getId());
+        connArr.push_back(connInfo.srcPort);
+        connArr.push_back(dstIt->second->getId());
+        connArr.push_back(connInfo.dstPort);
+        connections.push_back(connArr);
     }
-    topObj.set("connections", connections);
+    topObj["connections"] = connections;
+
+    //export to byte array
+    const QJsonDocument jsonDoc(topObj);
+    const auto data = jsonDoc.toJson(QJsonDocument::Indented);
 
     //write to file
-    try
+    QFile jsonFile(fileName);
+    if (not jsonFile.open(QFile::WriteOnly) or jsonFile.write(data) == -1)
     {
-        std::ofstream outFile(fileName.toStdString().c_str());
-        topObj.stringify(outFile, 4/*indent*/);
-    }
-    catch (const std::exception &ex)
-    {
-        poco_error_f2(_logger, "Error exporting %s: %s", fileName, std::string(ex.what()));
+        _logger.error("Error exporting %s: %s", fileName.toStdString(), jsonFile.errorString().toStdString());
     }
 }

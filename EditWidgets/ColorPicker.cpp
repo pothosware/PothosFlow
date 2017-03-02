@@ -1,8 +1,9 @@
-// Copyright (c) 2016-2016 Josh Blum
+// Copyright (c) 2016-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #define QT_QTCOLORPICKER_IMPORT
 #include <QtColorPicker>
 #include <stdexcept>
@@ -14,7 +15,7 @@ class ColorPicker : public QtColorPicker
 {
     Q_OBJECT
 public:
-    ColorPicker(QWidget *parent, const std::string &mode):
+    ColorPicker(QWidget *parent, const QString &mode):
         QtColorPicker(parent),
         _value("black")
     {
@@ -75,13 +76,9 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeColorPicker(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
+static QWidget *makeColorPicker(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
-    const auto mode = widgetKwargs->optValue<std::string>("mode", "default");
-
-    return new ColorPicker(parent, mode);
+    return new ColorPicker(parent, kwargs["mode"].toString("default"));
 }
 
 pothos_static_block(registerColorPicker)

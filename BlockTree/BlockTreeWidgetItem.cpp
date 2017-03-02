@@ -1,20 +1,21 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockTree/BlockTreeWidgetItem.hpp"
+#include <QJsonArray>
 
-void BlockTreeWidgetItem::load(const Poco::JSON::Object::Ptr &blockDesc, const std::string &category, const size_t depth)
+void BlockTreeWidgetItem::load(const QJsonObject &blockDesc, const QString &category, const size_t depth)
 {
-    const auto slashIndex = category.find("/");
-    const auto catName = category.substr(0, slashIndex);
-    if (slashIndex == std::string::npos)
+    const auto slashIndex = category.indexOf('/');
+    const auto catName = category.mid(0, slashIndex);
+    if (slashIndex == -1)
     {
         _blockDesc = blockDesc;
     }
     else
     {
-        const auto catRest = category.substr(slashIndex+1);
-        const auto key = catRest.substr(0, catRest.find("/"));
+        const auto catRest = category.mid(slashIndex+1);
+        const auto key = catRest.mid(0, catRest.indexOf("/"));
         if (_subNodes.find(key) == _subNodes.end())
         {
             _subNodes[key] = new BlockTreeWidgetItem(this, key);
@@ -42,17 +43,17 @@ void BlockTreeWidgetItem::setToolTipOnRequest(void)
     this->setToolTip(0, doc);
 }
 
-QString BlockTreeWidgetItem::extractDocString(Poco::JSON::Object::Ptr blockDesc)
+QString BlockTreeWidgetItem::extractDocString(const QJsonObject &blockDesc)
 {
-    if (not blockDesc or not blockDesc->isArray("docs")) return "";
+    if (not blockDesc.contains("docs")) return "";
     QString output;
-    output += "<b>" + QString::fromStdString(blockDesc->get("name").convert<std::string>()) + "</b>";
+    output += "<b>" + blockDesc["name"].toString() + "</b>";
     output += "<p>";
-    for (const auto &lineObj : *blockDesc->getArray("docs"))
+    for (const auto &lineVal : blockDesc["docs"].toArray())
     {
-        const auto line = lineObj.extract<std::string>();
-        if (line.empty()) output += "<p /><p>";
-        else output += QString::fromStdString(line)+"\n";
+        const auto line = lineVal.toString();
+        if (line.isEmpty()) output += "<p /><p>";
+        else output += line+"\n";
     }
     output += "</p>";
     return "<div>" + output + "</div>";

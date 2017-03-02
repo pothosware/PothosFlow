@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2016 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -24,7 +24,7 @@ class CpuSelectionWidget : public QWidget
 public:
     CpuSelectionWidget(const std::vector<Pothos::System::NumaInfo> &numaInfos, QWidget *parent);
 
-    void setup(const std::string &mode, const std::vector<size_t> &selection)
+    void setup(const QString &mode, const std::vector<int> &selection)
     {
         for (auto &pair : _itemToSelected) pair.second = false; //unselect all
         if (mode == "NUMA")
@@ -45,7 +45,7 @@ public:
     }
 
     //! get affinity mode for thread pool args
-    std::string mode(void) const
+    QString mode(void) const
     {
         for (const auto &item : _nodeItems)
         {
@@ -59,9 +59,9 @@ public:
     }
 
     //! get affinity selection for thread pool args
-    std::vector<size_t> selection(void) const
+    std::vector<int> selection(void) const
     {
-        std::vector<size_t> nums;
+        std::vector<int> nums;
         if (this->mode() == "NUMA")
         {
             for (const auto &item : _nodeItems)

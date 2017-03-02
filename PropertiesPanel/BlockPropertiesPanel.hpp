@@ -5,9 +5,9 @@
 #include <Pothos/Config.hpp>
 #include <QWidget>
 #include <QString>
+#include <QJsonObject>
 #include "GraphEditor/GraphState.hpp"
 #include "GraphObjects/GraphBlock.hpp"
-#include <Poco/JSON/Object.h>
 #include <map>
 
 class GraphBlock;
@@ -41,7 +41,7 @@ private slots:
 
     void handleBlockEvalDone(void);
 
-    void handleParamDescChanged(const QString &, const Poco::JSON::Object::Ptr &);
+    void handleParamDescChanged(const QString &, const QJsonObject &);
 
     void handleDocTabChanged(int);
 
@@ -77,8 +77,8 @@ private:
     QLabel *_jsonBlockDesc;
     QLabel *_evalTypesDesc;
     QFormLayout *_formLayout;
-    std::map<std::string, QFormLayout *> _paramLayouts;
+    std::map<QString, QFormLayout *> _paramLayouts;
     QTabWidget *_propertiesTabs;
-    std::map<QWidget *, std::string> _tabWidgetToTabName;
+    std::map<QWidget *, QString> _tabWidgetToTabName;
     QPointer<GraphBlock> _block;
 };

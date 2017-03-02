@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine.hpp"
@@ -110,24 +110,24 @@ void EvalEngine::submitBlock(QObject *obj)
     QMetaObject::invokeMethod(_impl, "submitBlock", Qt::QueuedConnection, Q_ARG(BlockInfo, blockToBlockInfo(block)));
 }
 
-std::string EvalEngine::getTopologyDotMarkup(const std::string &config)
+QByteArray EvalEngine::getTopologyDotMarkup(const QByteArray &config)
 {
-    std::string result;
-    QMetaObject::invokeMethod(_impl, "getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result), Q_ARG(std::string, config));
+    QByteArray result;
+    QMetaObject::invokeMethod(_impl, "getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
     return result;
 }
 
-std::string EvalEngine::getTopologyJSONDump(const std::string &config)
+QByteArray EvalEngine::getTopologyJSONDump(const QByteArray &config)
 {
-    std::string result;
-    QMetaObject::invokeMethod(_impl, "getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result), Q_ARG(std::string, config));
+    QByteArray result;
+    QMetaObject::invokeMethod(_impl, "getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
     return result;
 }
 
-std::string EvalEngine::getTopologyJSONStats(void)
+QByteArray EvalEngine::getTopologyJSONStats(void)
 {
-    std::string result;
-    QMetaObject::invokeMethod(_impl, "getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(std::string, result));
+    QByteArray result;
+    QMetaObject::invokeMethod(_impl, "getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result));
     return result;
 }
 
@@ -146,7 +146,7 @@ void EvalEngine::handleEvalThreadHeartBeat(void)
     if (_flaggedLockUp)
     {
         _flaggedLockUp = false;
-        poco_notice(_logger, "Evaluation thread has recovered. Perhaps a call is taking too long.");
+        _logger.notice("Evaluation thread has recovered. Perhaps a call is taking too long.");
     }
 
     _lastHeartBeat = std::chrono::system_clock::now();
@@ -162,6 +162,6 @@ void EvalEngine::handleMonitorTimeout(void)
     {
         _flaggedLockUp = true;
         _monitorTimer->stop(); //stop so the error messages will not continue
-        poco_fatal(_logger, "Detected evaluation thread lock-up. The evaluator will not function.");
+        _logger.fatal("Detected evaluation thread lock-up. The evaluator will not function.");
     }
 }

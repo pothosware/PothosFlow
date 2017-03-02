@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2016 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -16,9 +16,7 @@
 #include <QScrollArea>
 #include <QTreeWidget>
 #include <QtConcurrent/QtConcurrent>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
+#include <QJsonDocument>
 
 class TopologyStatsDialog : public QDialog
 {
@@ -34,7 +32,7 @@ public:
         _statsScroller(new QScrollArea(this)),
         _statsTree(new QTreeWidget(this)),
         _timer(new QTimer(this)),
-        _watcher(new QFutureWatcher<std::string>(this))
+        _watcher(new QFutureWatcher<QByteArray>(this))
     {
         //create layouts
         this->setWindowTitle(tr("Topology stats viewer"));
@@ -77,25 +75,24 @@ private slots:
     void handleWatcherDone(void)
     {
         const auto jsonStats = _watcher->result();
-        if (jsonStats.empty())
+        if (jsonStats.isNull())
         {
-            QMessageBox msgBox(QMessageBox::Critical, tr("Topology stats error"), tr("empty markup - is the topology active?"));
+            QMessageBox msgBox(QMessageBox::Critical, tr("Topology stats error"), tr("no stats - is the topology active?"));
             msgBox.exec();
         }
         else
         {
-            const auto result = Poco::JSON::Parser().parse(jsonStats);
-            auto topObj = result.extract<Poco::JSON::Object::Ptr>();
-            std::vector<std::string> names; topObj->getNames(names);
-            for (const auto &name : names)
+            const auto result = QJsonDocument::fromJson(jsonStats);
+            const auto topObj = result.object();
+            for (const auto &name : topObj.keys())
             {
-                const auto dataObj = topObj->getObject(name);
+                const auto dataObj = topObj[name].toObject();
 
                 auto &item = _statsItems[name];
                 if (item == nullptr)
                 {
-                    const auto title = dataObj->getValue<std::string>("blockName");
-                    item = new QTreeWidgetItem(QStringList(QString::fromStdString(title)));
+                    const auto title = dataObj["blockName"].toString();
+                    item = new QTreeWidgetItem(QStringList(title));
                     _statsTree->addTopLevelItem(item);
                 }
 
@@ -111,8 +108,7 @@ private slots:
                     _statsTree->setItemWidget(subItem, 0, label);
                 }
 
-                std::stringstream ss; dataObj->stringify(ss, 4);
-                label->setText(QString::fromStdString(ss.str()).replace("\\/", "/"));
+                label->setText(QJsonDocument(dataObj).toJson(QJsonDocument::Indented));
             }
         }
     }
@@ -125,9 +121,9 @@ private:
     QScrollArea *_statsScroller;
     QTreeWidget *_statsTree;
     QTimer *_timer;
-    QFutureWatcher<std::string> *_watcher;
-    std::map<std::string, QTreeWidgetItem *> _statsItems;
-    std::map<std::string, QLabel *> _statsLabels;
+    QFutureWatcher<QByteArray> *_watcher;
+    std::map<QString, QTreeWidgetItem *> _statsItems;
+    std::map<QString, QLabel *> _statsLabels;
 };
 
 void GraphEditor::handleShowTopologyStatsDialog(void)

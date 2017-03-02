@@ -1,8 +1,9 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <QSpinBox>
 #include <limits>
 
@@ -51,14 +52,11 @@ private:
 /***********************************************************************
  * Factory function and registration
  **********************************************************************/
-static QWidget *makeSpinBox(const Poco::JSON::Object::Ptr &paramDesc, QWidget *parent)
+static QWidget *makeSpinBox(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    Poco::JSON::Object::Ptr widgetKwargs(new Poco::JSON::Object());
-    if (paramDesc->has("widgetKwargs")) widgetKwargs = paramDesc->getObject("widgetKwargs");
-
     auto spinBox = new SpinBox(parent);
-    spinBox->setMinimum(widgetKwargs->optValue<int>("minimum", std::numeric_limits<int>::min()));
-    spinBox->setMaximum(widgetKwargs->optValue<int>("maximum", std::numeric_limits<int>::max()));
+    spinBox->setMinimum(kwargs["minimum"].toInt(std::numeric_limits<int>::min()));
+    spinBox->setMaximum(kwargs["maximum"].toInt(std::numeric_limits<int>::max()));
     return spinBox;
 }
 

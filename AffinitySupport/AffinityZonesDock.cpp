@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -15,10 +15,9 @@
 #include <QLineEdit>
 #include <QTabWidget>
 #include <QSignalMapper>
-#include <Poco/JSON/Parser.h>
+#include <QJsonDocument>
 #include <Poco/Logger.h>
 #include <cassert>
-#include <sstream>
 
 static AffinityZonesDock *globalAffinityZonesDock = nullptr;
 
@@ -107,7 +106,7 @@ QColor AffinityZonesDock::zoneToColor(const QString &zone)
     return QColor();
 }
 
-Poco::JSON::Object::Ptr AffinityZonesDock::zoneToConfig(const QString &zone)
+QJsonObject AffinityZonesDock::zoneToConfig(const QString &zone)
 {
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
@@ -115,7 +114,7 @@ Poco::JSON::Object::Ptr AffinityZonesDock::zoneToConfig(const QString &zone)
         assert(editor != nullptr);
         if (zone == editor->zoneName()) return editor->getCurrentConfig();
     }
-    return Poco::JSON::Object::Ptr();
+    return QJsonObject();
 }
 
 void AffinityZonesDock::handleTabCloseRequested(const int index)
@@ -151,16 +150,21 @@ AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneNam
     if (zoneName == settings->value("AffinityZones/currentZone").toString()) _editorsTabs->setCurrentWidget(editor);
 
     //restore the settings from save -- even if this is a new panel with the same name as a previous one
-    auto json = settings->value("AffinityZones/zones/"+zoneName).toString();
-    if (not json.isEmpty()) try
+    const auto value = settings->value("AffinityZones/zones/"+zoneName);
+    if (value.isValid())
     {
-        const auto result = Poco::JSON::Parser().parse(json.toStdString());
-        auto dataObj = result.extract<Poco::JSON::Object::Ptr>();
-        editor->loadFromConfig(dataObj);
-    }
-    catch (const Poco::JSON::JSONException &ex)
-    {
-        poco_error_f2(Poco::Logger::get("PothosGui.AffinityZonesDock"), "Failed to load editor for zone '%s' -- %s", zoneName.toStdString(), ex.displayText());
+        QJsonParseError parseError;
+        const auto jsonDoc = QJsonDocument::fromJson(value.toByteArray(), &parseError);
+        if (not jsonDoc.isNull())
+        {
+            editor->loadFromConfig(jsonDoc.object());
+        }
+        else
+        {
+            static auto &logger = Poco::Logger::get("PothosGui.AffinityZonesDock");
+            logger.error("Failed to load editor for zone '%s' -- %s",
+                zoneName.toStdString(), parseError.errorString().toStdString());
+        }
     }
 
     //now connect the changed signal after initialization+restore changes
@@ -214,9 +218,9 @@ void AffinityZonesDock::saveAffinityZoneEditorsState(void)
     {
         auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
         assert(editor != nullptr);
-        auto dataObj = editor->getCurrentConfig();
-        std::stringstream ss; dataObj->stringify(ss);
-        settings->setValue("AffinityZones/zones/"+editor->zoneName(), QString::fromStdString(ss.str()));
+        const auto jsonDoc = QJsonDocument(editor->getCurrentConfig());
+        const auto value = jsonDoc.toJson(QJsonDocument::Compact);
+        settings->setValue("AffinityZones/zones/"+editor->zoneName(), value);
     }
 
     emit this->zonesChanged();

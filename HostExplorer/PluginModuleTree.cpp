@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/PluginModuleTree.hpp"
@@ -41,7 +41,8 @@ static PluginModuleTree::ModMapType getRegistryDump(const std::string &uriStr)
     }
     catch (const Pothos::Exception &ex)
     {
-        poco_error_f2(Poco::Logger::get("PothosGui.PluginModuleTree"), "Failed to dump registry %s - %s", uriStr, ex.displayText());
+        static auto &logger = Poco::Logger::get("PothosGui.PluginModuleTree");
+        logger.error("Failed to dump registry %s - %s", uriStr, ex.displayText());
     }
     return modMap;
 }

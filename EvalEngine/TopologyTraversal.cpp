@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "TopologyEval.hpp"
@@ -88,9 +88,9 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
             {
                 ConnectionInfo info;
                 info.srcBlockUID = outputEp.getObj()->uid();
-                info.srcPort = outputEp.getKey().id.toStdString();
+                info.srcPort = outputEp.getKey().id;
                 info.dstBlockUID = subEp.getObj()->uid();
-                info.dstPort = subEp.getKey().id.toStdString();
+                info.dstPort = subEp.getKey().id;
                 connections.push_back(info);
             }
         }

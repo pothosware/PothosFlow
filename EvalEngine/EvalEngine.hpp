@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -55,13 +55,13 @@ public slots:
     void submitBlock(QObject *block);
 
     //! query the dot markup for the active topology
-    std::string getTopologyDotMarkup(const std::string &config);
+    QByteArray getTopologyDotMarkup(const QByteArray &config);
 
     //! query the JSON dump for the active topology
-    std::string getTopologyJSONDump(const std::string &config);
+    QByteArray getTopologyJSONDump(const QByteArray &config);
 
     //! query the JSON stats for the active topology
-    std::string getTopologyJSONStats(void);
+    QByteArray getTopologyJSONStats(void);
 
 private slots:
     void handleAffinityZonesChanged(void);

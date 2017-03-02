@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -40,9 +40,9 @@ public:
     GraphConnectableKey isPointingToConnectable(const QPointF &pos) const;
     GraphConnectableAttrs getConnectableAttrs(const GraphConnectableKey &key) const;
 
-    Poco::JSON::Object::Ptr serialize(void) const;
+    QJsonObject serialize(void) const;
 
-    virtual void deserialize(Poco::JSON::Object::Ptr obj);
+    virtual void deserialize(const QJsonObject &obj);
 
 private:
     void renderStaticText(void);

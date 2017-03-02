@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2015 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,7 +7,7 @@
 #include "TopologyEval.hpp"
 #include "BlockEval.hpp"
 #include <QString>
-#include <Poco/JSON/Object.h>
+#include <QJsonObject>
 #include <memory>
 #include <map>
 #include <set>
@@ -21,7 +21,7 @@ class QTimer;
 class EvalEngineGuiBlockDeleter;
 
 typedef std::map<size_t, BlockInfo> BlockInfos;
-typedef std::map<QString, Poco::JSON::Object::Ptr> ZoneInfos;
+typedef std::map<QString, QJsonObject> ZoneInfos;
 
 /*!
  * The EvalEngineImpl hold eval state and performs the actual work
@@ -61,13 +61,13 @@ public slots:
     void submitZoneInfo(const ZoneInfos &info);
 
     //! query the dot markup for the active topology
-    std::string getTopologyDotMarkup(const std::string &config);
+    QByteArray getTopologyDotMarkup(const QByteArray &config);
 
     //! query the JSON dump for the active topology
-    std::string getTopologyJSONDump(const std::string &config);
+    QByteArray getTopologyJSONDump(const QByteArray &config);
 
     //! query the JSON stats for the active topology
-    std::string getTopologyJSONStats(void);
+    QByteArray getTopologyJSONStats(void);
 
     //! Cleanup and shutdown prior to destruction
     void submitCleanup(void);

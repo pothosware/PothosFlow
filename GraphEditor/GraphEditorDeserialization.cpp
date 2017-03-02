@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -8,32 +8,32 @@
 #include "GraphObjects/GraphConnection.hpp"
 #include "GraphObjects/GraphWidget.hpp"
 #include <Pothos/Exception.hpp>
-#include <Poco/JSON/Parser.h>
-#include <Poco/JSON/Array.h>
-#include <Poco/JSON/Object.h>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <Poco/Logger.h>
 #include <cassert>
 
 /***********************************************************************
  * Per-type creation routine
  **********************************************************************/
-static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const std::string &type)
+void GraphEditor::loadPages(const QJsonArray &pages, const QString &type)
 {
-    for (size_t pageNo = 0; pageNo < pages->size(); pageNo++)
+    for (int pageNo = 0; pageNo < pages.size(); pageNo++)
     {
-        auto pageObj = pages->getObject(pageNo);
-        auto graphObjects = pageObj->getArray("graphObjects");
-        auto parent = editor->widget(pageNo);
+        const auto pageObj = pages.at(pageNo).toObject();
+        const auto graphObjects = pageObj["graphObjects"].toArray();
+        auto parent = this->widget(pageNo);
 
-        for (size_t objIndex = 0; objIndex < graphObjects->size(); objIndex++)
+        for (const auto &graphVal : graphObjects)
         {
             GraphObject *obj = nullptr;
+            const auto jGraphObj = graphVal.toObject();
+            if (jGraphObj.isEmpty()) continue;
+            const auto what = jGraphObj["what"].toString();
+            if (what != type) continue;
             POTHOS_EXCEPTION_TRY
             {
-                const auto jGraphObj = graphObjects->getObject(objIndex);
-                if (not jGraphObj) continue;
-                const auto what = jGraphObj->getValue<std::string>("what");
-                if (what != type) continue;
                 if (type == "Block") obj = new GraphBlock(parent);
                 if (type == "Breaker") obj = new GraphBreaker(parent);
                 if (type == "Connection") obj = new GraphConnection(parent);
@@ -42,7 +42,8 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
             }
             POTHOS_EXCEPTION_CATCH(const Pothos::Exception &ex)
             {
-                poco_error(Poco::Logger::get("PothosGui.GraphEditor.loadState"), ex.displayText());
+                _logger.error("Error creating %s(%s): %s", type.toStdString(),
+                    jGraphObj["what"].toString().toStdString(), ex.displayText());
                 delete obj;
             }
         }
@@ -52,38 +53,30 @@ static void loadPages(GraphEditor *editor, Poco::JSON::Array::Ptr pages, const s
 /***********************************************************************
  * Deserialization routine
  **********************************************************************/
-void GraphEditor::loadState(std::istream &is)
+void GraphEditor::loadState(const QByteArray &data)
 {
-    const auto result = Poco::JSON::Parser().parse(is);
+    QJsonParseError parseError;
+    const auto jsonDoc = QJsonDocument::fromJson(data, &parseError);
+    if (jsonDoc.isNull())
+    {
+        _logger.error("Error parsing JSON: %s", parseError.errorString().toStdString());
+        return;
+    }
 
     //extract topObj, old style is page array only
-    Poco::JSON::Object::Ptr topObj;
-    if (result.type() == typeid(Poco::JSON::Array::Ptr))
-    {
-        topObj = new Poco::JSON::Object();
-        topObj->set("pages", result.extract<Poco::JSON::Array::Ptr>());
-    }
-    else
-    {
-        topObj = result.extract<Poco::JSON::Object::Ptr>();
-    }
+    QJsonObject topObj;
+    if (jsonDoc.isArray()) topObj["pages"] = jsonDoc.array();
+    else topObj = jsonDoc.object();
 
     //extract global variables
     this->clearGlobals();
-    auto globals = topObj->getArray("globals");
-    if (globals) for (size_t constNo = 0; constNo < globals->size(); constNo++)
+    for (const auto &globalVal : topObj["globals"].toArray())
     {
-        const auto globalObj = globals->getObject(constNo);
-        if (not globalObj->has("name")) continue;
-        if (not globalObj->has("value")) continue;
-        this->setGlobalExpression(
-            QString::fromStdString(globalObj->getValue<std::string>("name")),
-            QString::fromStdString(globalObj->getValue<std::string>("value")));
+        const auto globalObj = globalVal.toObject();
+        if (not globalObj.contains("name")) continue;
+        if (not globalObj.contains("value")) continue;
+        this->setGlobalExpression(globalObj["name"].toString(), globalObj["value"].toString());
     }
-
-    //extract pages
-    auto pages = topObj->getArray("pages");
-    assert(pages);
 
     ////////////////////////////////////////////////////////////////////
     // clear existing stuff
@@ -103,21 +96,20 @@ void GraphEditor::loadState(std::istream &is)
     ////////////////////////////////////////////////////////////////////
     // create pages
     ////////////////////////////////////////////////////////////////////
-    for (size_t pageNo = 0; pageNo < pages->size(); pageNo++)
+    const auto pages = topObj["pages"].toArray();
+    for (int pageNo = 0; pageNo < pages.size(); pageNo++)
     {
-        auto pageObj = pages->getObject(pageNo);
-        auto pageName = pageObj->getValue<std::string>("pageName");
-        auto graphObjects = pageObj->getArray("graphObjects");
-        auto page = new GraphDraw(this);
-        this->insertTab(int(pageNo), page, QString::fromStdString(pageName));
-        if (pageObj->getValue<bool>("selected")) this->setCurrentIndex(pageNo);
+        const auto pageObj = pages.at(pageNo).toObject();
+        const auto pageName = pageObj["pageName"].toString();
+        this->insertTab(pageNo, new GraphDraw(this), pageName);
+        if (pageObj["selected"].toBool(false)) this->setCurrentIndex(pageNo);
     }
 
     ////////////////////////////////////////////////////////////////////
     // create graph objects
     ////////////////////////////////////////////////////////////////////
-    loadPages(this, pages, "Block");
-    loadPages(this, pages, "Breaker");
-    loadPages(this, pages, "Connection");
-    loadPages(this, pages, "Widget");
+    this->loadPages(pages, "Block");
+    this->loadPages(pages, "Breaker");
+    this->loadPages(pages, "Connection");
+    this->loadPages(pages, "Widget");
 }

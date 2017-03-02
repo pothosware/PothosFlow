@@ -1,12 +1,11 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QWidget>
 #include <QColor>
-#include <Poco/JSON/Object.h>
-#include <Poco/JSON/Array.h>
+#include <QJsonObject>
 #include <Pothos/System/NumaInfo.hpp>
 #include <vector>
 #include <map>
@@ -33,10 +32,10 @@ public:
     }
 
     //! load the settings from a JSON object
-    void loadFromConfig(const Poco::JSON::Object::Ptr &config);
+    void loadFromConfig(const QJsonObject &config);
 
     //! query the settings as a JSON object
-    Poco::JSON::Object::Ptr getCurrentConfig(void) const;
+    QJsonObject getCurrentConfig(void) const;
 
     //! Get the current color set on this editor
     QColor color(void) const;
