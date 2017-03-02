@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ColorUtils/ColorUtils.hpp"
-#include <Poco/Types.h>
 #include <Pothos/Framework.hpp>
 #include <Pothos/Util/TypeInfo.hpp>
 #include <QPixmap>
@@ -10,6 +9,7 @@
 #include <QReadWriteLock>
 #include <type_traits>
 #include <complex>
+#include <cstdint>
 
 /***********************************************************************
  * color map helper utilities
@@ -88,16 +88,11 @@ ColorMap::ColorMap(void)
     this->registerName(Pothos::DType().name(), Qt::gray);
 
     //integer types
-    registerIntType<char>(Qt::magenta);
-    registerIntType<short>(Qt::yellow);
-    registerIntType<int>(Qt::green);
+    registerIntType<int8_t>(Qt::magenta);
+    registerIntType<int16_t>(Qt::yellow);
+    registerIntType<int32_t>(Qt::green);
     static const QColor orange("#FF7F00");
-    #ifndef POCO_LONG_IS_64_BIT
-    registerIntType<long>(Qt::green);
-    #else
-    registerIntType<long>(orange);
-    #endif
-    registerIntType<long long>(orange);
+    registerIntType<int64_t>(orange);
 
     //floating point
     registerFloatType<float>(Qt::red);
