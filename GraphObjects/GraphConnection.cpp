@@ -515,7 +515,7 @@ QJsonObject GraphConnection::serialize(void) const
     auto obj = GraphObject::serialize();
     assert(this->getOutputEndpoint().isValid());
     assert(this->getInputEndpoint().isValid());
-    obj["what"] = "Connection";
+    obj["what"] = QString("Connection");
     endpointSerialize(obj, this->getOutputEndpoint());
     endpointSerialize(obj, this->getInputEndpoint());
 

@@ -189,7 +189,7 @@ void GraphBreaker::render(QPainter &painter)
 QJsonObject GraphBreaker::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj["what"] = "Breaker";
+    obj["what"] = QString("Breaker");
     obj["nodeName"] = this->getNodeName();
     obj["isInput"] = this->isInput();
     return obj;

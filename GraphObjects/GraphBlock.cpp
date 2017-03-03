@@ -277,7 +277,7 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
         if (not _impl->propertiesPreviewKwargs.at(key).contains("enum")) return true;
         const auto enumParamKey = _impl->propertiesPreviewKwargs.at(key)["enum"].toString();
         const auto enumParamValue = this->getPropertyValue(enumParamKey);
-        for (const auto &argVal : _impl->propertiesPreviewArgs.at(key))
+        for (const QJsonValue &argVal : _impl->propertiesPreviewArgs.at(key))
         {
             auto argStr = argVal.toVariant().toString();
 
@@ -285,7 +285,7 @@ bool GraphBlock::getPropertyPreview(const QString &key) const
             if (not enumParamValue.isEmpty() and enumParamValue.startsWith('"')
                 and not argStr.isEmpty() and not argStr.startsWith('"'))
             {
-                argStr += "\"" + argStr + "\"";
+                argStr = "\"" + argStr + "\"";
             }
 
             if (argStr == enumParamValue) return true;
@@ -915,7 +915,7 @@ void GraphBlock::render(QPainter &painter)
 QJsonObject GraphBlock::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj["what"] = "Block";
+    obj["what"] = QString("Block");
     obj["path"] = this->getBlockDescPath();
     obj["affinityZone"] = this->getAffinityZone();
     if (not this->getActiveEditTab().isEmpty())

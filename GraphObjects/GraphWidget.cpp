@@ -190,7 +190,7 @@ bool GraphWidget::didWidgetStateChange(void) const
 QJsonObject GraphWidget::serialize(void) const
 {
     auto obj = GraphObject::serialize();
-    obj["what"] = "Widget";
+    obj["what"] = QString("Widget");
     obj["blockId"] = _impl->block->getId();
     obj["width"] = _impl->graphicsWidget->size().width();
     obj["height"] = _impl->graphicsWidget->size().height();
