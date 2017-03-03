@@ -33,9 +33,9 @@ BlockTreeDock::BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEdito
     this->widget()->setLayout(layout);
 
     _searchBox->setPlaceholderText(tr("Search blocks"));
-#if QT_VERSION > 0x050200
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 2, 0)
     _searchBox->setClearButtonEnabled(true);
-#endif
+    #endif
     layout->addWidget(_searchBox);
 
     _blockTree = new BlockTreeWidget(this->widget(), editorTabs);

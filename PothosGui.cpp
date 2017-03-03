@@ -18,7 +18,9 @@ static void myQLogHandler(QtMsgType type, const QMessageLogContext &context, con
     Poco::Message::Priority prio(Poco::Message::PRIO_INFORMATION);
     switch (type) {
     case QtDebugMsg: prio = Poco::Message::PRIO_DEBUG; break;
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 5, 0)
     case QtInfoMsg: prio = Poco::Message::PRIO_INFORMATION; break;
+    #endif
     case QtWarningMsg: prio = Poco::Message::PRIO_WARNING; break;
     case QtCriticalMsg: prio = Poco::Message::PRIO_CRITICAL; break;
     case QtFatalMsg: prio = Poco::Message::PRIO_FATAL; break;
