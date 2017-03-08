@@ -348,14 +348,8 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
     {
         block->addBlockErrorMsg(errMsg);
     }
-    if (not status.inPortDesc.isEmpty())
-    {
-        block->setInputPortDesc(status.inPortDesc);
-    }
-    if (not status.outPortDesc.isEmpty())
-    {
-        block->setOutputPortDesc(status.outPortDesc);
-    }
+    block->setInputPortDesc(status.inPortDesc);
+    block->setOutputPortDesc(status.outPortDesc);
     block->setGraphWidget(status.widget);
     block->setOverlayDesc(status.overlayDesc);
 
