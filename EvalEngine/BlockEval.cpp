@@ -73,9 +73,12 @@ bool BlockEval::isReady(void) const
 bool BlockEval::portExists(const QString &name, const bool isInput) const
 {
     const auto portDesc = isInput?_lastBlockStatus.inPortDesc:_lastBlockStatus.outPortDesc;
-    for (const auto &val : portDesc)
+    if (portDesc.isSpecified())
     {
-        if (val.toObject()["name"].toString() == name) return true;
+        for (const auto &val : portDesc.value())
+        {
+            if (val.toObject()["name"].toString() == name) return true;
+        }
     }
     return false;
 }
@@ -348,8 +351,14 @@ void BlockEval::postStatusToBlock(const BlockStatus &status)
     {
         block->addBlockErrorMsg(errMsg);
     }
-    block->setInputPortDesc(status.inPortDesc);
-    block->setOutputPortDesc(status.outPortDesc);
+    if (status.inPortDesc.isSpecified())
+    {
+        block->setInputPortDesc(status.inPortDesc.value());
+    }
+    if (status.outPortDesc.isSpecified())
+    {
+        block->setOutputPortDesc(status.outPortDesc.value());
+    }
     block->setGraphWidget(status.widget);
     block->setOverlayDesc(status.overlayDesc);
 

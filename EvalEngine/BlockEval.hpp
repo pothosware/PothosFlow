@@ -15,6 +15,7 @@
 #include <memory>
 #include <chrono>
 #include <Poco/Logger.h>
+#include <Poco/Optional.h>
 
 class EnvironmentEval;
 class ThreadPoolEval;
@@ -51,8 +52,8 @@ struct BlockStatus
     std::map<QString, QString> propertyTypeInfos;
     std::map<QString, QString> propertyErrorMsgs;
     QStringList blockErrorMsgs;
-    QJsonArray inPortDesc;
-    QJsonArray outPortDesc;
+    Poco::Optional<QJsonArray> inPortDesc;
+    Poco::Optional<QJsonArray> outPortDesc;
     QJsonObject overlayDesc;
     QByteArray overlayDescStr;
     std::chrono::high_resolution_clock::time_point overlayExpired;
