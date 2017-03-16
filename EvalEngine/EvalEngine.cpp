@@ -13,6 +13,7 @@
 #include <cassert>
 
 static const int MONITOR_INTERVAL_MS = 1000;
+static const int THREAD_JOIN_MAX_MS = 10000;
 
 EvalEngine::EvalEngine(QObject *parent):
     QObject(parent),
@@ -44,7 +45,11 @@ EvalEngine::~EvalEngine(void)
     QMetaObject::invokeMethod(_impl, "submitCleanup", Qt::BlockingQueuedConnection);
     delete _impl;
     _thread->quit();
-    _thread->wait();
+    if (not _thread->wait(THREAD_JOIN_MAX_MS))
+    {
+        _logger.fatal("Detected lock-up when shutting down evaluation thread.");
+        _thread->wait();
+    }
 }
 
 static BlockInfo blockToBlockInfo(GraphBlock *block)
