@@ -68,9 +68,19 @@ public:
     void acceptBlockEvals(const std::map<size_t, std::shared_ptr<BlockEval>> &);
 
     /*!
+     * Disconnect any connections that involve shouldDisconnect() blocks
+     */
+    void disconnect(void);
+
+    /*!
      * Perform update work after changes applied.
      */
     void update(void);
+
+    /*!
+     * Commit after changes with error handling
+     */
+    void commit(void);
 
     //! Get access to the active topology
     Pothos::Topology *getTopology(void) const

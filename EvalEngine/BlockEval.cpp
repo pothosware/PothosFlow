@@ -58,6 +58,8 @@ bool BlockEval::isInfoMatch(const BlockInfo &info) const
 
 bool BlockEval::isReady(void) const
 {
+    if (not _proxyBlock) return false;
+
     if (not _newBlockInfo.enabled) return false;
 
     if (not _lastBlockStatus.blockErrorMsgs.empty()) return false;
@@ -68,6 +70,20 @@ bool BlockEval::isReady(void) const
     }
 
     return true;
+}
+
+bool BlockEval::shouldDisconnect(void) const
+{
+    //there is no block, no disconnect occurs
+    if (not _proxyBlock) return false;
+
+    //disconnect a block that was disabled recently
+    if (not _newBlockInfo.enabled) return true;
+
+    //critical change, the block will be torn down
+    if (this->hasCriticalChange()) return true;
+
+    return false;
 }
 
 bool BlockEval::portExists(const QString &name, const bool isInput) const
@@ -196,6 +212,8 @@ bool BlockEval::evaluationProcedure(void)
     //this may create a new _blockEval if needed
     else if (this->updateAllProperties())
     {
+        _proxyBlock = Pothos::Proxy(); //drop old handle
+
         //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
         if (_newBlockInfo.isGraphWidget)
         {

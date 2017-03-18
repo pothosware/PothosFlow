@@ -5,6 +5,7 @@
 #include "BlockEval.hpp"
 #include <Pothos/Framework.hpp>
 #include <algorithm> //std::remove
+#include <iostream>
 
 TopologyEval::TopologyEval(void):
     _topology(new Pothos::Topology()),
@@ -27,6 +28,42 @@ void TopologyEval::acceptConnectionInfo(const ConnectionInfos &info)
 void TopologyEval::acceptBlockEvals(const std::map<size_t, std::shared_ptr<BlockEval>> &info)
 {
     _newBlockEvals = info;
+}
+
+void TopologyEval::disconnect(void)
+{
+    if (this->isFailureState()) return;
+
+    const auto connsCopy = _currentConnections;
+    for (const auto &conn : connsCopy)
+    {
+        //locate the src and dst block evals
+        assert(_lastBlockEvals.count(conn.srcBlockUID) != 0);
+        assert(_lastBlockEvals.count(conn.dstBlockUID) != 0);
+        auto src = _lastBlockEvals.at(conn.srcBlockUID);
+        auto dst = _lastBlockEvals.at(conn.dstBlockUID);
+
+        //only blocks that specify that they should disconnect
+        if (src->shouldDisconnect() or dst->shouldDisconnect())
+        {
+            try
+            {
+                _topology->disconnect(
+                    src->getProxyBlock(), conn.srcPort.toStdString(),
+                    dst->getProxyBlock(), conn.dstPort.toStdString());
+                std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
+            }
+            catch (const Pothos::Exception &ex)
+            {
+                _logger.error("Failed to disconnect: %s", ex.displayText());
+                _failureState = true;
+                return;
+            }
+        }
+    }
+
+    //commit after changes
+    this->commit();
 }
 
 void TopologyEval::update(void)
@@ -54,7 +91,7 @@ void TopologyEval::update(void)
         if (not src->portExists(conn.srcPort, false)) continue;
         if (not dst->portExists(conn.dstPort, true)) continue;
 
-        //attempt to create the connection
+        //attempt to remove the connection
         try
         {
             _topology->disconnect(
@@ -105,18 +142,26 @@ void TopologyEval::update(void)
     }
 
     //commit after changes
+    this->commit();
+
+    //stash data for the current state
+    if (not _failureState)
+    {
+        _lastBlockEvals = _newBlockEvals;
+        _lastConnectionInfo = _newConnectionInfo;
+    }
+}
+
+void TopologyEval::commit(void)
+{
     try
     {
         _topology->commit();
-        //stash data for the current state
-        _lastBlockEvals = _newBlockEvals;
-        _lastConnectionInfo = _newConnectionInfo;
     }
     catch (const Pothos::Exception &ex)
     {
         _logger.error("Failed to commit: %s", ex.displayText());
         _failureState = true;
-        return;
     }
 }
 

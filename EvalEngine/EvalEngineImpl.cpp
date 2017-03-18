@@ -251,6 +251,8 @@ void EvalEngineImpl::evaluate(void)
     _threadPoolEvals = newThreadPoolEvals;
     _environmentEvals = newEnvironmentEvals;
 
+    //0) disconnect any blocks that will be torn down below
+    if (_topologyEval) _topologyEval->disconnect();
     //1) update all environments in case there were changes
     for (auto &pair : _environmentEvals) pair.second->update();
     //2) update all thread pools in case there were changes
