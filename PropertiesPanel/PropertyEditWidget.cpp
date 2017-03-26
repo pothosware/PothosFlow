@@ -91,6 +91,10 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
     if (widgetType.isEmpty()) widgetType = "LineEdit";
     _unitsStr = paramDesc["units"].toString();
 
+    //use line the line edit when forced by the button
+    _modeButton->setVisible(widgetType != "LineEdit");
+    if (_editMode == "raw") widgetType = "LineEdit";
+
     //lookup the plugin to get the entry widget factory
     try
     {
@@ -106,10 +110,6 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
     _editWidget->setLocale(QLocale::C);
     _editWidget->setObjectName("BlockPropertiesEditWidget"); //style-sheet id name
     _modeLayout->insertWidget(0, _editWidget, 1);
-
-    //use line the line edit when forced by the button
-    _modeButton->setVisible(widgetType != "LineEdit");
-    if (_editMode == "raw") widgetType = "LineEdit";
 
     //initialize value
     this->setValue(newValue);
