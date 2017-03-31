@@ -31,12 +31,17 @@ struct ConnectionInfo
         dstBlockUID(0){}
     size_t srcBlockUID, dstBlockUID;
     QString srcPort, dstPort;
+    QString toString(void) const;
 };
 
 bool operator==(const ConnectionInfo &lhs, const ConnectionInfo &rhs);
 
-//! typedef for multiple connection informations
-typedef std::vector<ConnectionInfo> ConnectionInfos;
+//! overload for multiple connection informations
+struct ConnectionInfos : std::vector<ConnectionInfo>
+{
+    void insert(const ConnectionInfo &info);
+    void remove(const ConnectionInfo &info);
+};
 
 //! Calculates set(in0 - in1)
 ConnectionInfos diffConnectionInfos(const ConnectionInfos &in0, const ConnectionInfos &in1);

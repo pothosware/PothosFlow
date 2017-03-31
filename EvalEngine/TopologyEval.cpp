@@ -51,7 +51,7 @@ void TopologyEval::disconnect(void)
                 _topology->disconnect(
                     src->getProxyBlock(), conn.srcPort.toStdString(),
                     dst->getProxyBlock(), conn.dstPort.toStdString());
-                std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
+                _currentConnections.remove(conn);
             }
             catch (const Pothos::Exception &ex)
             {
@@ -97,7 +97,7 @@ void TopologyEval::update(void)
             _topology->disconnect(
                 src->getProxyBlock(), conn.srcPort.toStdString(),
                 dst->getProxyBlock(), conn.dstPort.toStdString());
-            std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
+            _currentConnections.remove(conn);
         }
         catch (const Pothos::Exception &ex)
         {
@@ -130,8 +130,7 @@ void TopologyEval::update(void)
             _topology->connect(
                 src->getProxyBlock(), conn.srcPort.toStdString(),
                 dst->getProxyBlock(), conn.dstPort.toStdString());
-            std::remove(_currentConnections.begin(), _currentConnections.end(), conn);
-            _currentConnections.push_back(conn);
+            _currentConnections.insert(conn);
         }
         catch (const Pothos::Exception &ex)
         {
@@ -165,6 +164,13 @@ void TopologyEval::commit(void)
     }
 }
 
+QString ConnectionInfo::toString(void) const
+{
+    return QString("%1[%2]->%3[%4]")
+        .arg(srcBlockUID).arg(srcPort)
+        .arg(dstBlockUID).arg(dstPort);
+}
+
 bool operator==(const ConnectionInfo &lhs, const ConnectionInfo &rhs)
 {
     return
@@ -187,4 +193,16 @@ ConnectionInfos diffConnectionInfos(const ConnectionInfos &in0, const Connection
         next_elem0: continue;
     }
     return out;
+}
+
+void ConnectionInfos::insert(const ConnectionInfo &info)
+{
+    this->remove(info); //remove all instances
+    this->push_back(info);
+}
+
+void ConnectionInfos::remove(const ConnectionInfo &info)
+{
+    auto newEnd = std::remove(this->begin(), this->end(), info);
+    this->erase(newEnd, this->end());
 }
