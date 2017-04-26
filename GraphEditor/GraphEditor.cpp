@@ -49,7 +49,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     _stateManager(new GraphStateManager(this)),
     _evalEngine(new EvalEngine(this)),
     _isTopologyActive(false),
-    _pollWidgetTimer(new QTimer(this))
+    _pollWidgetTimer(new QTimer(this)),
+    _autoActivate(false)
 {
     this->setDocumentMode(true);
     this->setMovable(true);
@@ -1021,6 +1022,8 @@ void GraphEditor::load(void)
     _stateManager->saveCurrent();
     this->updateGraphEditorMenus();
     this->render();
+
+    if (_autoActivate) this->handleToggleActivateTopology(true);
 }
 
 void GraphEditor::render(void)

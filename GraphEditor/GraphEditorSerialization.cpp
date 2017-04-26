@@ -26,6 +26,11 @@ QByteArray GraphEditor::dumpState(void) const
     }
     if (not globals.isEmpty()) topObj["globals"] = globals;
 
+    //store other graph config
+    QJsonObject config;
+    if (_autoActivate) config["autoActivate"] = _autoActivate;
+    if (not config.isEmpty()) topObj["config"] = config;
+
     //store pages
     QJsonArray pages;
     for (int pageNo = 0; pageNo < this->count(); pageNo++)

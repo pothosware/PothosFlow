@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2015 Josh Blum
+// Copyright (c) 2015-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -70,6 +70,9 @@ private:
     void createVariableEditWidget(const QString &name);
     QStringList getSelectedVariables(void) const;
     std::map<QString, GraphVariableFormData> _varToFormData;
+
+    //graph editor configuration
+    PropertyEditWidget *_autoActivateEdit;
 
     //get a descriptive list of changes
     QStringList getChangeDescList(void) const;

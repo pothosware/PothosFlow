@@ -7,6 +7,8 @@
 #include "GraphPropertiesPanel.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <Pothos/Util/EvalEnvironment.hpp>
+#include <QJsonArray>
+#include <QJsonObject>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QPushButton>
@@ -88,6 +90,30 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         connect(_varsMoveDownButton, SIGNAL(clicked(void)), this, SLOT(handleVariableMoveDown(void)));
     }
 
+    //graph config
+    {
+        //create layouts
+        auto configBox = new QGroupBox(tr("Graph Configuration"), this);
+        _formLayout->addRow(configBox);
+        auto configFormLayout = new QFormLayout(configBox);
+
+        QJsonObject autoActivateConfig;
+        QJsonArray autoActivateOptions;
+        QJsonObject autoActivateOn;
+        autoActivateOn["name"] = "Enabled";
+        autoActivateOn["value"] = "true";
+        autoActivateOptions.append(autoActivateOn);
+        QJsonObject autoActivateOff;
+        autoActivateOff["name"] = "Disabled";
+        autoActivateOff["value"] = "false";
+        autoActivateOptions.append(autoActivateOff);
+        autoActivateConfig["widgetType"] = "ComboBox";
+        autoActivateConfig["widgetArgs"] = autoActivateOptions;
+        _autoActivateEdit = new PropertyEditWidget(_graphEditor->autoActivate()?"true":"false", autoActivateConfig, "", this);
+        configFormLayout->addRow(_autoActivateEdit->makeFormLabel(tr("Auto-activate"), this), _autoActivateEdit);
+        connect(_autoActivateEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
+    }
+
     //create widgets and make a backup of constants
     _originalVariableNames = _graphEditor->listGlobals();
     for (const auto &name : _originalVariableNames)
@@ -127,6 +153,7 @@ void GraphPropertiesPanel::handleCommit(void)
 {
     //process through changes before inspecting
     this->updateAllVariableForms();
+    _graphEditor->setAutoActivate(_autoActivateEdit->value() == "true");
 
     //look for changes
     const auto propertiesModified = this->getChangeDescList();
@@ -175,6 +202,12 @@ QStringList GraphPropertiesPanel::getChangeDescList(void) const
         {
             changes.push_back(tr("Changed variable %1").arg(name));
         }
+    }
+
+    //config changes
+    if (_autoActivateEdit->changed())
+    {
+        changes.push_back(tr("Configured auto-activate"));
     }
 
     return changes;

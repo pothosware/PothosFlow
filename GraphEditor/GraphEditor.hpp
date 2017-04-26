@@ -105,6 +105,17 @@ public:
     //! Tell the evaluator that globals have been modified
     void commitGlobalsChanges(void);
 
+    //! Is auto activate enabled?
+    bool autoActivate(void) const
+    {
+        return _autoActivate;
+    }
+
+    void setAutoActivate(const bool enb)
+    {
+        _autoActivate = enb;
+    }
+
 signals:
     void newTitleSubtext(const QString &);
 
@@ -190,4 +201,5 @@ private:
     //graph globals/constant expressions
     QStringList _globalNames;
     std::map<QString, QString> _globalExprs;
+    bool _autoActivate;
 };

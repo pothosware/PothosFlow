@@ -68,6 +68,10 @@ void GraphEditor::loadState(const QByteArray &data)
     if (jsonDoc.isArray()) topObj["pages"] = jsonDoc.array();
     else topObj = jsonDoc.object();
 
+    //extract other graph config
+    const auto config = topObj["config"].toObject();
+    _autoActivate = config["autoActivate"].toBool(false);
+
     //extract global variables
     this->clearGlobals();
     for (const auto &globalVal : topObj["globals"].toArray())
