@@ -1,3 +1,9 @@
+pothos-gui (0.5.0-1) unstable; urgency=low
+
+  * Release 0.5.0 (2017-04-27)
+
+ -- Josh Blum <josh@pothosware.com>  Thu, 27 Apr 2017 16:59:47 -0000
+
 pothos-gui (0.4.4-1) unstable; urgency=low
 
   * Release 0.4.4 (2017-03-03)
