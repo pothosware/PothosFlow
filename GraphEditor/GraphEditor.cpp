@@ -912,6 +912,7 @@ void GraphEditor::handleToggleActivateTopology(const bool enable)
     if (_evalEngine == nullptr) return;
     _evalEngine->submitActivateTopology(enable);
     _isTopologyActive = enable;
+    this->updateEnabledActions();
 }
 
 void GraphEditor::handleBlockDisplayModeChange(void)
