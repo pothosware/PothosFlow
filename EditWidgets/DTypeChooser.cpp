@@ -134,7 +134,7 @@ private:
  **********************************************************************/
 static QWidget *makeDTypeChooser(const QJsonArray &, const QJsonObject &kwargs, QWidget *parent)
 {
-    const bool editDimension = kwargs["dim"].toBool(false);
+    const bool editDimension = kwargs["dim"].toInt(0);
 
     auto dtypeChooser = new DTypeChooser(parent, editDimension);
     auto comboBox = dtypeChooser->comboBox();
