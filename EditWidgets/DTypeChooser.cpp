@@ -149,8 +149,8 @@ static QWidget *makeDTypeChooser(const QJsonArray &, const QJsonObject &kwargs, 
         }
         for (int bytes = 64; bytes >= 8; bytes /= 2)
         {
-            if (kwargs.contains(keyPrefix+"int")) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
-            if (kwargs.contains(keyPrefix+"uint")) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[keyPrefix+"int"].toInt(0)) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[keyPrefix+"uint"].toInt(0)) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
         }
     }
     return dtypeChooser;
