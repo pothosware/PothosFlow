@@ -36,7 +36,7 @@ public:
             layout->addWidget(_spinBox, 0);
             _spinBox->setPrefix("x");
             _spinBox->setMinimum(1);
-            _spinBox->setMaximum(std::numeric_limits<int>::max());
+            _spinBox->setMaximum(std::numeric_limits<short>::max()); //numeric maximum affects line edit width
             connect(_spinBox, SIGNAL(editingFinished(void)), this, SIGNAL(widgetChanged(void)));
             connect(_spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         }
@@ -143,12 +143,12 @@ static QWidget *makeDTypeChooser(const QJsonArray &, const QJsonObject &kwargs, 
         const QString aliasPrefix((mode == 0)? "complex_":"");
         for (int bytes = 64; bytes >= 32; bytes /= 2)
         {
-            if (kwargs.contains(keyPrefix+"float")) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[keyPrefix+"float"].toInt(0)!=0) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
         }
         for (int bytes = 64; bytes >= 8; bytes /= 2)
         {
-            if (kwargs[keyPrefix+"int"].toInt(0)) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
-            if (kwargs[keyPrefix+"uint"].toInt(0)) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[keyPrefix+"int"].toInt(0)!=0) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[keyPrefix+"uint"].toInt(0)!=0) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
         }
     }
     return dtypeChooser;
