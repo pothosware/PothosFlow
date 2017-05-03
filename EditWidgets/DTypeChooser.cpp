@@ -26,16 +26,14 @@ public:
         auto layout = new QHBoxLayout(this);
         layout->setContentsMargins(QMargins());
 
-        layout->addWidget(_comboBox);
+        layout->addWidget(_comboBox, 1);
         connect(_comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
         connect(_comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
 
         if (editDimension)
         {
             _spinBox = new QSpinBox(this);
-            layout->addWidget(_spinBox);
-            _spinBox->setMaximumSize(50, _spinBox->height());
-            _spinBox->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            layout->addWidget(_spinBox, 0);
             _spinBox->setPrefix("x");
             _spinBox->setMinimum(1);
             _spinBox->setMaximum(std::numeric_limits<int>::max());
