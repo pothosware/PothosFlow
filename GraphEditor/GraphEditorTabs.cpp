@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -42,6 +42,7 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
     connect(actions->exportAction, SIGNAL(triggered(void)), this, SLOT(handleExport(void)));
     connect(actions->exportAsAction, SIGNAL(triggered(void)), this, SLOT(handleExportAs(void)));
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(handleClose(int)));
+    connect(this->tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(handleTabMoved(int, int)));
 }
 
 GraphEditor *GraphEditorTabs::getGraphEditor(const int i) const
@@ -219,9 +220,8 @@ void GraphEditorTabs::handleClose(GraphEditor *editor)
 
 void GraphEditorTabs::handleExit(QCloseEvent *event)
 {
-    //save the currently selected editor tab
-    auto settings = MainSettings::global();
-    settings->setValue("GraphEditorTabs/activeIndex", this->currentIndex());
+    //dont save state for any further tab selection changes
+    disconnect(this, SIGNAL(currentChanged(int)), this, SLOT(handleChanged(int)));
 
     //exit logic -- save changes dialogs
     for (int i = 0; i < this->count(); i++)
@@ -285,6 +285,16 @@ void GraphEditorTabs::handleExportAs(void)
     editor->exportToJSONTopology(filePath);
 }
 
+void GraphEditorTabs::handleChanged(int)
+{
+    this->saveState();
+}
+
+void GraphEditorTabs::handleTabMoved(int, int)
+{
+    this->saveState();
+}
+
 void GraphEditorTabs::loadState(void)
 {
     MainSplash::global()->postMessage(tr("Restoring graph editor..."));
@@ -312,6 +322,9 @@ void GraphEditorTabs::loadState(void)
 
     //restore the active index setting
     this->setCurrentIndex(settings->value("GraphEditorTabs/activeIndex").toInt());
+
+    //become sensitive to tab selected index changes
+    connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleChanged(int)));
 }
 
 void GraphEditorTabs::ensureOneEditor(void)
@@ -333,4 +346,7 @@ void GraphEditorTabs::saveState(void)
     }
     auto settings = MainSettings::global();
     settings->setValue("GraphEditorTabs/files", files);
+
+    //save the currently selected editor tab
+    settings->setValue("GraphEditorTabs/activeIndex", this->currentIndex());
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -36,6 +36,8 @@ private slots:
     void handleExit(QCloseEvent *event);
     void handleExport(void);
     void handleExportAs(void);
+    void handleChanged(int);
+    void handleTabMoved(int, int);
 
 private:
     void doReloadDialog(GraphEditor *editor);
