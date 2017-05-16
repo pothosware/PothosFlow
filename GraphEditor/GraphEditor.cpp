@@ -1024,7 +1024,12 @@ void GraphEditor::load(void)
     this->updateGraphEditorMenus();
     this->render();
 
-    if (_autoActivate) this->handleToggleActivateTopology(true);
+    if (_autoActivate)
+    {
+        _evalEngine->submitActivateTopology(true);
+        _isTopologyActive = true;
+        this->updateEnabledActions();
+    }
 }
 
 void GraphEditor::render(void)
