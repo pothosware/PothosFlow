@@ -3,9 +3,11 @@
 
 #include "GraphEditor/GraphEditor.hpp"
 #include "GraphEditor/GraphDraw.hpp"
+#include "GraphEditor/Constants.hpp"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QtAlgorithms>
 
 /***********************************************************************
  * Serialization routine
@@ -40,9 +42,16 @@ QByteArray GraphEditor::dumpState(void) const
         page["pageName"] = this->tabText(pageNo);
         page["selected"] = (this->currentIndex() == pageNo);
 
-        for (auto graphObj : this->getGraphDraw(pageNo)->getGraphObjects())
+        //serialize an object list sorted by ID for each major graph object type
+        for (const auto &graphType : {GRAPH_BLOCK, GRAPH_BREAKER, GRAPH_CONNECTION, GRAPH_WIDGET})
         {
-            graphObjects.push_back(graphObj->serialize());
+            auto draw = this->getGraphDraw(pageNo);
+            auto objs = draw->getGraphObjects(graphType);
+            qSort(objs.begin(), objs.end(), [](const GraphObject *lhs, const GraphObject *rhs)
+            {
+                return QString::compare(lhs->getId(), rhs->getId()) < 0;
+            });
+            for (auto obj : objs) graphObjects.push_back(obj->serialize());
         }
 
         page["graphObjects"] = graphObjects;
