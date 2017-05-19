@@ -50,7 +50,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     _evalEngine(new EvalEngine(this)),
     _isTopologyActive(false),
     _pollWidgetTimer(new QTimer(this)),
-    _autoActivate(false)
+    _autoActivate(false),
+    _lockTopology(false)
 {
     this->setDocumentMode(true);
     this->setMovable(true);
