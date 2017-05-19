@@ -194,6 +194,20 @@ void GraphEditor::updateEnabledActions(void)
     actions->exportAction->setEnabled(not this->getCurrentFilePath().isEmpty());
     actions->activateTopologyAction->setChecked(_isTopologyActive);
 
+    actions->enableAction->setEnabled(not _lockTopology);
+    actions->disableAction->setEnabled(not _lockTopology);
+    actions->cutAction->setEnabled(not _lockTopology);
+    actions->pasteAction->setEnabled(not _lockTopology);
+    actions->createGraphPageAction->setEnabled(not _lockTopology);
+    actions->renameGraphPageAction->setEnabled(not _lockTopology);
+    actions->deleteGraphPageAction->setEnabled(not _lockTopology);
+    actions->inputBreakerAction->setEnabled(not _lockTopology);
+    actions->outputBreakerAction->setEnabled(not _lockTopology);
+    actions->rotateLeftAction->setEnabled(not _lockTopology);
+    actions->rotateRightAction->setEnabled(not _lockTopology);
+    actions->incrementAction->setEnabled(not _lockTopology);
+    actions->decrementAction->setEnabled(not _lockTopology);
+
     //can we paste something from the clipboard?
     auto mimeData = QApplication::clipboard()->mimeData();
     const bool canPaste = mimeData->hasFormat("binary/json/pothos_object_array") and

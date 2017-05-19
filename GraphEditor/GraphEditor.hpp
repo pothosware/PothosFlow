@@ -125,6 +125,7 @@ public:
     void setLockTopology(const bool enb)
     {
         _lockTopology = enb;
+        this->updateEnabledActions();
     }
 
 signals:

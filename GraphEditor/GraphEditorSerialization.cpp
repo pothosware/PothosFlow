@@ -31,6 +31,7 @@ QByteArray GraphEditor::dumpState(void) const
     //store other graph config
     QJsonObject config;
     if (_autoActivate) config["autoActivate"] = _autoActivate;
+    if (_lockTopology) config["lockTopology"] = _lockTopology;
     if (not config.isEmpty()) topObj["config"] = config;
 
     //store pages

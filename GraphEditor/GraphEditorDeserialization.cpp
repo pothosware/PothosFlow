@@ -71,6 +71,7 @@ void GraphEditor::loadState(const QByteArray &data)
     //extract other graph config
     const auto config = topObj["config"].toObject();
     _autoActivate = config["autoActivate"].toBool(false);
+    _lockTopology = config["lockTopology"].toBool(false);
 
     //extract global variables
     this->clearGlobals();
