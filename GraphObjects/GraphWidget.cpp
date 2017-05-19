@@ -53,6 +53,7 @@ GraphWidget::GraphWidget(QObject *parent):
 {
     this->setFlag(QGraphicsItem::ItemIsMovable);
     connect(_impl->container, SIGNAL(resized(void)), this, SLOT(handleWidgetResized(void)));
+    connect(this, SIGNAL(lockedChanged(bool)), _impl->container, SLOT(handleLockedChanged(bool)));
 }
 
 GraphWidget::~GraphWidget(void)

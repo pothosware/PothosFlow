@@ -55,6 +55,9 @@ public:
     bool isEnabled(void) const;
     void setEnabled(const bool enb);
 
+    bool isLocked(void) const;
+    void setLocked(const bool locked);
+
     //! Called internally or externally to indicate property changes
     void markChanged(void);
 
@@ -82,6 +85,7 @@ public:
 
 signals:
     void IDChanged(const QString &);
+    void lockedChanged(const bool);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent *event);

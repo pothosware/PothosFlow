@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidgetContainer.hpp"
@@ -58,7 +58,8 @@ GraphWidgetContainer::GraphWidgetContainer(QWidget *parent):
     _layout(new QVBoxLayout(this)),
     _grip(new MySizeGrip(this)),
     _widget(nullptr),
-    _selected(false)
+    _selected(false),
+    _locked(false)
 {
     this->setLayout(_layout);
     _layout->setContentsMargins(QMargins(3, 3, 3, 3));
@@ -133,7 +134,7 @@ void GraphWidgetContainer::leaveEvent(QEvent *event)
 
 void GraphWidgetContainer::updateShowGrip(void)
 {
-    const bool visible = this->underMouse() or _selected;
+    const bool visible = (this->underMouse() or _selected) and not _locked;
 
     if (not _widget) return;
     _widget->show(); //needs visibility to calculate size
@@ -166,6 +167,12 @@ void GraphWidgetContainer::paintEvent(QPaintEvent *event)
     painter.drawStaticText(QPointF((this->width()-_gripLabel.size().width())/2.,
         _widget->height()+(panelH-_gripLabel.size().height())/2.), _gripLabel);
     painter.end();
+}
+
+void GraphWidgetContainer::handleLockedChanged(const bool locked)
+{
+    _locked = locked;
+    this->updateShowGrip();
 }
 
 #include "GraphWidgetContainer.moc"

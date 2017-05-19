@@ -19,7 +19,9 @@ struct GraphObject::Impl
         deleteFlag(false),
         uid((*getUIDAtomic())++),
         enabled(true),
-        changed(true)
+        locked(false),
+        changed(true),
+        canMove(false)
     {
         return;
     }
@@ -27,7 +29,9 @@ struct GraphObject::Impl
     bool deleteFlag;
     size_t uid;
     bool enabled;
+    bool locked;
     bool changed;
+    bool canMove;
     GraphConnectableKey trackedKey;
 };
 
@@ -121,6 +125,33 @@ void GraphObject::setEnabled(const bool enb)
     this->markChanged();
 }
 
+bool GraphObject::isLocked(void) const
+{
+    return _impl->locked;
+}
+
+void GraphObject::setLocked(const bool locked)
+{
+    if (_impl->locked == locked) return;
+
+    //can move is sticky, track it so we can restore it
+    if ((this->flags() & QGraphicsItem::ItemIsMovable) != 0)
+    {
+        _impl->canMove = true;
+    }
+
+    //if movable, modify the setting based on locked
+    if (_impl->canMove)
+    {
+        this->setFlag(QGraphicsItem::ItemIsMovable, not locked);
+    }
+
+    this->setFlag(QGraphicsItem::ItemIsSelectable, not locked);
+
+    _impl->locked = locked;
+    emit this->lockedChanged(locked);
+}
+
 void GraphObject::markChanged(void)
 {
     _impl->changed = true;
@@ -205,7 +236,7 @@ void GraphObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void GraphObject::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     QGraphicsObject::mouseDoubleClickEvent(event);
-    if (event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton and not this->isLocked())
     {
         emit this->draw()->modifyProperties(this);
     }
