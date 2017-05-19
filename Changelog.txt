@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos GUI toolkit.
 
+Release 0.6.0 (pending)
+==========================
+
+- Added CheckBox and ToggleButton edit widgets for booleans
+
 Release 0.5.1 (pending)
 ==========================
 

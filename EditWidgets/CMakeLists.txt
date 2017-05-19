@@ -8,6 +8,8 @@ set(SOURCES
     FileEntry.cpp
     LineEdit.cpp
     SpinBox.cpp
+    CheckBox.cpp
+    ToggleButton.cpp
     StringEntry.cpp
     ColorPicker.cpp
 )
