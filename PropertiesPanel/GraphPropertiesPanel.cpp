@@ -103,7 +103,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         autoActivateKwargs["off"] = QString("Disabled");
         autoActivateConfig["widgetType"] = QString("ToggleButton");
         autoActivateConfig["widgetKwargs"] = autoActivateKwargs;
-        _autoActivateEdit = new PropertyEditWidget(_graphEditor->autoActivate()?"true":"false", autoActivateConfig, "", this);
+        _autoActivateEdit = new PropertyEditWidget(_graphEditor->isAutoActivate()?"true":"false", autoActivateConfig, "", this);
         configFormLayout->addRow(_autoActivateEdit->makeFormLabel(tr("Auto-activate"), this), _autoActivateEdit);
         connect(_autoActivateEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
 
@@ -113,7 +113,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         lockTopologyKwargs["off"] = QString("Unlocked");
         lockTopologyConfig["widgetType"] = QString("ToggleButton");
         lockTopologyConfig["widgetKwargs"] = lockTopologyKwargs;
-        _lockTopologyEdit = new PropertyEditWidget(_graphEditor->lockTopology()?"true":"false", lockTopologyConfig, "", this);
+        _lockTopologyEdit = new PropertyEditWidget(_graphEditor->isTopologyLocked()?"true":"false", lockTopologyConfig, "", this);
         configFormLayout->addRow(_lockTopologyEdit->makeFormLabel(tr("Lock topology"), this), _lockTopologyEdit);
         connect(_lockTopologyEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
     }

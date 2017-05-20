@@ -106,7 +106,7 @@ public:
     void commitGlobalsChanges(void);
 
     //! Is auto activate enabled?
-    bool autoActivate(void) const
+    bool isAutoActivate(void) const
     {
         return _autoActivate;
     }
@@ -117,7 +117,7 @@ public:
     }
 
     //! Is lock topology enabled?
-    bool lockTopology(void) const
+    bool isTopologyLocked(void) const
     {
         return _lockTopology;
     }

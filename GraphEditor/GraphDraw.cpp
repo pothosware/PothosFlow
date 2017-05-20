@@ -94,7 +94,7 @@ void GraphDraw::handleGraphDebugViewChange(void)
 
 void GraphDraw::dragEnterEvent(QDragEnterEvent *event)
 {
-    if (not this->getGraphEditor()->lockTopology() and
+    if (not this->getGraphEditor()->isTopologyLocked() and
         event->mimeData()->hasFormat("binary/json/pothos_block") and
         not event->mimeData()->data("binary/json/pothos_block").isEmpty())
     {
@@ -110,7 +110,7 @@ void GraphDraw::dragLeaveEvent(QDragLeaveEvent *event)
 
 void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 {
-    if (not this->getGraphEditor()->lockTopology() and
+    if (not this->getGraphEditor()->isTopologyLocked() and
         event->mimeData()->hasFormat("binary/json/pothos_block") and
         not event->mimeData()->data("binary/json/pothos_block").isEmpty())
     {
@@ -280,7 +280,8 @@ void GraphDraw::render(void)
     }
 
     //sync the topology locked status
-    for (auto obj : allObjs) obj->setLocked(this->getGraphEditor()->lockTopology());
+    const bool locked = this->getGraphEditor()->isTopologyLocked();
+    for (auto obj : allObjs) obj->setLocked(locked);
 
     //cause full redraw
     this->scene()->update();

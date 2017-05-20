@@ -112,7 +112,7 @@ void GraphDraw::mouseDoubleClickEvent(QMouseEvent *event)
     QGraphicsView::mouseDoubleClickEvent(event);
 
     //double clicked on graph to edit graph properties when nothing selected
-    if (this->getGraphEditor()->lockTopology()) return;
+    if (this->getGraphEditor()->isTopologyLocked()) return;
     const auto objs = this->getObjectsAtPos(event->pos());
     if (objs.empty()) emit this->modifyProperties(this->getGraphEditor());
 }
