@@ -1191,6 +1191,8 @@ void GraphEditor::commitGlobalsChanges(void)
 
 void GraphEditor::handlePollWidgetTimer(void)
 {
+    if (this->lockTopology()) return;
+
     //get a list of graph widgets changed since the last state
     QStringList changedIds;
     for (auto obj : this->getGraphObjects(GRAPH_WIDGET))
