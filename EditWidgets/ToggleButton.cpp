@@ -64,7 +64,7 @@ static QWidget *makeToggleButton(const QJsonArray &, const QJsonObject &kwargs, 
     return new ToggleButton(parent, kwargs["on"].toString(), kwargs["off"].toString());
 }
 
-pothos_static_block(registerCheckBox)
+pothos_static_block(registerToggleButton)
 {
     Pothos::PluginRegistry::add("/gui/EntryWidgets/ToggleButton", Pothos::Callable(&makeToggleButton));
 }
