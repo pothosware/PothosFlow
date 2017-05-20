@@ -116,6 +116,18 @@ public:
         _autoActivate = enb;
     }
 
+    //! Is lock topology enabled?
+    bool lockTopology(void) const
+    {
+        return _lockTopology;
+    }
+
+    void setLockTopology(const bool enb)
+    {
+        _lockTopology = enb;
+        this->updateEnabledActions();
+    }
+
 signals:
     void newTitleSubtext(const QString &);
 
@@ -202,4 +214,5 @@ private:
     QStringList _globalNames;
     std::map<QString, QString> _globalExprs;
     bool _autoActivate;
+    bool _lockTopology;
 };

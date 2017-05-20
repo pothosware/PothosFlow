@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -48,10 +48,14 @@ protected:
     void updateShowGrip(void);
     void paintEvent(QPaintEvent *event);
 
+private slots:
+    void handleLockedChanged(const bool locked);
+
 private:
     QStaticText _gripLabel;
     QVBoxLayout *_layout;
     QWidget *_grip;
     QPointer<QWidget> _widget;
     bool _selected;
+    bool _locked;
 };

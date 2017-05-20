@@ -98,20 +98,24 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         auto configFormLayout = new QFormLayout(configBox);
 
         QJsonObject autoActivateConfig;
-        QJsonArray autoActivateOptions;
-        QJsonObject autoActivateOn;
-        autoActivateOn["name"] = QString("Enabled");
-        autoActivateOn["value"] = QString("true");
-        autoActivateOptions.append(autoActivateOn);
-        QJsonObject autoActivateOff;
-        autoActivateOff["name"] = QString("Disabled");
-        autoActivateOff["value"] = QString("false");
-        autoActivateOptions.append(autoActivateOff);
-        autoActivateConfig["widgetType"] = QString("ComboBox");
-        autoActivateConfig["widgetArgs"] = autoActivateOptions;
+        QJsonObject autoActivateKwargs;
+        autoActivateKwargs["on"] = QString("Enabled");
+        autoActivateKwargs["off"] = QString("Disabled");
+        autoActivateConfig["widgetType"] = QString("ToggleButton");
+        autoActivateConfig["widgetKwargs"] = autoActivateKwargs;
         _autoActivateEdit = new PropertyEditWidget(_graphEditor->autoActivate()?"true":"false", autoActivateConfig, "", this);
         configFormLayout->addRow(_autoActivateEdit->makeFormLabel(tr("Auto-activate"), this), _autoActivateEdit);
         connect(_autoActivateEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
+
+        QJsonObject lockTopologyConfig;
+        QJsonObject lockTopologyKwargs;
+        lockTopologyKwargs["on"] = QString("Locked");
+        lockTopologyKwargs["off"] = QString("Unlocked");
+        lockTopologyConfig["widgetType"] = QString("ToggleButton");
+        lockTopologyConfig["widgetKwargs"] = lockTopologyKwargs;
+        _lockTopologyEdit = new PropertyEditWidget(_graphEditor->lockTopology()?"true":"false", lockTopologyConfig, "", this);
+        configFormLayout->addRow(_lockTopologyEdit->makeFormLabel(tr("Lock topology"), this), _lockTopologyEdit);
+        connect(_lockTopologyEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
     }
 
     //create widgets and make a backup of constants
@@ -154,6 +158,7 @@ void GraphPropertiesPanel::handleCommit(void)
     //process through changes before inspecting
     this->updateAllVariableForms();
     _graphEditor->setAutoActivate(_autoActivateEdit->value() == "true");
+    _graphEditor->setLockTopology(_lockTopologyEdit->value() == "true");
 
     //look for changes
     const auto propertiesModified = this->getChangeDescList();
@@ -208,6 +213,10 @@ QStringList GraphPropertiesPanel::getChangeDescList(void) const
     if (_autoActivateEdit->changed())
     {
         changes.push_back(tr("Configured auto-activate"));
+    }
+    if (_lockTopologyEdit->changed())
+    {
+        changes.push_back(tr("Configured lock topology"));
     }
 
     return changes;
