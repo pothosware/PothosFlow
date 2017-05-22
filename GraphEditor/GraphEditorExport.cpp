@@ -11,6 +11,31 @@
 #include <QJsonArray>
 #include <QFile>
 
+static QJsonValue parseArgDesc(
+    const GraphBlock *block,
+    const QJsonValueRef &arg,
+    QSet<QString> &usedProperties)
+{
+    //the property is used literally without an expression
+    if (block->getProperties().contains(arg.toString()))
+    {
+        return block->getPropertyValue(arg.toString());
+    }
+
+    //use locals to handle the evaluation
+    //and record all properties needed for the expression
+    for (const auto &propKey : block->getProperties())
+    {
+        if (arg.toString().contains(propKey))
+        {
+            usedProperties.insert(propKey);
+        }
+    }
+
+    //its an expression, return the argument as-is
+    return arg;
+}
+
 void GraphEditor::exportToJSONTopology(const QString &fileName)
 {
     _logger.information("Exporting %s", fileName.toStdString());
@@ -60,9 +85,19 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
             blockObj["threadPool"] = affinityZone;
         }
 
-        //block description args are in the same format
+        QSet<QString> usedProperties;
+
+        //copy in the constructor args in array format
         const auto desc = block->getBlockDesc();
-        if (desc.contains("args")) blockObj["args"] = desc["args"];
+        if (desc.contains("args"))
+        {
+            QJsonArray args;
+            for (const auto &arg : desc["args"].toArray())
+            {
+                args.push_back(parseArgDesc(block, arg, usedProperties));
+            }
+            blockObj["args"] = args;
+        }
 
         //copy in the named calls in array format
         QJsonArray calls;
@@ -71,21 +106,24 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
             const auto callObj = callVal.toObject();
             QJsonArray call;
             call.push_back(callObj["name"]);
-            for (const auto &arg : callObj["args"].toArray()) call.push_back(arg);
+            for (const auto &arg : callObj["args"].toArray())
+            {
+                call.push_back(parseArgDesc(block, arg, usedProperties));
+            }
             calls.push_back(call);
         }
         blockObj["calls"] = calls;
 
         //copy in the parameters as local variables
         QJsonArray locals;
-        for (const auto &name : block->getProperties())
+        for (const auto &name : usedProperties)
         {
             QJsonObject local;
             local["name"] = name;
             local["value"] = block->getPropertyValue(name);
             locals.push_back(local);
         }
-        blockObj["locals"] = locals;
+        if (not locals.isEmpty()) blockObj["locals"] = locals;
 
         blocks.push_back(blockObj);
     }
