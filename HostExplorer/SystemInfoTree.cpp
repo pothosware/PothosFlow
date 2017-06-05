@@ -10,6 +10,7 @@
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <Poco/Logger.h>
+#include <functional> //std::bind
 
 /***********************************************************************
  * information aquisition

@@ -9,6 +9,7 @@ Release 0.6.0 (pending)
 Release 0.5.1 (pending)
 ==========================
 
+- Added missing functional include for std::bind() usage
 - Reduce use of local variables in graph editor export
 - Reliable ordering for lists of saved graph objects
 - Save selected tab and tab order when selected/moved

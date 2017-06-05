@@ -10,6 +10,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <Poco/Logger.h>
 #include <map>
+#include <functional> //std::bind
 
 /***********************************************************************
  * recursive algorithm to create widget information
