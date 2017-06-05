@@ -74,8 +74,9 @@ static QWidget *editWidgetFactory(const QString &widgetType, const QJsonObject &
     return factory.call<QWidget *>(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
 }
 
-void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
+void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
 {
+    QJsonObject paramDesc = paramDesc_;
     _lastParamDesc = paramDesc;
 
     //value to set on replaced widget
@@ -86,8 +87,24 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
     delete _editWidget;
 
     //extract widget type
-    auto widgetType = paramDesc["widgetType"].toString("LineEdit");
-    if (paramDesc.contains("options")) widgetType = "ComboBox";
+    auto widgetType = paramDesc["widgetType"].toString();
+    if (paramDesc.contains("options") and widgetType.isEmpty())
+    {
+        const auto options = paramDesc["options"].toArray();
+        if (options.size() == 2 and options[0].toObject()["value"].toString() == "true" and options[1].toObject()["value"].toString() == "false")
+        {
+            paramDesc["widgetKwargs"].toObject()["on"] = options[0].toObject()["name"];
+            paramDesc["widgetKwargs"].toObject()["off"] = options[1].toObject()["name"];
+            widgetType = "ToggleButton";
+        }
+        else if (options.size() == 2 and options[1].toObject()["value"].toString() == "true" and options[0].toObject()["value"].toString() == "false")
+        {
+            paramDesc["widgetKwargs"].toObject()["on"] = options[1].toObject()["name"];
+            paramDesc["widgetKwargs"].toObject()["off"] = options[0].toObject()["name"];
+            widgetType = "ToggleButton";
+        }
+        else widgetType = "ComboBox";
+    }
     if (widgetType.isEmpty()) widgetType = "LineEdit";
     _unitsStr = paramDesc["units"].toString();
 
