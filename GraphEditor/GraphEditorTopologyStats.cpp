@@ -17,6 +17,7 @@
 #include <QTreeWidget>
 #include <QtConcurrent/QtConcurrent>
 #include <QJsonDocument>
+#include <functional> //std::bind
 
 class TopologyStatsDialog : public QDialog
 {
