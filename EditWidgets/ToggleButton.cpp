@@ -13,10 +13,10 @@ class ToggleButton : public QPushButton
 {
     Q_OBJECT
 public:
-    ToggleButton(QWidget *parent, const QString &checkedText, const QString &uncheckedText):
+    ToggleButton(QWidget *parent, const QString &onText, const QString &offText):
         QPushButton(parent),
-        _checkedText(checkedText),
-        _uncheckedText(uncheckedText)
+        _onText(onText),
+        _offText(offText)
     {
         this->setCheckable(true);
         connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
@@ -49,11 +49,11 @@ private slots:
 private:
     void updateText(const bool checked)
     {
-        this->setText(checked?_checkedText:_uncheckedText);
+        this->setText(checked?_onText:_offText);
     }
 
-    const QString _checkedText;
-    const QString _uncheckedText;
+    const QString _onText;
+    const QString _offText;
 };
 
 /***********************************************************************

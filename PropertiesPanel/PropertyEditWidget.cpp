@@ -74,8 +74,9 @@ static QWidget *editWidgetFactory(const QString &widgetType, const QJsonObject &
     return factory.call<QWidget *>(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
 }
 
-void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
+void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
 {
+    QJsonObject paramDesc = paramDesc_;
     _lastParamDesc = paramDesc;
 
     //value to set on replaced widget
@@ -86,8 +87,32 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc)
     delete _editWidget;
 
     //extract widget type
-    auto widgetType = paramDesc["widgetType"].toString("LineEdit");
-    if (paramDesc.contains("options")) widgetType = "ComboBox";
+    auto widgetType = paramDesc["widgetType"].toString();
+    if (paramDesc.contains("options") and widgetType.isEmpty())
+    {
+        //parse out the true/false options if present
+        const auto options = paramDesc["options"].toArray();
+        QJsonObject trueOption, falseOption;
+        for (const auto &option : options)
+        {
+            const auto optionObj = option.toObject();
+            if (optionObj["value"].toString() == "true") trueOption = optionObj;
+            if (optionObj["value"].toString() == "false") falseOption = optionObj;
+        }
+
+        //the options were true and false only, we can infer a toggle button
+        if (options.size() == 2 and not trueOption.isEmpty() and not falseOption.isEmpty())
+        {
+            QJsonObject kwargs;
+            kwargs["on"] = trueOption["name"];
+            kwargs["off"] = falseOption["name"];
+            paramDesc.insert("widgetKwargs", kwargs);
+            widgetType = "ToggleButton";
+        }
+
+        //otherwise use the combo-box style of widget
+        else widgetType = "ComboBox";
+    }
     if (widgetType.isEmpty()) widgetType = "LineEdit";
     _unitsStr = paramDesc["units"].toString();
 
