@@ -90,19 +90,27 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
     auto widgetType = paramDesc["widgetType"].toString();
     if (paramDesc.contains("options") and widgetType.isEmpty())
     {
+        //parse out the true/false options if present
         const auto options = paramDesc["options"].toArray();
-        if (options.size() == 2 and options[0].toObject()["value"].toString() == "true" and options[1].toObject()["value"].toString() == "false")
+        QJsonObject trueOption, falseOption;
+        for (const auto &option : options)
         {
-            paramDesc["widgetKwargs"].toObject()["on"] = options[0].toObject()["name"];
-            paramDesc["widgetKwargs"].toObject()["off"] = options[1].toObject()["name"];
+            const auto optionObj = option.toObject();
+            if (optionObj["value"].toString() == "true") trueOption = optionObj;
+            if (optionObj["value"].toString() == "false") falseOption = optionObj;
+        }
+
+        //the options were true and false only, we can infer a toggle button
+        if (options.size() == 2 and not trueOption.isEmpty() and not falseOption.isEmpty())
+        {
+            QJsonObject kwargs;
+            kwargs["on"] = trueOption["name"];
+            kwargs["off"] = falseOption["name"];
+            paramDesc.insert("widgetKwargs", kwargs);
             widgetType = "ToggleButton";
         }
-        else if (options.size() == 2 and options[1].toObject()["value"].toString() == "true" and options[0].toObject()["value"].toString() == "false")
-        {
-            paramDesc["widgetKwargs"].toObject()["on"] = options[1].toObject()["name"];
-            paramDesc["widgetKwargs"].toObject()["off"] = options[0].toObject()["name"];
-            widgetType = "ToggleButton";
-        }
+
+        //otherwise use the combo-box style of widget
         else widgetType = "ComboBox";
     }
     if (widgetType.isEmpty()) widgetType = "LineEdit";
