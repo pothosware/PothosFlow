@@ -13,10 +13,10 @@ class CheckBox : public QCheckBox
 {
     Q_OBJECT
 public:
-    CheckBox(QWidget *parent, const QString &checkedText, const QString &uncheckedText):
+    CheckBox(QWidget *parent, const QString &onText, const QString &offText):
         QCheckBox(parent),
-        _checkedText(checkedText),
-        _uncheckedText(uncheckedText)
+        _onText(onText),
+        _offText(offText)
     {
         connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
     }
@@ -48,11 +48,11 @@ private slots:
 private:
     void updateText(const bool checked)
     {
-        this->setText(checked?_checkedText:_uncheckedText);
+        this->setText(checked?_onText:_offText);
     }
 
-    const QString _checkedText;
-    const QString _uncheckedText;
+    const QString _onText;
+    const QString _offText;
 };
 
 /***********************************************************************
