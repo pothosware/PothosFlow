@@ -101,7 +101,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         QJsonObject autoActivateKwargs;
         autoActivateKwargs["on"] = QString("Enabled");
         autoActivateKwargs["off"] = QString("Disabled");
-        autoActivateConfig["widgetType"] = QString("ToggleButton");
+        autoActivateConfig["widgetType"] = QString("ToggleSwitch");
         autoActivateConfig["widgetKwargs"] = autoActivateKwargs;
         _autoActivateEdit = new PropertyEditWidget(_graphEditor->isAutoActivate()?"true":"false", autoActivateConfig, "", this);
         configFormLayout->addRow(_autoActivateEdit->makeFormLabel(tr("Auto-activate"), this), _autoActivateEdit);
@@ -111,7 +111,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         QJsonObject lockTopologyKwargs;
         lockTopologyKwargs["on"] = QString("Locked");
         lockTopologyKwargs["off"] = QString("Unlocked");
-        lockTopologyConfig["widgetType"] = QString("ToggleButton");
+        lockTopologyConfig["widgetType"] = QString("ToggleSwitch");
         lockTopologyConfig["widgetKwargs"] = lockTopologyKwargs;
         _lockTopologyEdit = new PropertyEditWidget(_graphEditor->isTopologyLocked()?"true":"false", lockTopologyConfig, "", this);
         configFormLayout->addRow(_lockTopologyEdit->makeFormLabel(tr("Lock topology"), this), _lockTopologyEdit);
