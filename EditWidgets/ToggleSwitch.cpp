@@ -7,11 +7,11 @@
 #include <QPushButton>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QWheelEvent>
 #include <QPropertyAnimation>
 #include <QStaticText>
 #include <algorithm> //min/max
 #include <utility> //swap
-#include <iostream>
 
 /***********************************************************************
  * Toggle switch is a custom slider-like toggle widget
@@ -33,6 +33,7 @@ public:
         _anim(new QPropertyAnimation(this, "offset", this))
     {
         this->setCheckable(true);
+        this->setFocusPolicy(Qt::StrongFocus);
         this->setCursor(Qt::PointingHandCursor);
         connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
     }
@@ -125,6 +126,18 @@ protected:
     {
         this->updatePos(this->isChecked());
         QAbstractButton::resizeEvent(e);
+    }
+
+    void wheelEvent(QWheelEvent *e)
+    {
+        const bool checked = e->delta() > 0;
+        if (e->delta() != 0 and checked != this->isChecked())
+        {
+            this->setChecked(checked);
+            this->handleToggled(checked);
+            return e->accept();
+        }
+        QAbstractButton::wheelEvent(e);
     }
 
 private:
