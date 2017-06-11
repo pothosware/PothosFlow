@@ -107,7 +107,7 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
             kwargs["on"] = trueOption["name"];
             kwargs["off"] = falseOption["name"];
             paramDesc.insert("widgetKwargs", kwargs);
-            widgetType = "ToggleButton";
+            widgetType = "ToggleSwitch";
         }
 
         //otherwise use the combo-box style of widget

@@ -10,6 +10,7 @@ set(SOURCES
     SpinBox.cpp
     CheckBox.cpp
     ToggleButton.cpp
+    ToggleSwitch.cpp
     StringEntry.cpp
     ColorPicker.cpp
 )
