@@ -15,12 +15,9 @@ QString EvalTracer::trace(void) const
     QString indent;
     for (const auto &elem : _stack)
     {
-        if (not out.isEmpty())
-        {
-            out += "\n" + indent;
-            indent += "  ";
-        }
+        if (not out.isEmpty()) out += "\n" + indent;
         out += elem;
+        indent += "  ";
     }
     return out;
 }

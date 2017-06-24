@@ -44,8 +44,12 @@ private:
 #define __MACRO_CONCAT( x, y ) __CONCAT_IMPL( x, y )
 
 //! Create an entry in the tracer for an arbitrary action
-#define EVAL_TRACER_ACTION(t, a) EvalTraceEntry __MACRO_CONCAT(__evalTraceEntry, __COUNTER__)(t, a)
+#define EVAL_TRACER_ACTION(t, a) EvalTraceEntry \
+    __MACRO_CONCAT(__evalTraceEntry, __COUNTER__)(t, QString("%1: %2").arg(__LINE__).arg(a))
 
 //! Create an entry in the tracer for entering a function
 #define EVAL_TRACER_FUNC(t) EVAL_TRACER_ACTION(t, Q_FUNC_INFO)
 
+//! Provide an extra argument that identifies the object
+#define EVAL_TRACER_FUNC_ARG(t, what) \
+    EVAL_TRACER_ACTION(t, QString("%1 - %2").arg(Q_FUNC_INFO).arg(what))

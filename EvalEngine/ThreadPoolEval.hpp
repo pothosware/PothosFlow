@@ -60,7 +60,7 @@ public:
 
 private:
 
-    Pothos::Proxy makeThreadPool(void);
+    Pothos::Proxy makeThreadPool(EvalTracer &tracer);
 
     //Tracking state for the eval environment:
     //Also stash the actual proxy environment here.

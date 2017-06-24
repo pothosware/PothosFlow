@@ -178,19 +178,19 @@ private:
      * Record the data type of each property.
      * \return true for success, false for error
      */
-    bool updateAllProperties(void);
+    bool updateAllProperties(EvalTracer &tracer);
 
     /*!
      * Apply constants to the evaluator.
      * \return true for success, false for error
      */
-    bool applyConstants(void);
+    bool applyConstants(EvalTracer &tracer);
 
     /*!
      * The main evaluation procedure for dealing with changes.
      * Return true for success and false for failure.
      */
-    bool evaluationProcedure(void);
+    bool evaluationProcedure(EvalTracer &tracer);
 
     //! Internal helper for error message formatting
     void reportError(const QString &action, const Pothos::Exception &ex);
