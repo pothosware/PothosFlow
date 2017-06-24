@@ -3,6 +3,7 @@
 
 #include "TopologyEval.hpp"
 #include "BlockEval.hpp"
+#include "EvalTracer.hpp"
 #include <Pothos/Framework.hpp>
 #include <algorithm> //std::remove
 #include <iostream>
@@ -30,8 +31,9 @@ void TopologyEval::acceptBlockEvals(const std::map<size_t, std::shared_ptr<Block
     _newBlockEvals = info;
 }
 
-void TopologyEval::disconnect(void)
+void TopologyEval::disconnect(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     if (this->isFailureState()) return;
 
     const auto connsCopy = _currentConnections;
@@ -63,11 +65,12 @@ void TopologyEval::disconnect(void)
     }
 
     //commit after changes
-    this->commit();
+    this->commit(tracer);
 }
 
-void TopologyEval::update(void)
+void TopologyEval::update(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     if (this->isFailureState()) return;
 
     const auto removedConnections = diffConnectionInfos(_currentConnections, _newConnectionInfo);
@@ -141,7 +144,7 @@ void TopologyEval::update(void)
     }
 
     //commit after changes
-    this->commit();
+    this->commit(tracer);
 
     //stash data for the current state
     if (not _failureState)
@@ -151,8 +154,9 @@ void TopologyEval::update(void)
     }
 }
 
-void TopologyEval::commit(void)
+void TopologyEval::commit(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     try
     {
         _topology->commit();

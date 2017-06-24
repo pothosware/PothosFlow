@@ -6,6 +6,7 @@
 #include "EnvironmentEval.hpp"
 #include "TopologyEval.hpp"
 #include "BlockEval.hpp"
+#include "EvalTracer.hpp"
 #include <QString>
 #include <QJsonObject>
 #include <memory>
@@ -79,6 +80,7 @@ private:
     void evaluate(void);
     bool _requireEval;
 
+    EvalTracer _tracer;
     QTimer *_monitorTimer;
 
     //most recent info

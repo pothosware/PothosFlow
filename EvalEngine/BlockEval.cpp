@@ -5,6 +5,7 @@
 #include "GraphObjects/GraphBlock.hpp"
 #include "ThreadPoolEval.hpp"
 #include "EnvironmentEval.hpp"
+#include "EvalTracer.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework.hpp>
 #include <QJsonDocument>
@@ -120,8 +121,9 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
     _newThreadPoolEval = tp;
 }
 
-void BlockEval::update(void)
+void BlockEval::update(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     _newEnvironment = _newEnvironmentEval->getEnv();
     _newThreadPool = _newThreadPoolEval->getThreadPool();
 
@@ -134,7 +136,7 @@ void BlockEval::update(void)
 
     //When eval fails, do a re-check on the environment.
     //Because block eval could have killed the environment.
-    if (not evalSuccess) _newEnvironmentEval->update();
+    if (not evalSuccess) _newEnvironmentEval->update(tracer);
 
     //When environment fails, replace the block error messages
     //with the error message from the evaluation environment.

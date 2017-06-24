@@ -252,16 +252,16 @@ void EvalEngineImpl::evaluate(void)
     _environmentEvals = newEnvironmentEvals;
 
     //0) disconnect any blocks that will be torn down below
-    if (_topologyEval) _topologyEval->disconnect();
+    if (_topologyEval) _topologyEval->disconnect(_tracer);
     //1) update all environments in case there were changes
-    for (auto &pair : _environmentEvals) pair.second->update();
+    for (auto &pair : _environmentEvals) pair.second->update(_tracer);
     //2) update all thread pools in case there were changes
-    for (auto &pair : _threadPoolEvals) pair.second->update();
+    for (auto &pair : _threadPoolEvals) pair.second->update(_tracer);
     //3) update all the blocks in case there were changes
     for (auto &pair : _blockEvals)
     {
         auto &blockEval = pair.second;
-        blockEval->update();
+        blockEval->update(_tracer);
         if (blockEval->isGraphWidget()) _guiBlocks.insert(blockEval->getProxyBlock().getHandle());
     }
     //4) update topology when present (activation mode)
@@ -269,7 +269,7 @@ void EvalEngineImpl::evaluate(void)
     {
         _topologyEval->acceptConnectionInfo(_connectionInfo);
         _topologyEval->acceptBlockEvals(_blockEvals);
-        _topologyEval->update();
+        _topologyEval->update(_tracer);
 
         //deactivate design in the face of certain failures
         if (_topologyEval->isFailureState())

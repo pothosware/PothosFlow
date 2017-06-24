@@ -185,6 +185,7 @@ list(APPEND SOURCES
     GraphObjects/GraphWidget.cpp
     GraphObjects/GraphWidgetContainer.cpp
 
+    EvalEngine/EvalTracer.cpp
     EvalEngine/EvalEngine.cpp
     EvalEngine/EvalEngineImpl.cpp
     EvalEngine/BlockEval.cpp

@@ -3,6 +3,7 @@
 
 #include "ThreadPoolEval.hpp"
 #include "EnvironmentEval.hpp"
+#include "EvalTracer.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Poco/Logger.h>
@@ -44,8 +45,9 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
     return env->findProxy("Pothos/ThreadPool")(args);
 }
 
-void ThreadPoolEval::update(void)
+void ThreadPoolEval::update(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     _newEnvironment = _newEnvironmentEval->getEnv();
     if (_newEnvironmentEval->isFailureState())
     {

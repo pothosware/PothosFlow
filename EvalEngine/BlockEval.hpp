@@ -20,6 +20,7 @@
 class EnvironmentEval;
 class ThreadPoolEval;
 class GraphBlock;
+class EvalTracer;
 
 /*!
  * Information about a block that is used for background evaluation.
@@ -126,7 +127,7 @@ public:
     /*!
      * Perform update work after changes applied.
      */
-    void update(void);
+    void update(EvalTracer &tracer);
 
 private slots:
 

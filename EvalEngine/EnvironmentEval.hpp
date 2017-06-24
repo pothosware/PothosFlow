@@ -11,6 +11,8 @@
 #include <utility>
 #include <Poco/Logger.h>
 
+class EvalTracer;
+
 typedef std::pair<QString, QString> HostProcPair;
 
 class EnvironmentEval : public QObject
@@ -31,7 +33,7 @@ public:
     /*!
      * Deal with changes from the latest config.
      */
-    void update(void);
+    void update(EvalTracer &tracer);
 
     //! Shared method to parse the zone config into host uri and process name
     static HostProcPair getHostProcFromConfig(const QString &zoneName, const QJsonObject &config);
