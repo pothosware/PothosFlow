@@ -6,7 +6,6 @@
 #include "EnvironmentEval.hpp"
 #include "TopologyEval.hpp"
 #include "BlockEval.hpp"
-#include "EvalTracer.hpp"
 #include <QString>
 #include <QJsonObject>
 #include <memory>
@@ -18,6 +17,7 @@ class ThreadPoolEval;
 class TopologyEval;
 class BlockEval;
 class GraphBlock;
+class EvalTracer;
 class QTimer;
 class EvalEngineGuiBlockDeleter;
 
@@ -32,7 +32,7 @@ class EvalEngineImpl : public QObject
     Q_OBJECT
 public:
 
-    EvalEngineImpl(void);
+    EvalEngineImpl(EvalTracer &tracer);
 
     ~EvalEngineImpl(void);
 
@@ -80,7 +80,7 @@ private:
     void evaluate(void);
     bool _requireEval;
 
-    EvalTracer _tracer;
+    EvalTracer &_tracer;
     QTimer *_monitorTimer;
 
     //most recent info

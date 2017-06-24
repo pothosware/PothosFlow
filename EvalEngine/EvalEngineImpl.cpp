@@ -44,8 +44,9 @@ public slots:
 /***********************************************************************
  * Eval engine implementation
  **********************************************************************/
-EvalEngineImpl::EvalEngineImpl(void):
+EvalEngineImpl::EvalEngineImpl(EvalTracer &tracer):
     _requireEval(false),
+    _tracer(tracer),
     _monitorTimer(new QTimer(this)),
     _guiBlockDeleter(new EvalEngineGuiBlockDeleter())
 {

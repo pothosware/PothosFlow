@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine.hpp"
+#include "EvalTracer.hpp"
 #include "EvalEngineImpl.hpp"
 #include "GraphObjects/GraphBlock.hpp"
 #include "GraphEditor/GraphDraw.hpp"
@@ -17,11 +18,12 @@ static const int THREAD_JOIN_MAX_MS = 10000;
 
 EvalEngine::EvalEngine(QObject *parent):
     QObject(parent),
+    _tracer(new EvalTracer),
     _flaggedLockUp(false),
     _logger(Poco::Logger::get("PothosGui.EvalEngine")),
     _thread(new QThread(this)),
     _monitorTimer(new QTimer(this)),
-    _impl(new EvalEngineImpl()),
+    _impl(new EvalEngineImpl(*_tracer)),
     _blockEvalMapper(new QSignalMapper(this)),
     _affinityDock(AffinityZonesDock::global())
 {
@@ -47,9 +49,11 @@ EvalEngine::~EvalEngine(void)
     _thread->quit();
     if (not _thread->wait(THREAD_JOIN_MAX_MS))
     {
-        _logger.fatal("Detected lock-up when shutting down evaluation thread.");
+        _logger.fatal("Detected lock-up when shutting down evaluation thread:\n%s",
+            _tracer->trace().toStdString());
         _thread->wait();
     }
+    delete _tracer;
 }
 
 static BlockInfo blockToBlockInfo(GraphBlock *block)
@@ -167,6 +171,7 @@ void EvalEngine::handleMonitorTimeout(void)
     {
         _flaggedLockUp = true;
         _monitorTimer->stop(); //stop so the error messages will not continue
-        _logger.fatal("Detected evaluation thread lock-up. The evaluator will not function.");
+        _logger.fatal("Detected evaluation thread lock-up. The evaluator will not function:\n%s",
+            _tracer->trace().toStdString());
     }
 }

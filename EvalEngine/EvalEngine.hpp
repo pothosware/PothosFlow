@@ -13,6 +13,7 @@ class QTimer;
 class EvalEngineImpl;
 class AffinityZonesDock;
 class QSignalMapper;
+class EvalTracer;
 
 /*!
  * The EvalEngine is the entry point for submitting design changes.
@@ -69,6 +70,7 @@ private slots:
     void handleMonitorTimeout(void);
 
 private:
+    EvalTracer *_tracer;
     bool _flaggedLockUp;
     Poco::Logger &_logger;
     QThread *_thread;
