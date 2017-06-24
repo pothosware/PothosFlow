@@ -12,6 +12,7 @@
 #include <set>
 
 class EnvironmentEval;
+class EvalTracer;
 
 class ThreadPoolEval : public QObject
 {
@@ -37,7 +38,7 @@ public:
     /*!
      * Deal with changes from the latest config.
      */
-    void update(void);
+    void update(EvalTracer &tracer);
 
     //! Get the thread pool that will be set on blocks
     Pothos::Proxy getThreadPool(void) const
@@ -59,7 +60,7 @@ public:
 
 private:
 
-    Pothos::Proxy makeThreadPool(void);
+    Pothos::Proxy makeThreadPool(EvalTracer &tracer);
 
     //Tracking state for the eval environment:
     //Also stash the actual proxy environment here.

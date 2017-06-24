@@ -3,6 +3,7 @@
 
 #include "ThreadPoolEval.hpp"
 #include "EnvironmentEval.hpp"
+#include "EvalTracer.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Framework/ThreadPool.hpp>
 #include <Poco/Logger.h>
@@ -29,8 +30,9 @@ void ThreadPoolEval::acceptEnvironment(const std::shared_ptr<EnvironmentEval> &e
     _newEnvironmentEval = env;
 }
 
-Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
+Pothos::Proxy ThreadPoolEval::makeThreadPool(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     if (_newZoneConfig.isEmpty()) return Pothos::Proxy();
 
     auto env = _newEnvironmentEval->getEnv();
@@ -44,8 +46,9 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
     return env->findProxy("Pothos/ThreadPool")(args);
 }
 
-void ThreadPoolEval::update(void)
+void ThreadPoolEval::update(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC(tracer);
     _newEnvironment = _newEnvironmentEval->getEnv();
     if (_newEnvironmentEval->isFailureState())
     {
@@ -69,7 +72,7 @@ void ThreadPoolEval::update(void)
     {
         try
         {
-            _threadPool = this->makeThreadPool();
+            _threadPool = this->makeThreadPool(tracer);
             _lastEnvironmentEval = _newEnvironmentEval;
             _lastEnvironment = _newEnvironment;
             _lastZoneConfig = _newZoneConfig;

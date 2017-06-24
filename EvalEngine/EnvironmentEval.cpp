@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EnvironmentEval.hpp"
+#include "EvalTracer.hpp"
 #include <Pothos/Proxy.hpp>
 #include <Pothos/Remote.hpp>
 #include <Pothos/System/Logger.hpp>
@@ -27,8 +28,9 @@ void EnvironmentEval::acceptConfig(const QString &zoneName, const QJsonObject &c
     _config = config;
 }
 
-void EnvironmentEval::update(void)
+void EnvironmentEval::update(EvalTracer &tracer)
 {
+    EVAL_TRACER_FUNC_ARG(tracer, _zoneName);
     if (this->isFailureState()) _env.reset();
 
     try
