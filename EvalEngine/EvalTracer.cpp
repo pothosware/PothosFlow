@@ -34,6 +34,18 @@ void EvalTracer::pop(void)
     _stack.pop_back();
 }
 
+static thread_local EvalTracer *__tls_tracer(nullptr);
+
+void EvalTracer::install(EvalTracer &tracer)
+{
+    __tls_tracer = &tracer;
+}
+
+EvalTracer &EvalTracer::getGlobal(void)
+{
+    return *__tls_tracer;
+}
+
 EvalTraceEntry::EvalTraceEntry(EvalTracer &stack, const QString &what):
     _stack(stack)
 {

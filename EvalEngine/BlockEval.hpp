@@ -20,7 +20,6 @@
 class EnvironmentEval;
 class ThreadPoolEval;
 class GraphBlock;
-class EvalTracer;
 
 /*!
  * Information about a block that is used for background evaluation.
@@ -127,7 +126,7 @@ public:
     /*!
      * Perform update work after changes applied.
      */
-    void update(EvalTracer &tracer);
+    void update(void);
 
 private slots:
 
@@ -178,19 +177,19 @@ private:
      * Record the data type of each property.
      * \return true for success, false for error
      */
-    bool updateAllProperties(EvalTracer &tracer);
+    bool updateAllProperties(void);
 
     /*!
      * Apply constants to the evaluator.
      * \return true for success, false for error
      */
-    bool applyConstants(EvalTracer &tracer);
+    bool applyConstants(void);
 
     /*!
      * The main evaluation procedure for dealing with changes.
      * Return true for success and false for failure.
      */
-    bool evaluationProcedure(EvalTracer &tracer);
+    bool evaluationProcedure(void);
 
     //! Internal helper for error message formatting
     void reportError(const QString &action, const Pothos::Exception &ex);

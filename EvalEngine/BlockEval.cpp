@@ -121,9 +121,9 @@ void BlockEval::acceptThreadPool(const std::shared_ptr<ThreadPoolEval> &tp)
     _newThreadPoolEval = tp;
 }
 
-void BlockEval::update(EvalTracer &tracer)
+void BlockEval::update(void)
 {
-    EVAL_TRACER_FUNC_ARG(tracer, _newBlockInfo.id);
+    EVAL_TRACER_FUNC_ARG(_newBlockInfo.id);
     _newEnvironment = _newEnvironmentEval->getEnv();
     _newThreadPool = _newThreadPoolEval->getThreadPool();
 
@@ -132,11 +132,11 @@ void BlockEval::update(EvalTracer &tracer)
     _lastBlockStatus.propertyErrorMsgs.clear();
 
     //perform evaluation
-    const bool evalSuccess = this->evaluationProcedure(tracer);
+    const bool evalSuccess = this->evaluationProcedure();
 
     //When eval fails, do a re-check on the environment.
     //Because block eval could have killed the environment.
-    if (not evalSuccess) _newEnvironmentEval->update(tracer);
+    if (not evalSuccess) _newEnvironmentEval->update();
 
     //When environment fails, replace the block error messages
     //with the error message from the evaluation environment.
@@ -157,9 +157,9 @@ void BlockEval::update(EvalTracer &tracer)
 /***********************************************************************
  * evaluation procedure implementation
  **********************************************************************/
-bool BlockEval::evaluationProcedure(EvalTracer &tracer)
+bool BlockEval::evaluationProcedure(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     if (_newEnvironmentEval->isFailureState())
     {
         assert(not _newEnvironmentEval->getErrorMsg().isEmpty());
@@ -184,7 +184,7 @@ bool BlockEval::evaluationProcedure(EvalTracer &tracer)
     //however there is no object to apply properties.
     if (not _newBlockInfo.enabled)
     {
-        evalSuccess = this->updateAllProperties(tracer);
+        evalSuccess = this->updateAllProperties();
         goto handle_property_errors;
     }
 
@@ -193,12 +193,12 @@ bool BlockEval::evaluationProcedure(EvalTracer &tracer)
     else if (_blockEval and not this->hasCriticalChange())
     {
         //update all properties - regardless of changes
-        bool setterError = not this->updateAllProperties(tracer);
+        bool setterError = not this->updateAllProperties();
         if (not setterError) for (const auto &setter : this->settersChangedList())
         {
             try
             {
-                EVAL_TRACER_ACTION(tracer, "call " + setter);
+                EVAL_TRACER_ACTION("call " + setter);
                 _blockEval.callVoid("handleCall", setter.toStdString());
             }
             catch (const Pothos::Exception &ex)
@@ -214,19 +214,19 @@ bool BlockEval::evaluationProcedure(EvalTracer &tracer)
     //otherwise, make a new block and all calls
     //update all properties - regardless of changes
     //this may create a new _blockEval if needed
-    else if (this->updateAllProperties(tracer))
+    else if (this->updateAllProperties())
     {
         _proxyBlock = Pothos::Proxy(); //drop old handle
 
         //widget blocks have to be evaluated in the GUI thread context, otherwise, eval here
         if (_newBlockInfo.isGraphWidget)
         {
-            EVAL_TRACER_ACTION(tracer, "blockEvalInGUIContext");
+            EVAL_TRACER_ACTION("blockEvalInGUIContext");
             QMetaObject::invokeMethod(this, "blockEvalInGUIContext", Qt::BlockingQueuedConnection, Q_RETURN_ARG(bool, evalSuccess));
         }
         else try
         {
-            EVAL_TRACER_ACTION(tracer, "eval " + _newBlockInfo.id);
+            EVAL_TRACER_ACTION("eval " + _newBlockInfo.id);
             _blockEval.callProxy("eval", _newBlockInfo.id.toStdString());
             _proxyBlock = _blockEval.callProxy("getProxyBlock");
         }
@@ -259,7 +259,7 @@ bool BlockEval::evaluationProcedure(EvalTracer &tracer)
         auto proxyBlock = this->getProxyBlock();
         if (proxyBlock) try
         {
-            EVAL_TRACER_ACTION(tracer, "get overlay");
+            EVAL_TRACER_ACTION("get overlay");
             const auto overlayStr = proxyBlock.call<std::string>("overlay");
             const QByteArray overlayBytes(overlayStr.data(), overlayStr.size());
             if (overlayBytes != _lastBlockStatus.overlayDescStr)
@@ -290,7 +290,7 @@ bool BlockEval::evaluationProcedure(EvalTracer &tracer)
     //load its port info
     if (evalSuccess and _queryPortDesc) try
     {
-        EVAL_TRACER_ACTION(tracer, "get port desc");
+        EVAL_TRACER_ACTION("get port desc");
         auto proxyBlock = this->getProxyBlock();
         _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
         _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
@@ -321,7 +321,7 @@ bool BlockEval::evaluationProcedure(EvalTracer &tracer)
     {
         if (not this->isGraphWidget()) try
         {
-            EVAL_TRACER_ACTION(tracer, "setThreadPool");
+            EVAL_TRACER_ACTION("setThreadPool");
             if (_newThreadPool) this->getProxyBlock().callVoid("setThreadPool", _newThreadPool);
             _lastThreadPool = _newThreadPool;
             _lastThreadPoolEval = _newThreadPoolEval;
@@ -506,23 +506,23 @@ QStringList BlockEval::getConstantsUsed(const QString &expr, const size_t depth)
     return used;
 }
 
-bool BlockEval::updateAllProperties(EvalTracer &tracer)
+bool BlockEval::updateAllProperties(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     //create a block evaluator if need-be
     if (not _blockEval) try
     {
-        EVAL_TRACER_ACTION(tracer, "create block evaluator");
+        EVAL_TRACER_ACTION("create block evaluator");
         Pothos::Proxy evalEnv;
         if (_newBlockInfo.isGraphWidget)
         {
-            EVAL_TRACER_ACTION(tracer, "make EvalEnvironment");
+            EVAL_TRACER_ACTION("make EvalEnvironment");
             auto env = Pothos::ProxyEnvironment::make("managed");
             evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
         }
         else
         {
-            EVAL_TRACER_ACTION(tracer, "get EvalEnvironment");
+            EVAL_TRACER_ACTION("get EvalEnvironment");
             evalEnv = _newEnvironmentEval->getEval();
         }
         auto BlockEval = evalEnv.getEnvironment()->findProxy("Pothos/Util/BlockEval");
@@ -536,7 +536,7 @@ bool BlockEval::updateAllProperties(EvalTracer &tracer)
     }
 
     //apply constants before eval property expressions
-    if (not this->applyConstants(tracer)) return false;
+    if (not this->applyConstants()) return false;
 
     //update each property
     bool hasError = false;
@@ -544,7 +544,7 @@ bool BlockEval::updateAllProperties(EvalTracer &tracer)
     {
         const auto &propKey = pair.first;
         const auto &propVal = pair.second;
-        EVAL_TRACER_ACTION(tracer, "update property " + propKey);
+        EVAL_TRACER_ACTION("update property " + propKey);
         try
         {
             auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), propVal.toStdString());
@@ -559,9 +559,9 @@ bool BlockEval::updateAllProperties(EvalTracer &tracer)
     return not hasError;
 }
 
-bool BlockEval::applyConstants(EvalTracer &tracer)
+bool BlockEval::applyConstants(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     //determine which constants were removed from the last eval
     auto removedConstants = _lastBlockInfo.constantNames.toSet();
     for (const auto &name : _newBlockInfo.constantNames)
@@ -572,7 +572,7 @@ bool BlockEval::applyConstants(EvalTracer &tracer)
     //unregister all constants from the removed list
     for (const auto &name : removedConstants)
     {
-        EVAL_TRACER_ACTION(tracer, "removeConstant " + name);
+        EVAL_TRACER_ACTION("removeConstant " + name);
         _blockEval.callProxy("removeConstant", name.toStdString());
     }
 
@@ -580,7 +580,7 @@ bool BlockEval::applyConstants(EvalTracer &tracer)
     for (const auto &name : _newBlockInfo.constantNames)
     {
         if (not this->isConstantUsed(name)) continue;
-        EVAL_TRACER_ACTION(tracer, "applyConstant " + name);
+        EVAL_TRACER_ACTION("applyConstant " + name);
         try
         {
             const auto &expr = _newBlockInfo.constants.at(name);

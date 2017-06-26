@@ -13,7 +13,6 @@
 #include <Poco/Logger.h>
 
 class BlockEval;
-class EvalTracer;
 
 namespace Pothos
 {
@@ -76,17 +75,17 @@ public:
     /*!
      * Disconnect any connections that involve shouldDisconnect() blocks
      */
-    void disconnect(EvalTracer &tracer);
+    void disconnect(void);
 
     /*!
      * Perform update work after changes applied.
      */
-    void update(EvalTracer &tracer);
+    void update(void);
 
     /*!
      * Commit after changes with error handling
      */
-    void commit(EvalTracer &tracer);
+    void commit(void);
 
     //! Get access to the active topology
     Pothos::Topology *getTopology(void) const

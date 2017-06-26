@@ -23,6 +23,15 @@ public:
     //! Remove the element from the top of the stack
     void pop(void);
 
+    //! Set the local thread context's tracer
+    static void install(EvalTracer &tracer);
+
+    /*!
+     * Get the local thread context's tracer.
+     * See the macros below for usage.
+     */
+    static EvalTracer &getGlobal(void);
+
 private:
     mutable std::mutex _mutex;
     std::deque<QString> _stack;
@@ -44,12 +53,14 @@ private:
 #define __MACRO_CONCAT( x, y ) __CONCAT_IMPL( x, y )
 
 //! Create an entry in the tracer for an arbitrary action
-#define EVAL_TRACER_ACTION(t, a) EvalTraceEntry \
-    __MACRO_CONCAT(__evalTraceEntry, __COUNTER__)(t, QString("%1: %2").arg(__LINE__).arg(a))
+#define EVAL_TRACER_ACTION(a) EvalTraceEntry \
+    __MACRO_CONCAT(__evalTraceEntry, __COUNTER__)(\
+        EvalTracer::getGlobal(), \
+        QString("%1: %2").arg(__LINE__).arg(a))
 
 //! Create an entry in the tracer for entering a function
-#define EVAL_TRACER_FUNC(t) EVAL_TRACER_ACTION(t, Q_FUNC_INFO)
+#define EVAL_TRACER_FUNC() EVAL_TRACER_ACTION(Q_FUNC_INFO)
 
 //! Provide an extra argument that identifies the object
-#define EVAL_TRACER_FUNC_ARG(t, what) \
-    EVAL_TRACER_ACTION(t, QString("%1 - %2").arg(Q_FUNC_INFO).arg(what))
+#define EVAL_TRACER_FUNC_ARG(what) \
+    EVAL_TRACER_ACTION(QString("%1 - %2").arg(Q_FUNC_INFO).arg(what))

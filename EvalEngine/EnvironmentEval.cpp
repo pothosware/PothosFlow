@@ -28,9 +28,9 @@ void EnvironmentEval::acceptConfig(const QString &zoneName, const QJsonObject &c
     _config = config;
 }
 
-void EnvironmentEval::update(EvalTracer &tracer)
+void EnvironmentEval::update(void)
 {
-    EVAL_TRACER_FUNC_ARG(tracer, _zoneName);
+    EVAL_TRACER_FUNC_ARG(_zoneName);
     if (this->isFailureState()) _env.reset();
 
     try

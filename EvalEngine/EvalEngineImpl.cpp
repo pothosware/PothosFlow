@@ -3,6 +3,7 @@
 
 #include "EvalEngineImpl.hpp"
 #include "EvalEngine.hpp"
+#include "EvalTracer.hpp"
 #include "BlockEval.hpp"
 #include "ThreadPoolEval.hpp"
 #include "EnvironmentEval.hpp"
@@ -177,6 +178,9 @@ void EvalEngineImpl::handleMonitorTimeout(void)
 
 void EvalEngineImpl::evaluate(void)
 {
+    EvalTracer::install(_tracer); //needed here to install the tracer
+    EVAL_TRACER_FUNC();
+
     //Do not evaluate when there are pending events in the queue.
     //Evaluate only after all events received - AKA event compression.
     if (this->thread()->eventDispatcher()->hasPendingEvents()) return;
@@ -253,16 +257,16 @@ void EvalEngineImpl::evaluate(void)
     _environmentEvals = newEnvironmentEvals;
 
     //0) disconnect any blocks that will be torn down below
-    if (_topologyEval) _topologyEval->disconnect(_tracer);
+    if (_topologyEval) _topologyEval->disconnect();
     //1) update all environments in case there were changes
-    for (auto &pair : _environmentEvals) pair.second->update(_tracer);
+    for (auto &pair : _environmentEvals) pair.second->update();
     //2) update all thread pools in case there were changes
-    for (auto &pair : _threadPoolEvals) pair.second->update(_tracer);
+    for (auto &pair : _threadPoolEvals) pair.second->update();
     //3) update all the blocks in case there were changes
     for (auto &pair : _blockEvals)
     {
         auto &blockEval = pair.second;
-        blockEval->update(_tracer);
+        blockEval->update();
         if (blockEval->isGraphWidget()) _guiBlocks.insert(blockEval->getProxyBlock().getHandle());
     }
     //4) update topology when present (activation mode)
@@ -270,7 +274,7 @@ void EvalEngineImpl::evaluate(void)
     {
         _topologyEval->acceptConnectionInfo(_connectionInfo);
         _topologyEval->acceptBlockEvals(_blockEvals);
-        _topologyEval->update(_tracer);
+        _topologyEval->update();
 
         //deactivate design in the face of certain failures
         if (_topologyEval->isFailureState())

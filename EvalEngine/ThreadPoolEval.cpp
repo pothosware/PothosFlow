@@ -30,9 +30,9 @@ void ThreadPoolEval::acceptEnvironment(const std::shared_ptr<EnvironmentEval> &e
     _newEnvironmentEval = env;
 }
 
-Pothos::Proxy ThreadPoolEval::makeThreadPool(EvalTracer &tracer)
+Pothos::Proxy ThreadPoolEval::makeThreadPool(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     if (_newZoneConfig.isEmpty()) return Pothos::Proxy();
 
     auto env = _newEnvironmentEval->getEnv();
@@ -46,9 +46,9 @@ Pothos::Proxy ThreadPoolEval::makeThreadPool(EvalTracer &tracer)
     return env->findProxy("Pothos/ThreadPool")(args);
 }
 
-void ThreadPoolEval::update(EvalTracer &tracer)
+void ThreadPoolEval::update(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     _newEnvironment = _newEnvironmentEval->getEnv();
     if (_newEnvironmentEval->isFailureState())
     {
@@ -72,7 +72,7 @@ void ThreadPoolEval::update(EvalTracer &tracer)
     {
         try
         {
-            _threadPool = this->makeThreadPool(tracer);
+            _threadPool = this->makeThreadPool();
             _lastEnvironmentEval = _newEnvironmentEval;
             _lastEnvironment = _newEnvironment;
             _lastZoneConfig = _newZoneConfig;

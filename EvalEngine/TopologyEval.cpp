@@ -31,9 +31,9 @@ void TopologyEval::acceptBlockEvals(const std::map<size_t, std::shared_ptr<Block
     _newBlockEvals = info;
 }
 
-void TopologyEval::disconnect(EvalTracer &tracer)
+void TopologyEval::disconnect(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     if (this->isFailureState()) return;
 
     const auto connsCopy = _currentConnections;
@@ -65,12 +65,12 @@ void TopologyEval::disconnect(EvalTracer &tracer)
     }
 
     //commit after changes
-    this->commit(tracer);
+    this->commit();
 }
 
-void TopologyEval::update(EvalTracer &tracer)
+void TopologyEval::update(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     if (this->isFailureState()) return;
 
     const auto removedConnections = diffConnectionInfos(_currentConnections, _newConnectionInfo);
@@ -144,7 +144,7 @@ void TopologyEval::update(EvalTracer &tracer)
     }
 
     //commit after changes
-    this->commit(tracer);
+    this->commit();
 
     //stash data for the current state
     if (not _failureState)
@@ -154,9 +154,9 @@ void TopologyEval::update(EvalTracer &tracer)
     }
 }
 
-void TopologyEval::commit(EvalTracer &tracer)
+void TopologyEval::commit(void)
 {
-    EVAL_TRACER_FUNC(tracer);
+    EVAL_TRACER_FUNC();
     try
     {
         _topology->commit();
