@@ -167,7 +167,7 @@ void EvalEngine::handleEvalThreadHeartBeat(void)
 
 void EvalEngine::handleMonitorTimeout(void)
 {
-    if ((std::chrono::system_clock::now() - _lastHeartBeat) > std::chrono::seconds(10))
+    if ((std::chrono::system_clock::now() - _lastHeartBeat) > std::chrono::seconds(0))
     {
         _flaggedLockUp = true;
         _monitorTimer->stop(); //stop so the error messages will not continue
