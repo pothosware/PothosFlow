@@ -8,6 +8,11 @@ Release 0.6.0 (pending)
 - Added lockable feature to graph editor to prevent edits
 - Added CheckBox and ToggleButton edit widgets for booleans
 
+Release 0.5.2 (pending)
+==========================
+
+- Skip disabled blocks when exporting the topology to JSON
+
 Release 0.5.1 (2017-06-09)
 ==========================
 
