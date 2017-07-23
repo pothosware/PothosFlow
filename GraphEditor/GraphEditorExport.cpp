@@ -68,6 +68,7 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
     {
         const auto block = dynamic_cast<const GraphBlock *>(obj);
         if (block == nullptr) continue;
+        if (not block->isEnabled()) continue;
         if (block->isGraphWidget()) continue;
         uidToBlock[block->uid()] = block;
 
