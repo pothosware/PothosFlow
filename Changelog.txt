@@ -11,6 +11,7 @@ Release 0.6.0 (pending)
 Release 0.5.2 (pending)
 ==========================
 
+- Added missing cmath header to GraphConnection.cpp
 - Skip disabled blocks when exporting the topology to JSON
 
 Release 0.5.1 (2017-06-09)
