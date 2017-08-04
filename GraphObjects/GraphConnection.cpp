@@ -14,6 +14,7 @@
 #include <iostream>
 #include <algorithm> //std::find
 #include <cassert>
+#include <cmath> //abs, ceil
 #include <QtMath> //qCos, radians
 
 static QString directionToStr(const GraphConnectableDirection direction)
