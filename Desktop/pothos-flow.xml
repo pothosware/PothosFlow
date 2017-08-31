@@ -3,6 +3,5 @@
   <mime-type type="application/pothos-flow">
     <comment>Pothos Flow saved topologies</comment>
     <glob pattern="*.pothos"/>
-    <glob pattern="*.pth"/>
   </mime-type>
 </mime-info>

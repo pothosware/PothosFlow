@@ -88,7 +88,7 @@ void GraphEditorTabs::handleOpen(void)
     auto filePaths = QFileDialog::getOpenFileNames(this,
                         tr("Open Files"),
                         lastPath,
-                        tr("Pothos Topologies (*.pothos *.pth)"));
+                        tr("Pothos Topologies (*.pothos)"));
 
     for (const auto &file : filePaths)
     {
@@ -156,7 +156,7 @@ void GraphEditorTabs::handleSaveAs(void)
     auto filePath = QFileDialog::getSaveFileName(this,
                         tr("Save As"),
                         lastPath,
-                        tr("Pothos Topologies (*.pothos *.pth)"));
+                        tr("Pothos Topologies (*.pothos)"));
     if (filePath.isEmpty()) return;
     if (not filePath.endsWith(".pothos")) filePath += ".pothos";
     filePath = QDir(filePath).absolutePath();
@@ -256,7 +256,6 @@ void GraphEditorTabs::handleExport(void)
 
     auto path = editor->getCurrentFilePath();
     if (path.endsWith(".pothos")) path = path.left(path.size()-7);
-    if (path.endsWith(".pth")) path = path.left(path.size()-4);
     path += ".json";
 
     editor->exportToJSONTopology(path);
@@ -270,7 +269,6 @@ void GraphEditorTabs::handleExportAs(void)
     QString lastPath = editor->getCurrentFilePath();
     if (lastPath.isEmpty()) lastPath = defaultSavePath();
     if (lastPath.endsWith(".pothos")) lastPath = lastPath.left(lastPath.size()-7);
-    if (lastPath.endsWith(".pth")) lastPath = lastPath.left(lastPath.size()-4);
     lastPath += ".json";
 
     this->setCurrentWidget(editor);
