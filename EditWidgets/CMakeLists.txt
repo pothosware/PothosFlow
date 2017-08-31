@@ -21,5 +21,5 @@ POTHOS_MODULE_UTIL(
     LIBRARIES
         ${Qt5_LIBRARIES}
         PothosQtColorPicker
-    DESTINATION gui
+    DESTINATION flow
 )

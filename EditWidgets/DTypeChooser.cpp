@@ -156,7 +156,7 @@ static QWidget *makeDTypeChooser(const QJsonArray &, const QJsonObject &kwargs, 
 
 pothos_static_block(registerDTypeChooser)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/DTypeChooser", Pothos::Callable(&makeDTypeChooser));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/DTypeChooser", Pothos::Callable(&makeDTypeChooser));
 }
 
 #include "DTypeChooser.moc"

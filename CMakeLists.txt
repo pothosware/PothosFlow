@@ -74,9 +74,9 @@ set_target_properties(PothosQtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPI
 set_target_properties(PothosQtColorPicker PROPERTIES VERSION 0)
 target_link_libraries(PothosQtColorPicker ${Pothos_LIBRARIES})
 install(TARGETS PothosQtColorPicker
-    LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .so file
-    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_gui # .lib file
-    RUNTIME DESTINATION bin              COMPONENT pothos_gui # .dll file
+    LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_flow # .so file
+    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_flow # .lib file
+    RUNTIME DESTINATION bin              COMPONENT pothos_flow # .dll file
 )
 list(APPEND Pothos_LIBRARIES PothosQtColorPicker)
 
@@ -99,7 +99,7 @@ file(APPEND ${RESOURCES_QRC} "</RCC>\n")
 list(APPEND SOURCES ${RESOURCES_QRC})
 
 ########################################################################
-# Resource file - adds an icon to Pothos GUI executable
+# Resource file - adds an icon to Pothos Flow executable
 ########################################################################
 if (WIN32)
     set(ICON_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/icons/PothosFlow.ico)

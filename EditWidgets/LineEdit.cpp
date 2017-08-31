@@ -53,7 +53,7 @@ static QWidget *makeLineEdit(const QJsonArray &, const QJsonObject &, QWidget *p
 
 pothos_static_block(registerLineEdit)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/LineEdit", Pothos::Callable(&makeLineEdit));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/LineEdit", Pothos::Callable(&makeLineEdit));
 }
 
 #include "LineEdit.moc"

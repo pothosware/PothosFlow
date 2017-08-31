@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
-  <mime-type type="application/pothos-gui">
-    <comment>Pothos GUI saved topologies</comment>
+  <mime-type type="application/pothos-flow">
+    <comment>Pothos Flow saved topologies</comment>
     <glob pattern="*.pothos"/>
     <glob pattern="*.pth"/>
   </mime-type>

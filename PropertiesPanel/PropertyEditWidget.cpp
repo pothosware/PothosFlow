@@ -69,7 +69,7 @@ static QWidget *editWidgetFactory(const QString &widgetType, const QJsonObject &
 {
     const auto widgetArgs = paramDesc["widgetArgs"].toArray(paramDesc["options"].toArray());
     const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString()));
+    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/flow/EntryWidgets").join(widgetType.toStdString()));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
     return factory.call<QWidget *>(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
 }

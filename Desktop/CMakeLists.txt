@@ -1,15 +1,15 @@
 ########################################################################
 # menu launcher and MIME type
 ########################################################################
-file(GLOB pothos_gui_png_icons ${CMAKE_CURRENT_SOURCE_DIR}/pothos-gui-*.png)
+file(GLOB pothos_flow_png_icons ${CMAKE_CURRENT_SOURCE_DIR}/pothos-flow-*.png)
 
 install(
     FILES
-        pothos-gui.desktop
-        pothos-gui.xml
-        ${pothos_gui_png_icons}
+        pothos-flow.desktop
+        pothos-flow.xml
+        ${pothos_flow_png_icons}
     DESTINATION share/Pothos/Desktop
-    COMPONENT pothos_gui
+    COMPONENT pothos_flow
 )
 
 ########################################################################
@@ -20,5 +20,5 @@ install(
         install
         uninstall
     DESTINATION share/Pothos/Desktop
-    COMPONENT pothos_gui
+    COMPONENT pothos_flow
 )

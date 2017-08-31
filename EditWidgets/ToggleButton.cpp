@@ -66,7 +66,7 @@ static QWidget *makeToggleButton(const QJsonArray &, const QJsonObject &kwargs, 
 
 pothos_static_block(registerToggleButton)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/ToggleButton", Pothos::Callable(&makeToggleButton));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/ToggleButton", Pothos::Callable(&makeToggleButton));
 }
 
 #include "ToggleButton.moc"
