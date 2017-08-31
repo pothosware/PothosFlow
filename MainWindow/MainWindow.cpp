@@ -25,7 +25,7 @@
 
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
-    _logger(Poco::Logger::get("PothosGui.MainWindow")),
+    _logger(Poco::Logger::get("PothosFlow.MainWindow")),
     _splash(new MainSplash(this)),
     _settings(new MainSettings(this)),
     _actions(nullptr),
@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent):
     Pothos::init();
 
     this->setMinimumSize(800, 600);
-    this->setWindowTitle("Pothos GUI");
+    this->setWindowTitle("Pothos Flow");
 
     //initialize actions and action buttons
     _splash->postMessage(tr("Creating actions..."));
@@ -174,7 +174,7 @@ void MainWindow::handleInitDone(void)
 
 void MainWindow::handleNewTitleSubtext(const QString &s)
 {
-    this->setWindowTitle("Pothos GUI - " + s);
+    this->setWindowTitle("Pothos Flow - " + s);
 }
 
 void MainWindow::handleShowAbout(void)

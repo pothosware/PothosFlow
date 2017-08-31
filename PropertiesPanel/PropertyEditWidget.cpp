@@ -127,7 +127,7 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
     }
     catch(const Pothos::Exception &ex)
     {
-        static auto &logger = Poco::Logger::get("PothosGui.BlockPropertiesPanel");
+        static auto &logger = Poco::Logger::get("PothosFlow.BlockPropertiesPanel");
         logger.error("Error creating '%s' widget:\n%s", widgetType.toStdString(), ex.displayText());
         widgetType = "LineEdit";
         _editWidget = editWidgetFactory(widgetType, paramDesc, _editParent);

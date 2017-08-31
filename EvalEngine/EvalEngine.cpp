@@ -20,7 +20,7 @@ EvalEngine::EvalEngine(QObject *parent):
     QObject(parent),
     _tracer(new EvalTracer),
     _flaggedLockUp(false),
-    _logger(Poco::Logger::get("PothosGui.EvalEngine")),
+    _logger(Poco::Logger::get("PothosFlow.EvalEngine")),
     _thread(new QThread(this)),
     _monitorTimer(new QTimer(this)),
     _impl(new EvalEngineImpl(*_tracer)),

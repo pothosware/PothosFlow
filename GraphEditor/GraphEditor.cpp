@@ -42,7 +42,7 @@ static const size_t POLL_WIDGET_CHANGES_MS = 1000;
 
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
-    _logger(Poco::Logger::get("PothosGui.GraphEditor")),
+    _logger(Poco::Logger::get("PothosFlow.GraphEditor")),
     _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),

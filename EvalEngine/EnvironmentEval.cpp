@@ -12,7 +12,7 @@
 
 EnvironmentEval::EnvironmentEval(void):
     _failureState(false),
-    _logger(Poco::Logger::get("PothosGui.EnvironmentEval"))
+    _logger(Poco::Logger::get("PothosFlow.EnvironmentEval"))
 {
     return;
 }

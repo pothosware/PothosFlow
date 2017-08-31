@@ -38,7 +38,7 @@ static QJsonArray portInfosToJSON(const std::vector<Pothos::PortInfo> &infos)
 
 BlockEval::BlockEval(void):
     _queryPortDesc(false),
-    _logger(Poco::Logger::get("PothosGui.BlockEval"))
+    _logger(Poco::Logger::get("PothosFlow.BlockEval"))
 {
     qRegisterMetaType<BlockStatus>("BlockStatus");
     this->moveToThread(QApplication::instance()->thread());

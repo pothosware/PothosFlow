@@ -16,7 +16,7 @@ static QString getSettingsPath(void)
 {
     const auto confPath = Pothos::System::getUserConfigPath();
     const QDir confDir(QString::fromStdString(confPath));
-    return confDir.absoluteFilePath("PothosGui.conf");
+    return confDir.absoluteFilePath("PothosFlow.conf");
 }
 
 MainSettings::MainSettings(QObject *parent):
