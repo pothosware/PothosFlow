@@ -5,6 +5,10 @@
 * Pothos library
 * QT5 C++ development libraries and headers
 
+##Documentation
+
+* https://github.com/pothosware/PothosFlow/wiki
+
 ## Building
 
 Configure, build, and install with CMake
