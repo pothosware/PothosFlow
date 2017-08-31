@@ -1,4 +1,4 @@
-This this the changelog file for the Pothos GUI toolkit.
+This this the changelog file for the Pothos Flow toolkit.
 
 Release 0.6.0 (pending)
 ==========================
