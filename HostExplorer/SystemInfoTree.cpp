@@ -17,7 +17,7 @@
  **********************************************************************/
 static InfoResult getInfo(const std::string &uriStr)
 {
-    static auto &logger = Poco::Logger::get("PothosGui.SystemInfoTree");
+    static auto &logger = Poco::Logger::get("PothosFlow.SystemInfoTree");
     InfoResult info;
     POTHOS_EXCEPTION_TRY
     {

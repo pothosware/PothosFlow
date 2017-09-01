@@ -8,10 +8,10 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-MASTER_ICON=${DIR}/../icons/PothosGui.png
+MASTER_ICON=${DIR}/../icons/PothosFlow.png
 
 for size in 16 22 32 48 64 128; do
-    echo "Generating pothos-gui-${size}.png..."
-    convert ${MASTER_ICON} -geometry ${size} ${DIR}/pothos-gui-${size}.png
+    echo "Generating pothos-flow-${size}.png..."
+    convert ${MASTER_ICON} -geometry ${size} ${DIR}/pothos-flow-${size}.png
 done
 echo "Done!"

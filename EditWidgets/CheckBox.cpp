@@ -65,7 +65,7 @@ static QWidget *makeCheckBox(const QJsonArray &, const QJsonObject &kwargs, QWid
 
 pothos_static_block(registerCheckBox)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/CheckBox", Pothos::Callable(&makeCheckBox));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/CheckBox", Pothos::Callable(&makeCheckBox));
 }
 
 #include "CheckBox.moc"

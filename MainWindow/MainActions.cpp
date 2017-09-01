@@ -42,7 +42,7 @@ MainActions::MainActions(QObject *parent):
     closeAction = new QAction(makeIconFromTheme("document-close"), tr("&Close"), this);
     closeAction->setShortcut(QKeySequence::Close);
 
-    exitAction = new QAction(makeIconFromTheme("application-exit"), tr("&Exit Pothos GUI"), this);
+    exitAction = new QAction(makeIconFromTheme("application-exit"), tr("&Exit Pothos Flow"), this);
     exitAction->setShortcut(QKeySequence::Quit);
 
     undoAction = new QAction(makeIconFromTheme("edit-undo"), tr("&Undo"), this);

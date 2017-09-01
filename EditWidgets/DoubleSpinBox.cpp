@@ -67,7 +67,7 @@ static QWidget *makeDoubleSpinBox(const QJsonArray &, const QJsonObject &kwargs,
 
 pothos_static_block(registerDoubleSpinBox)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/DoubleSpinBox", Pothos::Callable(&makeDoubleSpinBox));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/DoubleSpinBox", Pothos::Callable(&makeDoubleSpinBox));
 }
 
 #include "DoubleSpinBox.moc"

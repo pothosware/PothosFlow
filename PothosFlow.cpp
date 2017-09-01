@@ -73,7 +73,7 @@ int main(int argc, char **argv)
     app.setApplicationVersion(QString::fromStdString(Pothos::System::getApiVersion()));
 
     //setup the application icon
-    app.setWindowIcon(QIcon(makeIconPath("PothosGui.png")));
+    app.setWindowIcon(QIcon(makeIconPath("PothosFlow.png")));
 
     POTHOS_EXCEPTION_TRY
     {
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     }
     POTHOS_EXCEPTION_CATCH (const Pothos::Exception &ex)
     {
-        QMessageBox msgBox(QMessageBox::Critical, "PothosGui Application Error", QString::fromStdString(ex.displayText()));
+        QMessageBox msgBox(QMessageBox::Critical, "PothosFlow Application Error", QString::fromStdString(ex.displayText()));
         msgBox.exec();
         return EXIT_FAILURE;
     }

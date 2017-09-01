@@ -42,7 +42,7 @@ static PluginModuleTree::ModMapType getRegistryDump(const std::string &uriStr)
     }
     catch (const Pothos::Exception &ex)
     {
-        static auto &logger = Poco::Logger::get("PothosGui.PluginModuleTree");
+        static auto &logger = Poco::Logger::get("PothosFlow.PluginModuleTree");
         logger.error("Failed to dump registry %s - %s", uriStr, ex.displayText());
     }
     return modMap;

@@ -294,7 +294,7 @@ bool GraphDraw::tryToMakeConnection(const GraphConnectionEndpoint &thisEp)
         }
         catch (const Pothos::Exception &ex)
         {
-            static auto &logger = Poco::Logger::get("PothosGui.GraphDraw");
+            static auto &logger = Poco::Logger::get("PothosFlow.GraphDraw");
             logger.warning("Cannot connect port %s[%s] to port %s[%s]: %s",
                 _lastClickSelectEp.getObj()->getId().toStdString(),
                 _lastClickSelectEp.getKey().id.toStdString(),

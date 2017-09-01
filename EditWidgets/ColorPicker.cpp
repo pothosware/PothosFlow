@@ -83,7 +83,7 @@ static QWidget *makeColorPicker(const QJsonArray &, const QJsonObject &kwargs, Q
 
 pothos_static_block(registerColorPicker)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/ColorPicker", Pothos::Callable(&makeColorPicker));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/ColorPicker", Pothos::Callable(&makeColorPicker));
 }
 
 #include "ColorPicker.moc"

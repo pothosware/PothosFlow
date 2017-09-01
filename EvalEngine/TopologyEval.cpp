@@ -11,7 +11,7 @@
 TopologyEval::TopologyEval(void):
     _topology(new Pothos::Topology()),
     _failureState(false),
-    _logger(Poco::Logger::get("PothosGui.TopologyEval"))
+    _logger(Poco::Logger::get("PothosFlow.TopologyEval"))
 {
     return;
 }

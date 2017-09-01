@@ -2,12 +2,12 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-echo -n "Install Pothos GUI icon resources...	"
+echo -n "Install Pothos Flow icon resources...	"
 if [ -x /usr/bin/xdg-icon-resource ] ; then
     for theme in hicolor gnome; do
         for size in 16 22 32 48 64 128; do
-            xdg-icon-resource install --noupdate --context mimetypes --theme ${theme} --size ${size} ${DIR}/pothos-gui-${size}.png application-pothos-gui || true
-            xdg-icon-resource install --noupdate --context apps --theme ${theme} --size ${size} ${DIR}/pothos-gui-${size}.png pothos-gui || true
+            xdg-icon-resource install --noupdate --context mimetypes --theme ${theme} --size ${size} ${DIR}/pothos-flow-${size}.png application-pothos-flow || true
+            xdg-icon-resource install --noupdate --context apps --theme ${theme} --size ${size} ${DIR}/pothos-flow-${size}.png pothos-flow || true
         done
     done
     xdg-icon-resource forceupdate || true
@@ -16,17 +16,17 @@ else
     echo "FAIL (missing xdg-icon-resource)"
 fi
 
-echo -n "Install Pothos GUI MIME types...	"
+echo -n "Install Pothos Flow MIME types...	"
 if [ -x /usr/bin/xdg-mime ] ; then
-    xdg-mime install ${DIR}/pothos-gui.xml || true
+    xdg-mime install ${DIR}/pothos-flow.xml || true
     echo "OK"
 else
     echo "FAIL (missing xdg-mime)"
 fi
 
-echo -n "Install Pothos GUI menu launcher...	"
+echo -n "Install Pothos Flow menu launcher...	"
 if [ -x /usr/bin/xdg-desktop-menu ] ; then
-    xdg-desktop-menu install ${DIR}/pothos-gui.desktop || true
+    xdg-desktop-menu install ${DIR}/pothos-flow.desktop || true
     echo "OK"
 else
     echo "FAIL (missing xdg-desktop-menu)"

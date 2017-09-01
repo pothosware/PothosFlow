@@ -32,7 +32,7 @@ static QJsonArray queryBlockDescs(const QString &uri)
     }
     catch (const Pothos::Exception &ex)
     {
-        static auto &logger = Poco::Logger::get("PothosGui.BlockCache");
+        static auto &logger = Poco::Logger::get("PothosFlow.BlockCache");
         logger.warning("Failed to query JSON Docs from %s - %s", uri.toStdString(), ex.displayText());
     }
 

@@ -16,7 +16,7 @@
 struct GraphBlock::Impl
 {
     Impl(void):
-        logger(Poco::Logger::get("PothosGui.GraphBlock")),
+        logger(Poco::Logger::get("PothosFlow.GraphBlock")),
         isGraphWidget(false),
         signalPortUseCount(0),
         slotPortUseCount(0),

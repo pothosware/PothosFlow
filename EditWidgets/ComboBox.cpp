@@ -108,7 +108,7 @@ static QWidget *makeComboBox(const QJsonArray &args, const QJsonObject &kwargs, 
 
 pothos_static_block(registerComboBox)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/ComboBox", Pothos::Callable(&makeComboBox));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/ComboBox", Pothos::Callable(&makeComboBox));
 }
 
 #include "ComboBox.moc"

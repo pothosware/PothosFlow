@@ -59,7 +59,7 @@ static QWidget *makeStringEntry(const QJsonArray &, const QJsonObject &, QWidget
 
 pothos_static_block(registerStringEntry)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/StringEntry", Pothos::Callable(&makeStringEntry));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/StringEntry", Pothos::Callable(&makeStringEntry));
 }
 
 #include "StringEntry.moc"

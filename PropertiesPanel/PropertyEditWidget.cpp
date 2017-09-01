@@ -69,7 +69,7 @@ static QWidget *editWidgetFactory(const QString &widgetType, const QJsonObject &
 {
     const auto widgetArgs = paramDesc["widgetArgs"].toArray(paramDesc["options"].toArray());
     const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
-    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/gui/EntryWidgets").join(widgetType.toStdString()));
+    const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/flow/EntryWidgets").join(widgetType.toStdString()));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
     return factory.call<QWidget *>(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
 }
@@ -127,7 +127,7 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
     }
     catch(const Pothos::Exception &ex)
     {
-        static auto &logger = Poco::Logger::get("PothosGui.BlockPropertiesPanel");
+        static auto &logger = Poco::Logger::get("PothosFlow.BlockPropertiesPanel");
         logger.error("Error creating '%s' widget:\n%s", widgetType.toStdString(), ex.displayText());
         widgetType = "LineEdit";
         _editWidget = editWidgetFactory(widgetType, paramDesc, _editParent);

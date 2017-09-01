@@ -2,28 +2,28 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-echo -n "Uninstall Pothos GUI menu launcher...	"
+echo -n "Uninstall Pothos Flow menu launcher...	"
 if [ -x /usr/bin/xdg-desktop-menu ] ; then
-    xdg-desktop-menu uninstall pothos-gui.desktop || true
+    xdg-desktop-menu uninstall pothos-flow.desktop || true
     echo "OK"
 else
     echo "FAIL (missing xdg-desktop-menu)"
 fi
 
-echo -n "Uninstall Pothos GUI MIME types...	"
+echo -n "Uninstall Pothos Flow MIME types...	"
 if [ -x /usr/bin/xdg-mime ] ; then
-    xdg-mime uninstall ${DIR}/pothos-gui.xml || true
+    xdg-mime uninstall ${DIR}/pothos-flow.xml || true
     echo "OK"
 else
     echo "FAIL (missing xdg-mime)"
 fi
 
-echo -n "Uninstall Pothos GUI icon resources...	"
+echo -n "Uninstall Pothos Flow icon resources...	"
 if [ -x /usr/bin/xdg-icon-resource ] ; then
     for theme in hicolor gnome; do
         for size in 16 22 32 48 64 128; do
-            xdg-icon-resource uninstall --noupdate --context mimetypes --theme ${theme} --size ${size} application-pothos-gui || true
-            xdg-icon-resource uninstall --noupdate --context apps --theme ${theme} --size ${size} pothos-gui || true
+            xdg-icon-resource uninstall --noupdate --context mimetypes --theme ${theme} --size ${size} application-pothos-flow || true
+            xdg-icon-resource uninstall --noupdate --context apps --theme ${theme} --size ${size} pothos-flow || true
         done
     done
     xdg-icon-resource forceupdate || true

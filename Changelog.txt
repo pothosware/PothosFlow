@@ -1,8 +1,10 @@
-This this the changelog file for the Pothos GUI toolkit.
+This this the changelog file for the Pothos Flow toolkit.
 
 Release 0.6.0 (pending)
 ==========================
 
+- Removed support for older .pth saved file extension
+- Renamed the project repo from pothos-gui to PothosFlow
 - Added stack trace points and dump for evaluator lockup
 - Infer toggle button for boolean type property edit widgets
 - Added lockable feature to graph editor to prevent edits

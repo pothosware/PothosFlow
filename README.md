@@ -1,4 +1,10 @@
-# GUI frontend and designer tool for the Pothos framework
+# Pothos Flow - graphical topology designer
+
+Pothos Flow is the GUI frontend and designer tool for the Pothos framework.
+
+## Documentation
+
+* https://github.com/pothosware/PothosFlow/wiki
 
 ## Dependencies
 

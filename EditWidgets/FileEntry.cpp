@@ -89,7 +89,7 @@ static QWidget *makeFileEntry(const QJsonArray &, const QJsonObject &kwargs, QWi
 
 pothos_static_block(registerFileEntry)
 {
-    Pothos::PluginRegistry::add("/gui/EntryWidgets/FileEntry", Pothos::Callable(&makeFileEntry));
+    Pothos::PluginRegistry::add("/flow/EntryWidgets/FileEntry", Pothos::Callable(&makeFileEntry));
 }
 
 #include "FileEntry.moc"
