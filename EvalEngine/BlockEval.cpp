@@ -81,6 +81,9 @@ bool BlockEval::shouldDisconnect(void) const
     //disconnect a block that was disabled recently
     if (not _newBlockInfo.enabled) return true;
 
+    //moved eval environments
+    if (_newEnvironmentEval != _lastEnvironmentEval) return true;
+
     //critical change, the block will be torn down
     if (this->hasCriticalChange()) return true;
 
