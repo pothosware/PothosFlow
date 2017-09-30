@@ -34,7 +34,7 @@ void NodeInfo::update(void)
         if (this->nodeName.isEmpty())
         {
             auto env = client.makeEnvironment("managed");
-            auto hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
+            Pothos::System::HostInfo hostInfo = env->findProxy("Pothos/System/HostInfo").call("get");
             this->nodeName = QString::fromStdString(hostInfo.nodeName);
             settings->setValue("HostExplorer/"+this->uri+"/nodeName", this->nodeName);
         }

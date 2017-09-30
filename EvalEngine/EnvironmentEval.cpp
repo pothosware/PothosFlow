@@ -45,7 +45,7 @@ void EnvironmentEval::update(void)
         {
             _env = this->makeEnvironment();
             auto EvalEnvironment = _env->findProxy("Pothos/Util/EvalEnvironment");
-            _eval = EvalEnvironment.callProxy("make");
+            _eval = EvalEnvironment.call("make");
             _failureState = false;
         }
     }
@@ -91,7 +91,7 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
     auto serverHandle = serverEnv->findProxy("Pothos/RemoteServer")("tcp://"+Pothos::Util::getWildcardAddr(), false/*noclose*/);
 
     //construct the uri for the new server
-    auto actualPort = serverHandle.call<std::string>("getActualPort");
+    std::string actualPort = serverHandle.call("getActualPort");
     Poco::URI newHostUri(hostUri);
     newHostUri.setPort(std::stoul(actualPort));
 
@@ -131,9 +131,9 @@ Pothos::ProxyEnvironment::Sptr EnvironmentEval::makeEnvironment(void)
     }
 
     //setup log delivery from the server process
-    env->findProxy("Pothos/System/Logger").callVoid("startSyslogForwarding", serverAddr.toString());
-    env->findProxy("Pothos/System/Logger").callVoid("forwardStdIoToLogging", logSource);
-    serverHandle.callVoid("startSyslogForwarding", serverAddr.toString(), logSource);
+    env->findProxy("Pothos/System/Logger").call("startSyslogForwarding", serverAddr.toString());
+    env->findProxy("Pothos/System/Logger").call("forwardStdIoToLogging", logSource);
+    serverHandle.call("startSyslogForwarding", serverAddr.toString(), logSource);
 
     return env;
 }

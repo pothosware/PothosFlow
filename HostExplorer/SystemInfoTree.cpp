@@ -22,9 +22,9 @@ static InfoResult getInfo(const std::string &uriStr)
     POTHOS_EXCEPTION_TRY
     {
         auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
-        info.hostInfo = env->findProxy("Pothos/System/HostInfo").call<Pothos::System::HostInfo>("get");
+        info.hostInfo = env->findProxy("Pothos/System/HostInfo").call("get");
         info.numaInfo = env->findProxy("Pothos/System/NumaInfo").call<std::vector<Pothos::System::NumaInfo>>("get");
-        auto deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call<std::string>("dumpJson");
+        const std::string deviceInfo = env->findProxy("Pothos/Util/DeviceInfoUtils").call("dumpJson");
         const QByteArray devInfoBytes(deviceInfo.data(), deviceInfo.size());
         QJsonParseError errorParser;
         const auto jsonDoc = QJsonDocument::fromJson(devInfoBytes, &errorParser);

@@ -24,7 +24,7 @@ static QJsonArray queryBlockDescs(const QString &uri)
     {
         auto client = Pothos::RemoteClient(uri.toStdString());
         auto env = client.makeEnvironment("managed");
-        const auto json = env->findProxy("Pothos/Util/DocUtils").call<std::string>("dumpJson");
+        const std::string json = env->findProxy("Pothos/Util/DocUtils").call("dumpJson");
         QJsonParseError errorParser;
         const auto jsonDoc = QJsonDocument::fromJson(QByteArray(json.data(), json.size()), &errorParser);
         if (jsonDoc.isNull()) throw Pothos::Exception(errorParser.errorString().toStdString());
@@ -84,7 +84,7 @@ QJsonObject BlockCache::getBlockDescFromPath(const QString &path)
             auto client = Pothos::RemoteClient(uri.toStdString());
             auto env = client.makeEnvironment("managed");
             auto DocUtils = env->findProxy("Pothos/Util/DocUtils");
-            const auto json = DocUtils.call<std::string>("dumpJsonAt", path.toStdString());
+            const std::string json = DocUtils.call("dumpJsonAt", path.toStdString());
             QJsonParseError errorParser;
             const auto jsonDoc = QJsonDocument::fromJson(QByteArray(json.data(), json.size()), &errorParser);
             if (jsonDoc.isNull()) throw Pothos::Exception(errorParser.errorString().toStdString());

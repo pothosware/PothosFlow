@@ -71,7 +71,7 @@ static QWidget *editWidgetFactory(const QString &widgetType, const QJsonObject &
     const auto widgetKwargs = paramDesc["widgetKwargs"].toObject();
     const auto plugin = Pothos::PluginRegistry::get(Pothos::PluginPath("/flow/EntryWidgets").join(widgetType.toStdString()));
     const auto &factory = plugin.getObject().extract<Pothos::Callable>();
-    return factory.call<QWidget *>(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
+    return factory.call(widgetArgs, widgetKwargs, static_cast<QWidget *>(parent));
 }
 
 void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)

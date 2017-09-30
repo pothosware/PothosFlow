@@ -37,7 +37,7 @@ static PluginModuleTree::ModMapType getRegistryDump(const std::string &uriStr)
     try
     {
         auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
-        const auto dump = env->findProxy("Pothos/PluginRegistry").call<Pothos::PluginRegistryInfoDump>("dump");
+        const Pothos::PluginRegistryInfoDump dump = env->findProxy("Pothos/PluginRegistry").call("dump");
         loadModuleMap(modMap, dump);
     }
     catch (const Pothos::Exception &ex)

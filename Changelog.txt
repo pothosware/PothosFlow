@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Flow toolkit.
 Release 0.6.0 (pending)
 ==========================
 
+- Require Pothos version 0.6 for new Proxy API calls
 - Removed support for older .pth saved file extension
 - Renamed the project repo from pothos-gui to PothosFlow
 - Added stack trace points and dump for evaluator lockup

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/PluginRegistryTree.hpp"
@@ -54,7 +54,7 @@ static Pothos::PluginRegistryInfoDump getRegistryDump(const std::string &uriStr)
     try
     {
         auto env = Pothos::RemoteClient(uriStr).makeEnvironment("managed");
-        return env->findProxy("Pothos/PluginRegistry").call<Pothos::PluginRegistryInfoDump>("dump");
+        return env->findProxy("Pothos/PluginRegistry").call("dump");
     }
     catch (const Pothos::Exception &ex)
     {

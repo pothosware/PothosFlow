@@ -202,7 +202,7 @@ bool BlockEval::evaluationProcedure(void)
             try
             {
                 EVAL_TRACER_ACTION("call " + setter);
-                _blockEval.callVoid("handleCall", setter.toStdString());
+                _blockEval.call("handleCall", setter.toStdString());
             }
             catch (const Pothos::Exception &ex)
             {
@@ -230,8 +230,8 @@ bool BlockEval::evaluationProcedure(void)
         else try
         {
             EVAL_TRACER_ACTION("eval " + _newBlockInfo.id);
-            _blockEval.callProxy("eval", _newBlockInfo.id.toStdString());
-            _proxyBlock = _blockEval.callProxy("getProxyBlock");
+            _blockEval.call("eval", _newBlockInfo.id.toStdString());
+            _proxyBlock = _blockEval.call("getProxyBlock");
         }
         catch(const Pothos::Exception &ex)
         {
@@ -263,7 +263,7 @@ bool BlockEval::evaluationProcedure(void)
         if (proxyBlock) try
         {
             EVAL_TRACER_ACTION("get overlay");
-            const auto overlayStr = proxyBlock.call<std::string>("overlay");
+            const std::string overlayStr = proxyBlock.call("overlay");
             const QByteArray overlayBytes(overlayStr.data(), overlayStr.size());
             if (overlayBytes != _lastBlockStatus.overlayDescStr)
             {
@@ -295,8 +295,8 @@ bool BlockEval::evaluationProcedure(void)
     {
         EVAL_TRACER_ACTION("get port desc");
         auto proxyBlock = this->getProxyBlock();
-        _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("inputPortInfo"));
-        _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call<std::vector<Pothos::PortInfo>>("outputPortInfo"));
+        _lastBlockStatus.inPortDesc = portInfosToJSON(proxyBlock.call("inputPortInfo"));
+        _lastBlockStatus.outPortDesc = portInfosToJSON(proxyBlock.call("outputPortInfo"));
         _queryPortDesc = false;
     }
 
@@ -325,7 +325,7 @@ bool BlockEval::evaluationProcedure(void)
         if (not this->isGraphWidget()) try
         {
             EVAL_TRACER_ACTION("setThreadPool");
-            if (_newThreadPool) this->getProxyBlock().callVoid("setThreadPool", _newThreadPool);
+            if (_newThreadPool) this->getProxyBlock().call("setThreadPool", _newThreadPool);
             _lastThreadPool = _newThreadPool;
             _lastThreadPoolEval = _newThreadPoolEval;
         }
@@ -521,7 +521,7 @@ bool BlockEval::updateAllProperties(void)
         {
             EVAL_TRACER_ACTION("make EvalEnvironment");
             auto env = Pothos::ProxyEnvironment::make("managed");
-            evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").callProxy("make");
+            evalEnv = env->findProxy("Pothos/Util/EvalEnvironment").call("make");
         }
         else
         {
@@ -550,7 +550,7 @@ bool BlockEval::updateAllProperties(void)
         EVAL_TRACER_ACTION("update property " + propKey);
         try
         {
-            auto obj = _blockEval.callProxy("evalProperty", propKey.toStdString(), propVal.toStdString());
+            auto obj = _blockEval.call("evalProperty", propKey.toStdString(), propVal.toStdString());
             _lastBlockStatus.propertyTypeInfos[propKey] = QString::fromStdString(obj.call<std::string>("getTypeString"));
         }
         catch (const Pothos::Exception &ex)
@@ -576,7 +576,7 @@ bool BlockEval::applyConstants(void)
     for (const auto &name : removedConstants)
     {
         EVAL_TRACER_ACTION("removeConstant " + name);
-        _blockEval.callProxy("removeConstant", name.toStdString());
+        _blockEval.call("removeConstant", name.toStdString());
     }
 
     //apply all currently used constants in the order of dependency
@@ -587,7 +587,7 @@ bool BlockEval::applyConstants(void)
         try
         {
             const auto &expr = _newBlockInfo.constants.at(name);
-            _blockEval.callProxy("applyConstant", name.toStdString(), expr.toStdString());
+            _blockEval.call("applyConstant", name.toStdString(), expr.toStdString());
         }
         catch (const Pothos::Exception &ex)
         {
@@ -610,9 +610,9 @@ bool BlockEval::blockEvalInGUIContext(void)
 {
     try
     {
-        _blockEval.callProxy("setProperty", "remoteEnv", _newEnvironmentEval->getEval().getEnvironment());
-        _blockEval.callProxy("eval", _newBlockInfo.id.toStdString());
-        _proxyBlock = _blockEval.callProxy("getProxyBlock");
+        _blockEval.call("setProperty", "remoteEnv", _newEnvironmentEval->getEval().getEnvironment());
+        _blockEval.call("eval", _newBlockInfo.id.toStdString());
+        _proxyBlock = _blockEval.call("getProxyBlock");
         _lastBlockStatus.widget = _proxyBlock.call<QWidget *>("widget");
         return true;
     }
