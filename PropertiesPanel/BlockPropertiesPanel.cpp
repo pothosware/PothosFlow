@@ -202,7 +202,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _blockInfoDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
         _blockInfoDesc->setWordWrap(true);
         _blockInfoDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-        _blockInfoDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
+        _blockInfoDesc->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
+        _blockInfoDesc->setOpenExternalLinks(true);
         _infoTabs->addTab(_blockInfoDesc, tr("Documentation"));
     }
 
