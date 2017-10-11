@@ -204,6 +204,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _blockInfoDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
         _blockInfoDesc->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
         _blockInfoDesc->setOpenExternalLinks(true);
+        connect(_blockInfoDesc, &QLabel::linkHovered, _blockInfoDesc, &QLabel::setToolTip);
         _infoTabs->addTab(_blockInfoDesc, tr("Documentation"));
     }
 
