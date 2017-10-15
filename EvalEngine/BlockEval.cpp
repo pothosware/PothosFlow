@@ -193,7 +193,7 @@ bool BlockEval::evaluationProcedure(void)
 
     //special case: apply settings only
     //no critical changes, block already exists
-    else if (_blockEval and not this->hasCriticalChange())
+    else if (_blockEval and _proxyBlock and not this->hasCriticalChange())
     {
         //update all properties - regardless of changes
         bool setterError = not this->updateAllProperties();
