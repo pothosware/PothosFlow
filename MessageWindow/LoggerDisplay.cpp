@@ -32,7 +32,7 @@ LoggerDisplay::LoggerDisplay(QWidget *parent):
     _clearButton->setToolTip(tr("Clear message history"));
     connect(_clearButton, SIGNAL(clicked(void)), _text, SLOT(clear(void)));
 
-    connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleCheckMsgs(void)));
+    connect(_timer, &QTimer::timeout, this, &LoggerDisplay::handleCheckMsgs);
     _timer->start(CHECK_MSGS_TIMEOUT_MS);
 }
 

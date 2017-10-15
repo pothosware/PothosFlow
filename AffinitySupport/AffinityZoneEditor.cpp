@@ -64,7 +64,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         _colorPicker->insertColor(QColor(253,253,150), tr("Pastel yellow"));
         _colorPicker->setCurrentColor(QColor(253,253,150)); //Pastel yellow
         _colorPicker->setToolTip(tr("Select a color to associate affinities in the graph editor"));
-        connect(_colorPicker, SIGNAL(colorChanged(const QColor &)), this, SLOT(handleColorChanged(const QColor &)));
+        connect(_colorPicker, &QtColorPicker::colorChanged, this, &AffinityZoneEditor::handleColorChanged);
     }
 
     //host selection
@@ -73,7 +73,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         _hostsBox->setEditable(true);
         _hostsBox->setToolTip(tr("Select the URI for a local or remote host"));
         connect(_hostsBox, SIGNAL(activated(int)), this, SLOT(handleUriChanged(int)));
-        connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(handleHostListChanged(void)));
+        connect(_hostExplorerDock, &HostExplorerDock::hostUriListChanged, this, &AffinityZoneEditor::handleHostListChanged);
         this->handleHostListChanged();
     }
 
@@ -82,7 +82,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         formLayout->addRow(tr("Process name"), _processNameEdit);
         _processNameEdit->setPlaceholderText(tr("The string name of a process"));
         _processNameEdit->setToolTip(tr("An arbitrary name to identify a process on a node"));
-        connect(_processNameEdit, SIGNAL(editingFinished(void)), this, SLOT(handleProcessNameChanged(void)));
+        connect(_processNameEdit, &QLineEdit::editingFinished, this, &AffinityZoneEditor::handleProcessNameChanged);
     }
 
     //num threads
@@ -90,7 +90,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         formLayout->addRow(tr("Thread count"), _numThreadsSpin);
         _numThreadsSpin->setRange(0, ARBITRARY_MAX_THREADS);
         _numThreadsSpin->setToolTip(tr("Number of threads to allocate, 0 means automatic"));
-        connect(_numThreadsSpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged(void)));
+        connect(_numThreadsSpin, &QSpinBox::editingFinished, this, &AffinityZoneEditor::handleSpinSelChanged);
     }
 
     //priority selection
@@ -98,7 +98,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         formLayout->addRow(tr("Process priority %"), _prioritySpin);
         _prioritySpin->setRange(-100, +100);
         _prioritySpin->setToolTip(tr("A priority percentage between -100% and 100%"));
-        connect(_prioritySpin, SIGNAL(editingFinished(void)), this, SLOT(handleSpinSelChanged(void)));
+        connect(_prioritySpin, &QSpinBox::editingFinished, this, &AffinityZoneEditor::handleSpinSelChanged);
     }
 
     //cpu/node selection
@@ -222,6 +222,6 @@ void AffinityZoneEditor::updateCpuSelection(void)
 
     delete _cpuSelection;
     _cpuSelection = new CpuSelectionWidget(_uriToNumaInfo[uriStr], this);
-    connect(_cpuSelection, SIGNAL(selectionChanged(void)), this, SLOT(handleSpinSelChanged(void)));
+    connect(_cpuSelection, &CpuSelectionWidget::selectionChanged, this, &AffinityZoneEditor::handleSpinSelChanged);
     _cpuSelectionContainer->addWidget(_cpuSelection);
 }

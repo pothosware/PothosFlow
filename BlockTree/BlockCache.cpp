@@ -57,9 +57,9 @@ BlockCache::BlockCache(QObject *parent, HostExplorerDock *hostExplorer):
 {
     globalBlockCache = this;
     assert(_hostExplorerDock != nullptr);
-    connect(_watcher, SIGNAL(resultReadyAt(int)), this, SLOT(handleWatcherDone(int)));
-    connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherFinished(void)));
-    connect(_hostExplorerDock, SIGNAL(hostUriListChanged(void)), this, SLOT(update(void)));
+    connect(_watcher, &QFutureWatcher<QJsonArray>::resultReadyAt, this, &BlockCache::handleWatcherDone);
+    connect(_watcher, &QFutureWatcher<QJsonArray>::finished, this, &BlockCache::handleWatcherFinished);
+    connect(_hostExplorerDock, &HostExplorerDock::hostUriListChanged, this, &BlockCache::update);
 }
 
 BlockCache::~BlockCache(void)

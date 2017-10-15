@@ -187,9 +187,9 @@ HostSelectionTable::HostSelectionTable(QWidget *parent):
 
     //connect entry related widgets
     connect(_addButton, SIGNAL(clicked(void)), _lineEdit, SLOT(handleReturnPressed(void)));
-    connect(_lineEdit, SIGNAL(handleUriEntered(const QString &)), this, SLOT(handleAdd(const QString &)));
+    connect(_lineEdit, &HostUriQLineEdit::handleUriEntered, this, &HostSelectionTable::handleAdd);
     connect(_removeMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleRemove(const QString &)));
-    connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleUpdateStatus(void)));
+    connect(_timer, &QTimer::timeout, this, &HostSelectionTable::handleUpdateStatus);
     connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleNodeQueryComplete(void)));
     connect(this, SIGNAL(cellClicked(int, int)), this, SLOT(handleCellClicked(int, int)));
 

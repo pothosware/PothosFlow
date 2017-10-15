@@ -42,7 +42,7 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
     //connect mappers
     connect(_startMapper, SIGNAL(mapped(const int)), this, SLOT(start(const int)));
     connect(_stopMapper, SIGNAL(mapped(const int)), this, SLOT(stop(const int)));
-    connect(_table, SIGNAL(hostUriListChanged(void)), this, SIGNAL(hostUriListChanged(void)));
+    connect(_table, &HostSelectionTable::hostUriListChanged, this, &HostExplorerDock::hostUriListChanged);
 
     //connect handlers for node info so the tabs update
     for (int i = 0; i < _tabs->count(); i++)

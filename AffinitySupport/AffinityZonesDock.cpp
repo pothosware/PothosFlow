@@ -66,8 +66,8 @@ AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExpl
         hbox->addWidget(_createButton);
         _zoneEntry->setPlaceholderText(tr("Enter a new zone name..."));
         _createButton->setToolTip(tr("Create a new affinity zone editor panel."));
-        connect(_zoneEntry, SIGNAL(returnPressed(void)), this, SLOT(handleCreateZone(void)));
-        connect(_createButton, SIGNAL(pressed(void)), this, SLOT(handleCreateZone(void)));
+        connect(_zoneEntry, &QLineEdit::returnPressed, this, &AffinityZonesDock::handleCreateZone);
+        connect(_createButton, &QPushButton::pressed, this, &AffinityZonesDock::handleCreateZone);
     }
 
     this->initAffinityZoneEditors();
@@ -190,8 +190,8 @@ void AffinityZonesDock::initAffinityZoneEditors(void)
     auto names = settings->value("AffinityZones/zoneNames").toStringList();
     for (const auto &name : names) this->createZoneFromName(name);
     this->ensureDefault();
-    connect(_editorsTabs, SIGNAL(tabCloseRequested(int)), this, SLOT(handleTabCloseRequested(int)));
-    connect(_editorsTabs, SIGNAL(currentChanged(int)), this, SLOT(handleTabSelectionChanged(int)));
+    connect(_editorsTabs, &QTabWidget::tabCloseRequested, this, &AffinityZonesDock::handleTabCloseRequested);
+    connect(_editorsTabs, &QTabWidget::currentChanged, this, &AffinityZonesDock::handleTabSelectionChanged);
 }
 
 void AffinityZonesDock::updateTabColors(void)

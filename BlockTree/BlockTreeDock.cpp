@@ -43,12 +43,12 @@ BlockTreeDock::BlockTreeDock(QWidget *parent, BlockCache *blockCache, GraphEdito
         _blockTree, SLOT(handleBlockDescUpdate(const QJsonArray &)));
     connect(_blockTree, SIGNAL(blockDescEvent(const QJsonObject &, bool)),
         this, SLOT(handleBlockDescEvent(const QJsonObject &, bool)));
-    connect(_searchBox, SIGNAL(textChanged(const QString &)), _blockTree, SLOT(handleFilter(const QString &)));
+    connect(_searchBox, &QLineEdit::textChanged, _blockTree, &BlockTreeWidget::handleFilter);
     layout->addWidget(_blockTree);
 
     _addButton = new QPushButton(makeIconFromTheme("list-add"), "Add Block", this->widget());
     layout->addWidget(_addButton);
-    connect(_addButton, SIGNAL(released(void)), this, SLOT(handleAdd(void)));
+    connect(_addButton, &QPushButton::released, this, &BlockTreeDock::handleAdd);
     _addButton->setEnabled(false); //default disabled
 }
 

@@ -11,7 +11,7 @@ AffinityZonesMenu::AffinityZonesMenu(AffinityZonesDock *dock, QWidget *parent):
     _dock(dock)
 {
     connect(_clickMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleMapperClicked(const QString &)));
-    connect(_dock, SIGNAL(zonesChanged(void)), this, SLOT(handleZonesChanged(void)));
+    connect(_dock, &AffinityZonesDock::zonesChanged, this, &AffinityZonesMenu::handleZonesChanged);
     this->handleZonesChanged(); //init
 }
 

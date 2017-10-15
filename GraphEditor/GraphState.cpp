@@ -31,7 +31,7 @@ GraphState::GraphState(const QString &iconName, const QString &description, cons
 GraphStateManager::GraphStateManager(QWidget *parent):
     QListWidget(parent)
 {
-    connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(handleItemDoubleClicked(QListWidgetItem *)));
+    connect(this, &GraphStateManager::itemDoubleClicked, this, &GraphStateManager::handleItemDoubleClicked);
 }
 
 GraphStateManager::~GraphStateManager(void)

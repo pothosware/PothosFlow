@@ -53,7 +53,7 @@ CpuSelectionWidget::CpuSelectionWidget(const std::vector<Pothos::System::NumaInf
     }
     _table->resizeColumnsToContents();
     _table->resizeRowsToContents();
-    connect(_table, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(handleTableItemClicked(QTableWidgetItem *)));
+    connect(_table, &QTableWidget::itemPressed, this, &CpuSelectionWidget::handleTableItemClicked);
     this->update();
 
     //table resize to exact fit

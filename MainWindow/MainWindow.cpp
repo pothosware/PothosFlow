@@ -90,14 +90,14 @@ MainWindow::MainWindow(QWidget *parent):
     //block cache (make before block tree)
     _splash->postMessage(tr("Creating block cache..."));
     _blockCache = new BlockCache(this, hostExplorerDock);
-    connect(this, SIGNAL(initDone(void)), _blockCache, SLOT(update(void)));
+    connect(this, &MainWindow::initDone, _blockCache, &BlockCache::update);
 
     //create topology editor tabbed widget
     _splash->postMessage(tr("Creating graph editor..."));
     _editorTabs = new GraphEditorTabs(this);
     this->setCentralWidget(_editorTabs);
-    connect(this, SIGNAL(initDone(void)), _editorTabs, SLOT(loadState(void)));
-    connect(this, SIGNAL(exitBegin(QCloseEvent *)), _editorTabs, SLOT(handleExit(QCloseEvent *)));
+    connect(this, &MainWindow::initDone, _editorTabs, &GraphEditorTabs::loadState);
+    connect(this, &MainWindow::exitBegin, _editorTabs, &GraphEditorTabs::handleExit);
 
     //create block tree (after the block cache)
     _splash->postMessage(tr("Creating block tree..."));
@@ -132,7 +132,7 @@ MainWindow::MainWindow(QWidget *parent):
 
     //setup is complete, show the window and signal done
     this->show();
-    connect(this, SIGNAL(initDone(void)), this, SLOT(handleInitDone(void)));
+    connect(this, &MainWindow::initDone, this, &MainWindow::handleInitDone);
     emit this->initDone();
 }
 

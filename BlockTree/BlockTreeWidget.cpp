@@ -34,9 +34,9 @@ BlockTreeWidget::BlockTreeWidget(QWidget *parent, GraphEditorTabs *editorTabs):
     _filttimer->setSingleShot(true);
     _filttimer->setInterval(UPDATE_TIMER_MS);
 
-    connect(this, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleSelectionChange(void)));
+    connect(this, &BlockTreeWidget::itemSelectionChanged, this, &BlockTreeWidget::handleSelectionChange);
     connect(this, SIGNAL(itemDoubleClicked(QTreeWidgetItem *, int)), this, SLOT(handleItemDoubleClicked(QTreeWidgetItem *, int)));
-    connect(_filttimer, SIGNAL(timeout()), this, SLOT(handleFilterTimerExpired(void)));
+    connect(_filttimer, &QTimer::timeout, this, &BlockTreeWidget::handleFilterTimerExpired);
 }
 
 void BlockTreeWidget::mousePressEvent(QMouseEvent *event)

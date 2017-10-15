@@ -28,7 +28,7 @@ EvalEngine::EvalEngine(QObject *parent):
     _affinityDock(AffinityZonesDock::global())
 {
     assert(_affinityDock != nullptr);
-    connect(_affinityDock, SIGNAL(zonesChanged(void)), this, SLOT(handleAffinityZonesChanged(void)));
+    connect(_affinityDock, &AffinityZonesDock::zonesChanged, this, &EvalEngine::handleAffinityZonesChanged);
     connect(_blockEvalMapper, SIGNAL(mapped(QObject *)), this, SLOT(submitBlock(QObject *)));
 
     _impl->moveToThread(_thread);
@@ -37,8 +37,8 @@ EvalEngine::EvalEngine(QObject *parent):
     //manual call so initial zone info gets loaded into the evaluator
     this->handleAffinityZonesChanged();
 
-    connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
-    connect(_impl, SIGNAL(monitorHeartBeat(void)), this, SLOT(handleEvalThreadHeartBeat(void)));
+    connect(_monitorTimer, &QTimer::timeout, this, &EvalEngine::handleMonitorTimeout);
+    connect(_impl, &EvalEngineImpl::monitorHeartBeat, this, &EvalEngine::handleEvalThreadHeartBeat);
     connect(_impl, SIGNAL(deactivateDesign(void)), parent, SLOT(handleEvalEngineDeactivate(void)));
 }
 

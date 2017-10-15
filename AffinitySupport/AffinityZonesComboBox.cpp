@@ -10,7 +10,7 @@ AffinityZonesComboBox::AffinityZonesComboBox(AffinityZonesDock *dock, QWidget *p
     _dock(dock)
 {
     this->handleZonesChanged(); //initial update
-    connect(_dock, SIGNAL(zonesChanged(void)), this, SLOT(handleZonesChanged(void)));
+    connect(_dock, &AffinityZonesDock::zonesChanged, this, &AffinityZonesComboBox::handleZonesChanged);
 }
 
 void AffinityZonesComboBox::handleZonesChanged(void)
