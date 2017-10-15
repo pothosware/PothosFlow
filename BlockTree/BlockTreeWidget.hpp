@@ -29,10 +29,10 @@ signals:
 public slots:
     void handleBlockDescUpdate(const QJsonArray &blockDescs);
 
+    void handleFilter(const QString &filter);
+
 private slots:
     void handleFilterTimerExpired(void);
-
-    void handleFilter(const QString &filter);
 
     void handleSelectionChange(void);
 

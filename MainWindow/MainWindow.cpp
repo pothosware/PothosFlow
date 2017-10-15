@@ -20,6 +20,7 @@
 #include "MainWindow/MainToolBar.hpp"
 #include "MainWindow/MainSettings.hpp"
 #include "MainWindow/MainSplash.hpp"
+#include <QCloseEvent>
 #include <QMenuBar>
 #include <QMessageBox>
 
