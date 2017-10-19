@@ -84,7 +84,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
 
         //connect signals
         connect(_varsAddButton, SIGNAL(clicked(void)), this, SLOT(handleCreateVariable(void)));
-        connect(_varNameEntry, SIGNAL(returnPressed(void)), this, SLOT(handleCreateVariable(void)));
+        connect(_varNameEntry, &QLineEdit::returnPressed, this, &GraphPropertiesPanel::handleCreateVariable);
         connect(_varsRemoveButton, SIGNAL(clicked(void)), this, SLOT(handleVariableRemoval(void)));
         connect(_varsMoveUpButton, SIGNAL(clicked(void)), this, SLOT(handleVariableMoveUp(void)));
         connect(_varsMoveDownButton, SIGNAL(clicked(void)), this, SLOT(handleVariableMoveDown(void)));
@@ -105,7 +105,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         autoActivateConfig["widgetKwargs"] = autoActivateKwargs;
         _autoActivateEdit = new PropertyEditWidget(_graphEditor->isAutoActivate()?"true":"false", autoActivateConfig, "", this);
         configFormLayout->addRow(_autoActivateEdit->makeFormLabel(tr("Auto-activate"), this), _autoActivateEdit);
-        connect(_autoActivateEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
+        connect(_autoActivateEdit, &PropertyEditWidget::widgetChanged, this, &GraphPropertiesPanel::updateAllVariableForms);
 
         QJsonObject lockTopologyConfig;
         QJsonObject lockTopologyKwargs;
@@ -115,7 +115,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         lockTopologyConfig["widgetKwargs"] = lockTopologyKwargs;
         _lockTopologyEdit = new PropertyEditWidget(_graphEditor->isTopologyLocked()?"true":"false", lockTopologyConfig, "", this);
         configFormLayout->addRow(_lockTopologyEdit->makeFormLabel(tr("Lock topology"), this), _lockTopologyEdit);
-        connect(_lockTopologyEdit, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
+        connect(_lockTopologyEdit, &PropertyEditWidget::widgetChanged, this, &GraphPropertiesPanel::updateAllVariableForms);
     }
 
     //create widgets and make a backup of constants
@@ -326,9 +326,9 @@ void GraphPropertiesPanel::createVariableEditWidget(const QString &name)
 
     //create edit widget
     auto editWidget = new PropertyEditWidget(_graphEditor->getGlobalExpression(name), QJsonObject(), "", this);
-    connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(updateAllVariableForms(void)));
-    //connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(updateAllVariableForms(void)));
-    connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
+    connect(editWidget, &PropertyEditWidget::widgetChanged, this, &GraphPropertiesPanel::updateAllVariableForms);
+    //connect(editWidget, &PropertyEditWidget::entryChanged, this, &GraphPropertiesPanel::updateAllVariableForms);
+    connect(editWidget, &PropertyEditWidget::commitRequested, this, &GraphPropertiesPanel::handleCommit);
     editLayout->addWidget(editWidget);
 
     //selection button

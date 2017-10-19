@@ -50,10 +50,10 @@ PropertiesPanelDock::PropertiesPanelDock(QWidget *parent):
         auto buttonLayout = new QHBoxLayout();
         layout->addLayout(buttonLayout);
         _commitButton = new QPushButton(makeIconFromTheme("dialog-ok-apply"), tr("Commit"), this);
-        connect(_commitButton, SIGNAL(pressed(void)), this, SLOT(handleDeletePanel(void)));
+        connect(_commitButton, &QPushButton::pressed, this, &PropertiesPanelDock::handleDeletePanel);
         buttonLayout->addWidget(_commitButton);
         _cancelButton = new QPushButton(makeIconFromTheme("dialog-cancel"), tr("Cancel"), this);
-        connect(_cancelButton, SIGNAL(pressed(void)), this, SLOT(handleDeletePanel(void)));
+        connect(_cancelButton, &QPushButton::pressed, this, &PropertiesPanelDock::handleDeletePanel);
         buttonLayout->addWidget(_cancelButton);
     }
 }

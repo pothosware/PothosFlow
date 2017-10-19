@@ -40,8 +40,8 @@ BreakerPropertiesPanel::BreakerPropertiesPanel(GraphBreaker *breaker, QWidget *p
         _idEdit = new QLineEdit(this);
         _idLabel = new QLabel(this);
         _formLayout->addRow(_idLabel, _idEdit);
-        connect(_idEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        connect(_idEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommit(void)));
+        connect(_idEdit, &QLineEdit::textEdited, this, &BreakerPropertiesPanel::handleEditWidgetChanged);
+        connect(_idEdit, &QLineEdit::returnPressed, this, &BreakerPropertiesPanel::handleCommit);
     }
 
     //node name
@@ -50,8 +50,8 @@ BreakerPropertiesPanel::BreakerPropertiesPanel(GraphBreaker *breaker, QWidget *p
         _nodeNameEdit = new QLineEdit(this);
         _nodeNameLabel = new QLabel(this);
         _formLayout->addRow(_nodeNameLabel, _nodeNameEdit);
-        connect(_nodeNameEdit, SIGNAL(textEdited(const QString &)), this, SLOT(handleEditWidgetChanged(const QString &)));
-        connect(_nodeNameEdit, SIGNAL(returnPressed(void)), this, SLOT(handleCommit(void)));
+        connect(_nodeNameEdit, &QLineEdit::textEdited, this, &BreakerPropertiesPanel::handleEditWidgetChanged);
+        connect(_nodeNameEdit, &QLineEdit::returnPressed, this, &BreakerPropertiesPanel::handleCommit);
     }
 
     //info text

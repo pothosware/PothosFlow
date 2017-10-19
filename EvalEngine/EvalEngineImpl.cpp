@@ -58,8 +58,8 @@ EvalEngineImpl::EvalEngineImpl(EvalTracer &tracer):
     qRegisterMetaType<ZoneInfos>("ZoneInfos");
     qRegisterMetaType<std::vector<size_t>>("std::vector<size_t>");
 
-    connect(_monitorTimer, SIGNAL(timeout(void)), this, SLOT(handleMonitorTimeout(void)));
-    connect(_monitorTimer, SIGNAL(timeout(void)), this, SIGNAL(monitorHeartBeat(void)));
+    connect(_monitorTimer, &QTimer::timeout, this, &EvalEngineImpl::handleMonitorTimeout);
+    connect(_monitorTimer, &QTimer::timeout, this, &EvalEngineImpl::monitorHeartBeat);
     _monitorTimer->start(MONITOR_INTERVAL_MS);
 }
 

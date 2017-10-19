@@ -58,10 +58,10 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     {
         _idLineEdit = new PropertyEditWidget(_block->getId(), QJsonObject(), "", this);
         _formLayout->addRow(_idLineEdit->makeFormLabel(tr("ID"), this), _idLineEdit);
-        connect(_idLineEdit, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
-        connect(_idLineEdit, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
-        connect(_idLineEdit, SIGNAL(entryChanged(void)), this, SLOT(handleWidgetChanged(void)));
-        connect(_idLineEdit, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
+        connect(_idLineEdit, &PropertyEditWidget::widgetChanged, this, &BlockPropertiesPanel::handleWidgetChanged);
+        connect(_idLineEdit, &PropertyEditWidget::widgetChanged, _block, &GraphBlock::triggerEvalEvent);
+        connect(_idLineEdit, &PropertyEditWidget::entryChanged, this, &BlockPropertiesPanel::handleWidgetChanged);
+        connect(_idLineEdit, &PropertyEditWidget::commitRequested, this, &BlockPropertiesPanel::handleCommit);
     }
 
     //create optional properties tabs
@@ -149,7 +149,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     */
 
     //block level description
-    connect(_infoTabs, SIGNAL(currentChanged(int)), this, SLOT(handleDocTabChanged(int)));
+    connect(_infoTabs, &QTabWidget::currentChanged, this, &BlockPropertiesPanel::handleDocTabChanged);
     _formLayout->addRow(_infoTabs);
     {
         QString output;
@@ -228,8 +228,8 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _evalTypesDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
     }
 
-    connect(_block, SIGNAL(destroyed(QObject*)), this, SLOT(handleBlockDestroyed(QObject*)));
-    connect(_block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
+    connect(_block, &GraphBlock::destroyed, this, &BlockPropertiesPanel::handleBlockDestroyed);
+    connect(_block, &GraphBlock::evalDoneEvent, this, &BlockPropertiesPanel::handleBlockEvalDone);
     connect(_block, SIGNAL(paramDescChanged(const QString &, const QJsonObject &)),
             this, SLOT(handleParamDescChanged(const QString &, const QJsonObject &)));
     this->updateAllForms();

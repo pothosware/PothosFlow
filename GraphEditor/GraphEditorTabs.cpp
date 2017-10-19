@@ -322,7 +322,7 @@ void GraphEditorTabs::loadState(void)
     this->setCurrentIndex(settings->value("GraphEditorTabs/activeIndex").toInt());
 
     //become sensitive to tab selected index changes
-    connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleChanged(int)));
+    connect(this, &GraphEditorTabs::currentChanged, this, &GraphEditorTabs::handleChanged);
 }
 
 void GraphEditorTabs::ensureOneEditor(void)

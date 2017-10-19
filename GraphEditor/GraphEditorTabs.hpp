@@ -20,6 +20,7 @@ public slots:
 
     void loadState(void);
     void saveState(void);
+    void handleExit(QCloseEvent *event);
 
 private slots:
     void handleNew(void);
@@ -33,7 +34,6 @@ private slots:
     void handleClose(void);
     void handleClose(int);
     void handleClose(GraphEditor *editor);
-    void handleExit(QCloseEvent *event);
     void handleExport(void);
     void handleExportAs(void);
     void handleChanged(int);

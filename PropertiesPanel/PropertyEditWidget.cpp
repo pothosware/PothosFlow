@@ -38,7 +38,7 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const QJsonO
     //setup entry timer - timeout acts like widget changed
     _entryTimer->setSingleShot(true);
     _entryTimer->setInterval(UPDATE_TIMER_MS);
-    connect(_entryTimer, SIGNAL(timeout(void)), this, SIGNAL(widgetChanged(void)));
+    connect(_entryTimer, &QTimer::timeout, this, &PropertyEditWidget::widgetChanged);
 
     //setup edit mode button
     _modeButton->setFixedSize(QSize(20, 20));

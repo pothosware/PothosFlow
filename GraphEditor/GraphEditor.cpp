@@ -64,8 +64,8 @@ GraphEditor::GraphEditor(QWidget *parent):
 
     //connect handlers that work at the page-level of control
     connect(QApplication::clipboard(), SIGNAL(dataChanged(void)), this, SLOT(handleClipboardDataChange(void)));
-    connect(this, SIGNAL(currentChanged(int)), this, SLOT(handleCurrentChanged(int)));
-    connect(_stateManager, SIGNAL(newStateSelected(int)), this, SLOT(handleResetState(int)));
+    connect(this, &GraphEditor::currentChanged, this, &GraphEditor::handleCurrentChanged);
+    connect(_stateManager, &GraphStateManager::newStateSelected, this, &GraphEditor::handleResetState);
     connect(actions->createGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleCreateGraphPage(void)));
     connect(actions->renameGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleRenameGraphPage(void)));
     connect(actions->deleteGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleDeleteGraphPage(void)));
@@ -101,7 +101,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(this, SIGNAL(newTitleSubtext(const QString &)), _parentTabWidget->parent(), SLOT(handleNewTitleSubtext(const QString &)));
-    connect(_pollWidgetTimer, SIGNAL(timeout(void)), this, SLOT(handlePollWidgetTimer(void)));
+    connect(_pollWidgetTimer, &QTimer::timeout, this, &GraphEditor::handlePollWidgetTimer);
     _pollWidgetTimer->start(POLL_WIDGET_CHANGES_MS);
 }
 

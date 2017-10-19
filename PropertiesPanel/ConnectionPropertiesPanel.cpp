@@ -42,12 +42,12 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
 
         //output list
         _outputListWidget = this->makePortListWidget(this, outputEp, _outputItemToKey);
-        connect(_outputListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
+        connect(_outputListWidget, &QTreeWidget::itemSelectionChanged, this, &ConnectionPropertiesPanel::handleItemSelectionChanged);
         listWidgetLayout->addWidget(_outputListWidget);
 
         //input list
         _inputListWidget = this->makePortListWidget(this, inputEp, _inputItemToKey);
-        connect(_inputListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
+        connect(_inputListWidget, &QTreeWidget::itemSelectionChanged, this, &ConnectionPropertiesPanel::handleItemSelectionChanged);
         listWidgetLayout->addWidget(_inputListWidget);
     }
 
@@ -57,7 +57,7 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
         layout->addWidget(_connectionsListWidget);
         _connectionsListWidget->setColumnCount(1);
         _connectionsListWidget->setHeaderLabels(QStringList(tr("Signal slot connections")));
-        connect(_connectionsListWidget, SIGNAL(itemSelectionChanged(void)), this, SLOT(handleItemSelectionChanged(void)));
+        connect(_connectionsListWidget, &QTreeWidget::itemSelectionChanged, this, &ConnectionPropertiesPanel::handleItemSelectionChanged);
 
         //save pre-edit settings
         _originalKeyPairs = _conn->getSigSlotPairs();
@@ -66,11 +66,11 @@ ConnectionPropertiesPanel::ConnectionPropertiesPanel(GraphConnection *conn, QWid
     //remove button
     {
         _removeButton = new QPushButton(makeIconFromTheme("list-remove"), tr("Remove connection"), this);
-        connect(_removeButton, SIGNAL(pressed(void)), this, SLOT(handleRemoveConnection(void)));
+        connect(_removeButton, &QPushButton::pressed, this, &ConnectionPropertiesPanel::handleRemoveConnection);
         layout->addWidget(_removeButton);
     }
 
-    connect(_conn, SIGNAL(destroyed(QObject*)), this, SLOT(handleConnectionDestroyed(QObject*)));
+    connect(_conn, &GraphConnection::destroyed, this, &ConnectionPropertiesPanel::handleConnectionDestroyed);
     this->handleItemSelectionChanged(); //init state
     this->populateConnectionsList(); //init state
 }
