@@ -95,7 +95,7 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         //create layouts
         auto configBox = new QGroupBox(tr("Graph Configuration"), this);
         _formLayout->addRow(configBox);
-        auto configFormLayout = new QFormLayout(configBox);
+        auto configFormLayout = makeFormLayout(configBox);
 
         QJsonObject autoActivateConfig;
         QJsonObject autoActivateKwargs;
