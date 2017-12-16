@@ -25,6 +25,7 @@
 #include <QSignalMapper>
 #include <QDockWidget>
 #include <QApplication>
+#include <QScreen>
 #include <QClipboard>
 #include <QMimeData>
 #include <QRegExp>
@@ -53,6 +54,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     _autoActivate(false),
     _lockTopology(false)
 {
+    this->setSceneSize(QSize()); //automatic screen size
     this->setDocumentMode(true);
     this->setMovable(true);
     this->setUsesScrollButtons(true);
@@ -1219,4 +1221,22 @@ void GraphEditor::handlePollWidgetTimer(void)
     //emit a new graph state for the change
     const auto desc = (changedIds.size() == 1)? changedIds.front() : tr("multiple widgets");
     handleStateChange(GraphState("edit-select", tr("Modified %1").arg(desc), changedIds));
+}
+
+void GraphEditor::setSceneSize(const QSize &size)
+{
+    _sceneSize = size;
+
+    //handle null size as automatic
+    if (not _sceneSize.isValid())
+    {
+        auto screen = QGuiApplication::primaryScreen();
+        _sceneSize = screen->geometry().size();
+    }
+
+    const QRectF rect(QPointF(), _sceneSize);
+    for (int i = 0; i < this->count(); i++)
+    {
+        this->getGraphDraw(i)->scene()->setSceneRect(rect);
+    }
 }

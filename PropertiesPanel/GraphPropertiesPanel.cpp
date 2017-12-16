@@ -116,6 +116,30 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         _lockTopologyEdit = new PropertyEditWidget(_graphEditor->isTopologyLocked()?"true":"false", lockTopologyConfig, "", this);
         configFormLayout->addRow(_lockTopologyEdit->makeFormLabel(tr("Lock topology"), this), _lockTopologyEdit);
         connect(_lockTopologyEdit, &PropertyEditWidget::widgetChanged, this, &GraphPropertiesPanel::updateAllVariableForms);
+
+        QJsonObject graphSizeConfig;
+        QJsonArray graphSizeArgs;
+        QJsonObject graphSizeKwargs;
+        auto addOption = [&graphSizeArgs](const QString &name, const QString &value){
+            QJsonObject entry;
+            entry["name"] = name;
+            entry["value"] = value;
+            graphSizeArgs.push_back(entry);
+        };
+        addOption(tr("System Default"), "");
+        addOption("HD 1280 x 720", "1280 x 720");
+        addOption("Full HD 1920 x 1080", "1920 x 1080");
+        addOption("4K Ultra HD 4096 x 2160", "4096 x 2160");
+        addOption("8K Ultra HD 8192 x 4320", "8192 x 4320");
+        graphSizeKwargs["editable"] = true;
+        graphSizeConfig["widgetType"] = QString("ComboBox");
+        graphSizeConfig["widgetArgs"] = graphSizeArgs;
+        graphSizeConfig["widgetKwargs"] = graphSizeKwargs;
+        const auto size = _graphEditor->getSceneSize();
+        const auto value = QString("%1 x %2").arg(size.width()).arg(size.height());
+        _graphSizeEdit = new PropertyEditWidget(value, graphSizeConfig, "", this);
+        configFormLayout->addRow(_graphSizeEdit->makeFormLabel(tr("Graph resolution"), this), _graphSizeEdit);
+        connect(_graphSizeEdit, &PropertyEditWidget::widgetChanged, this, &GraphPropertiesPanel::updateAllVariableForms);
     }
 
     //create widgets and make a backup of constants
@@ -153,12 +177,39 @@ void GraphPropertiesPanel::handleCancel(void)
     this->deleteLater();
 }
 
+static QSize tryParseSize(const QString &value, bool &ok)
+{
+    ok = false;
+    if (value.trimmed().isEmpty())
+    {
+        ok = true;
+        return QSize();
+    }
+
+    const auto sizeStrSplit = value.split("x");
+    if (sizeStrSplit.size() != 2) return QSize();
+
+    const auto width = sizeStrSplit[0].trimmed().toInt(&ok);
+    if (not ok or width < 1) return QSize();
+
+    const auto height = sizeStrSplit[1].trimmed().toInt(&ok);
+    if (not ok or height < 1) return QSize();
+
+    ok = true;
+    return QSize(width, height);
+}
+
 void GraphPropertiesPanel::handleCommit(void)
 {
     //process through changes before inspecting
     this->updateAllVariableForms();
     _graphEditor->setAutoActivate(_autoActivateEdit->value() == "true");
     _graphEditor->setLockTopology(_lockTopologyEdit->value() == "true");
+
+    //parse and apply the graph size
+    bool graphSizeOk = true;
+    const auto graphSize = tryParseSize(_graphSizeEdit->value(), graphSizeOk);
+    if (graphSizeOk) _graphEditor->setSceneSize(graphSize);
 
     //look for changes
     const auto propertiesModified = this->getChangeDescList();
@@ -217,6 +268,10 @@ QStringList GraphPropertiesPanel::getChangeDescList(void) const
     if (_lockTopologyEdit->changed())
     {
         changes.push_back(tr("Configured lock topology"));
+    }
+    if (_graphSizeEdit->changed())
+    {
+        changes.push_back(tr("Configured graph resolution"));
     }
 
     return changes;
@@ -313,6 +368,12 @@ void GraphPropertiesPanel::updateAllVariableForms(void)
             editWidget->setToolTip(QString::fromStdString(ex.message()));
         }
     }
+
+    //graph size entry
+    bool sizeOk = true;
+    tryParseSize(_graphSizeEdit->value(), sizeOk);
+    if (sizeOk) _graphSizeEdit->setErrorMsg("");
+    else _graphSizeEdit->setErrorMsg(tr("Failed to parse width x height resolution from %1").arg(_graphSizeEdit->value()));
 
     _graphEditor->commitGlobalsChanges();
 }

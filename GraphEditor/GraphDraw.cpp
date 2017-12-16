@@ -36,7 +36,8 @@ GraphDraw::GraphDraw(QWidget *parent):
     _selectionState(0)
 {
     //setup scene
-    this->setScene(new QGraphicsScene(QRectF(QPointF(), GraphDrawCanvasSize), this));
+    const auto size = getGraphEditor()->getSceneSize();
+    this->setScene(new QGraphicsScene(QRectF(QPointF(), size), this));
     //required: BspTreeIndex is too smart for its own good, connections will not render properly
     this->scene()->setItemIndexMethod(QGraphicsScene::NoIndex);
     this->scene()->setBackgroundBrush(QColor(GraphDrawBackgroundColor));

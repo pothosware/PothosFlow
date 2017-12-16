@@ -74,6 +74,7 @@ private:
     //graph editor configuration
     PropertyEditWidget *_autoActivateEdit;
     PropertyEditWidget *_lockTopologyEdit;
+    PropertyEditWidget *_graphSizeEdit;
 
     //get a descriptive list of changes
     QStringList getChangeDescList(void) const;
