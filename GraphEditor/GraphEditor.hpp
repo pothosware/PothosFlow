@@ -128,6 +128,13 @@ public:
         this->updateEnabledActions();
     }
 
+    void setSceneSize(const QSize &size);
+
+    QSize getSceneSize(void) const
+    {
+        return _sceneSize;
+    }
+
 signals:
     void newTitleSubtext(const QString &);
 
@@ -215,4 +222,5 @@ private:
     std::map<QString, QString> _globalExprs;
     bool _autoActivate;
     bool _lockTopology;
+    QSize _sceneSize;
 };

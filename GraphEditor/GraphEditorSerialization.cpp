@@ -32,6 +32,11 @@ QByteArray GraphEditor::dumpState(void) const
     QJsonObject config;
     if (_autoActivate) config["autoActivate"] = _autoActivate;
     if (_lockTopology) config["lockTopology"] = _lockTopology;
+    if (_sceneSize.isValid())
+    {
+        config["graphWidth"] = _sceneSize.width();
+        config["graphHeight"] = _sceneSize.height();
+    }
     if (not config.isEmpty()) topObj["config"] = config;
 
     //store pages

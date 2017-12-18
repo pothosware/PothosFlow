@@ -72,6 +72,8 @@ void GraphEditor::loadState(const QByteArray &data)
     const auto config = topObj["config"].toObject();
     _autoActivate = config["autoActivate"].toBool(false);
     _lockTopology = config["lockTopology"].toBool(false);
+    this->setSceneSize(QSize(config["graphWidth"].toInt(-1),
+                             config["graphHeight"].toInt(-1)));
 
     //extract global variables
     this->clearGlobals();

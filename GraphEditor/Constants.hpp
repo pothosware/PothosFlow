@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2017 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -28,7 +28,6 @@ static const qreal GraphObjectConnLineLength = 10;
 
 static const qreal GraphDrawScrollFudge = 20;
 static const QString GraphDrawBackgroundColor = "#FCFFFF";
-static const QSizeF GraphDrawCanvasSize(1920, 1080);
 static const qreal GraphDrawZoomStep = 0.1;
 static const qreal GraphDrawZoomMax = 1.5;
 static const qreal GraphDrawZoomMin = 0.5;
