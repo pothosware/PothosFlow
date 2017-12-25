@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Flow toolkit.
 
-Release 0.6.0 (pending)
+Release 0.6.0 (2017-12-25)
 ==========================
 
 - Added graph editor resolution to graph properties panel
@@ -12,10 +12,6 @@ Release 0.6.0 (pending)
 - Infer toggle button for boolean type property edit widgets
 - Added lockable feature to graph editor to prevent edits
 - Added CheckBox and ToggleButton edit widgets for booleans
-
-Release 0.5.2 (pending)
-==========================
-
 - Added missing cmath header to GraphConnection.cpp
 - Skip disabled blocks when exporting the topology to JSON
 
