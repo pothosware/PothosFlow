@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos Flow toolkit.
 
+Release 0.6.1 (pending)
+==========================
+
+- Display module version in Plugin Modules tree view
+
 Release 0.6.0 (2017-12-25)
 ==========================
 

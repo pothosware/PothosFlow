@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -16,7 +16,11 @@ class PluginModuleTree : public QTreeWidget
 public:
     PluginModuleTree(QWidget *parent);
 
-    typedef std::map<std::string, std::vector<std::string>> ModMapType;
+    struct ModInfoType
+    {
+        std::map<std::string, std::vector<std::string>> modMap;
+        std::map<std::string, std::string> modVers;
+    };
 
 signals:
     void startLoad(void);
@@ -30,5 +34,5 @@ private slots:
     void handleWatcherDone(void);
 
 private:
-    QFutureWatcher<ModMapType> *_watcher;
+    QFutureWatcher<ModInfoType> *_watcher;
 };
