@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -86,7 +86,7 @@ private:
         }
         else
         {
-            auto entry = makeEntry(root, rootName, var.toString());
+            auto entry = makeEntry(root, rootName, var.toVariant().toString());
             entry->setExpanded(expand);
         }
     }
