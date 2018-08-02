@@ -1,5 +1,10 @@
 This this the changelog file for the Pothos Flow toolkit.
 
+Release 0.6.2 (pending)
+==========================
+
+- Remove invalid iCCP chunks in PNGs to avoid warning
+
 Release 0.6.1 (2018-04-27)
 ==========================
 
