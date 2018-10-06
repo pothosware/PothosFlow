@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBlockImpl.hpp"
@@ -26,6 +26,11 @@ GraphBlock::GraphBlock(QObject *parent):
     _impl(new Impl())
 {
     this->setFlag(QGraphicsItem::ItemIsMovable);
+}
+
+GraphBlock::~GraphBlock(void)
+{
+    return;
 }
 
 QString GraphBlock::getBlockDescPath(void) const

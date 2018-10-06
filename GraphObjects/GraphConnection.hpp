@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -73,5 +73,5 @@ private:
     void unregisterEndpoint(const GraphConnectionEndpoint &ep);
 
     struct Impl;
-    std::shared_ptr<Impl> _impl;
+    std::unique_ptr<Impl> _impl;
 };

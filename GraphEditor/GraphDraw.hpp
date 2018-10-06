@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -114,8 +114,8 @@ private:
     GraphConnectionEndpoint _lastClickSelectEp;
     std::map<GraphObject *, QPointF> _preMovePositions;
 
-    std::shared_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
-    std::shared_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
-    std::shared_ptr<QGraphicsLineItem> _connectLineItem;
+    std::unique_ptr<QGraphicsPixmapItem> _graphConnectionPoints;
+    std::unique_ptr<QGraphicsPixmapItem> _graphBoundingBoxes;
+    std::unique_ptr<QGraphicsLineItem> _connectLineItem;
     std::unique_ptr<GraphObjectImmobilizer> _connectModeImmobilizer;
 };

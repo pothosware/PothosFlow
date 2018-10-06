@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockTree/BlockTreeWidget.hpp"
@@ -80,7 +80,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
 
     //create a block object to render the image
     auto draw = _editorTabs->getCurrentGraphEditor()->getCurrentGraphDraw();
-    std::shared_ptr<GraphBlock> renderBlock(new GraphBlock(draw));
+    std::unique_ptr<GraphBlock> renderBlock(new GraphBlock(draw));
     renderBlock->setBlockDesc(blockItem->getBlockDesc());
     renderBlock->prerender(); //precalculate so we can get bounds
     const auto bounds = renderBlock->boundingRect();

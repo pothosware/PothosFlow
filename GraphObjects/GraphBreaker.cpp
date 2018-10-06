@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphBreaker.hpp"
@@ -35,6 +35,11 @@ GraphBreaker::GraphBreaker(QObject *parent):
     _impl(new Impl())
 {
     this->setFlag(QGraphicsItem::ItemIsMovable);
+}
+
+GraphBreaker::~GraphBreaker(void)
+{
+    return;
 }
 
 void GraphBreaker::setInput(const bool isInput)

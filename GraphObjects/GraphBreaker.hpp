@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -19,6 +19,7 @@ class GraphBreaker : public GraphObject
     Q_OBJECT
 public:
     GraphBreaker(QObject *parent);
+    ~GraphBreaker(void);
 
     //! Set the direction mode of this breaker
     void setInput(const bool isInput);
@@ -47,5 +48,5 @@ public:
 private:
     void renderStaticText(void);
     struct Impl;
-    std::shared_ptr<Impl> _impl;
+    std::unique_ptr<Impl> _impl;
 };
