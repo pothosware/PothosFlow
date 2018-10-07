@@ -72,6 +72,11 @@ GraphDraw::GraphDraw(QWidget *parent):
     this->handleGraphDebugViewChange();
 }
 
+GraphDraw::~GraphDraw(void)
+{
+    return;
+}
+
 void GraphDraw::handleGraphDebugViewChange(void)
 {
     auto actions = MainActions::global();

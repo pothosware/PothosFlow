@@ -5,9 +5,9 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include "GraphEditor/DockingTabWidget.hpp"
 #include <Poco/Logger.h>
 #include <QJsonObject>
-#include <QTabWidget>
 #include <QPointer>
 
 class GraphConnection;
@@ -17,7 +17,7 @@ class QTabWidget;
 class EvalEngine;
 class QTimer;
 
-class GraphEditor : public QTabWidget
+class GraphEditor : public DockingTabWidget
 {
     Q_OBJECT
 public:

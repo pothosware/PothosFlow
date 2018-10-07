@@ -175,6 +175,7 @@ list(APPEND SOURCES
     GraphEditor/GraphDraw.cpp
     GraphEditor/GraphDrawSelection.cpp
     GraphEditor/GraphActionsDock.cpp
+    GraphEditor/DockingTabWidget.cpp
 
     GraphObjects/GraphEndpoint.cpp
     GraphObjects/GraphObject.cpp
