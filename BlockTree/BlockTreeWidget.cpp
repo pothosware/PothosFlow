@@ -44,12 +44,12 @@ void BlockTreeWidget::mousePressEvent(QMouseEvent *event)
     this->setFocus();
     //if the item under the mouse is the bottom of the tree (a block, not category)
     //then we set a dragstartpos
-    if(!itemAt(event->pos()))
+    if (not itemAt(event->pos()))
     {
-        QTreeWidget::mousePressEvent(event);
-        return;
+        return QTreeWidget::mousePressEvent(event);
     }
-    if(itemAt(event->pos())->childCount() == 0 and event->button() == Qt::LeftButton) {
+    if (itemAt(event->pos())->childCount() == 0 and event->button() == Qt::LeftButton)
+    {
         _dragStartPos = event->pos();
         _dragItem = itemAt(_dragStartPos);
     }
@@ -60,15 +60,13 @@ void BlockTreeWidget::mousePressEvent(QMouseEvent *event)
 
 void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    if(!(event->buttons() & Qt::LeftButton))
+    if (not (event->buttons() & Qt::LeftButton))
     {
-        QTreeWidget::mouseMoveEvent(event);
-        return;
+        return QTreeWidget::mouseMoveEvent(event);
     }
-    if((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance())
+    if ((event->pos() - _dragStartPos).manhattanLength() < QApplication::startDragDistance())
     {
-        QTreeWidget::mouseMoveEvent(event);
-        return;
+        return QTreeWidget::mouseMoveEvent(event);
     }
 
     //do we have a valid item to drag?
