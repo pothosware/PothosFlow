@@ -47,7 +47,6 @@ public:
     void setLabel(const QString &label)
     {
         _label = label;
-        if (_dialog) _dialog->setWindowTitle(_label);
     }
 
     bool isDocked(void) const
@@ -62,20 +61,33 @@ public:
         {
             _layout->addWidget(_widget);
             _widget->setParent(this);
+            _dialogPos = _dialog->mapToGlobal(_dialog->pos());
+            _dialogSize = _dialog->size();
             delete _dialog;
         }
         else //undock into new dialog
         {
             _dialog = new QDialog(this);
             auto layout = new QVBoxLayout(_dialog);
-            _dialog->setWindowTitle(_label);
             _widget->setParent(_dialog);
             layout->addWidget(_widget);
-            _dialog->resize(_tabs->width(), _tabs->height());
+            _dialog->show(); //must show before setting dimensions or it will be off a little
+            if (_dialogSize.isValid())
+            {
+                _dialog->resize(_dialogSize);
+                _dialog->move(_dialog->mapFromGlobal(_dialogPos));
+            }
+            else _dialog->resize(_tabs->width(), _tabs->height());
             this->connect(_dialog, &QDialog::finished, this, &DockingPage::handleDialogFinished);
-            _dialog->show();
             _widget->show();
+
+            //TODO select a different tab if it exists
         }
+    }
+
+    void updateDialogTitle(const QString &title)
+    {
+        if (_dialog) _dialog->setWindowTitle(QString("[%1] %2").arg(_label).arg(title));
     }
 
 private slots:
@@ -90,6 +102,8 @@ private:
     QString _label;
     QWidget *_widget;
     QTabWidget *_tabs;
+    QSize _dialogSize;
+    QPoint _dialogPos;
 };
 
 /***********************************************************************
@@ -105,6 +119,12 @@ DockingTabWidget::DockingTabWidget(QWidget *parent):
 DockingTabWidget::~DockingTabWidget(void)
 {
     return;
+}
+
+void DockingTabWidget::setDialogTitle(const QString &title)
+{
+    _dialogTitle = title;
+    this->internalUpdate();
 }
 
 bool DockingTabWidget::isDocked(const int index) const
@@ -183,9 +203,12 @@ void DockingTabWidget::internalUpdate(void)
     for (int index = 0; index < this->count(); index++)
     {
         auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
+        container->updateDialogTitle(_dialogTitle);
+        const bool docked = container->isDocked();
+
         auto button = reinterpret_cast<QPushButton *>(this->tabBar()->tabButton(index, QTabBar::RightSide));
-        button->setToolTip((this->isDocked(index)?tr("Undock tab: %1"):tr("Restore tab: %1")).arg(container->label()));
-        QString prefix = (this->isDocked(index))?"undock":"dock";
+        button->setToolTip((docked?tr("Undock tab: %1"):tr("Restore tab: %1")).arg(container->label()));
+        const QString prefix = docked?"undock":"dock";
         button->setStyleSheet(
             QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+".png"))+
             QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover.png"))+

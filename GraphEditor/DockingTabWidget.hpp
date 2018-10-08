@@ -17,6 +17,9 @@ public:
     DockingTabWidget(QWidget *parent = nullptr);
     ~DockingTabWidget(void);
 
+    //! The title for the dialog box
+    void setDialogTitle(const QString &title);
+
     //! Is the widget at this index docked or in an external dialog?
     bool isDocked(const int index) const;
 
@@ -48,4 +51,5 @@ protected:
 private:
     void internalUpdate(void);
     QSignalMapper *_mapper;
+    QString _dialogTitle;
 };

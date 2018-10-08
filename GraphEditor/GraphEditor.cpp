@@ -222,6 +222,7 @@ void GraphEditor::updateEnabledActions(void)
     if (subtext.isEmpty()) subtext = tr("untitled");
     MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
     MainWindow::global()->setWindowTitle(tr("Editing %1[*]").arg(subtext));
+    this->setDialogTitle(subtext);
 }
 
 void GraphEditor::handleCurrentChanged(int)
