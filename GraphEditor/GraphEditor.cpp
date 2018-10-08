@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine/EvalEngine.hpp"
@@ -15,6 +15,7 @@
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainSplash.hpp"
+#include "MainWindow/MainWindow.hpp"
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QFile>
@@ -102,7 +103,6 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(actions->decrementAction, SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
-    connect(this, SIGNAL(newTitleSubtext(const QString &)), _parentTabWidget->parent(), SLOT(handleNewTitleSubtext(const QString &)));
     connect(_pollWidgetTimer, &QTimer::timeout, this, &GraphEditor::handlePollWidgetTimer);
     _pollWidgetTimer->start(POLL_WIDGET_CHANGES_MS);
 }
@@ -217,9 +217,11 @@ void GraphEditor::updateEnabledActions(void)
     actions->pasteAction->setEnabled(canPaste);
 
     //update window title
+    //[*] is a placeholder for the windowModified property
     QString subtext = this->getCurrentFilePath();
     if (subtext.isEmpty()) subtext = tr("untitled");
-    emit this->newTitleSubtext(tr("Editing ") + subtext);
+    MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
+    MainWindow::global()->setWindowTitle(tr("Editing %1[*]").arg(subtext));
 }
 
 void GraphEditor::handleCurrentChanged(int)

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
@@ -24,6 +24,13 @@
 #include <QMenuBar>
 #include <QMessageBox>
 
+static MainWindow *globalMainWindow = nullptr;
+
+MainWindow *MainWindow::global(void)
+{
+    return globalMainWindow;
+}
+
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     _logger(Poco::Logger::get("PothosFlow.MainWindow")),
@@ -34,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent):
     _editorTabs(nullptr),
     _propertiesPanel(nullptr)
 {
+    globalMainWindow = this;
+
     _splash->show();
     _splash->postMessage(tr("Creating main window..."));
 
@@ -173,9 +182,9 @@ void MainWindow::handleInitDone(void)
     _logger.information("Initialization complete");
 }
 
-void MainWindow::handleNewTitleSubtext(const QString &s)
+void MainWindow::setWindowTitle(const QString &s)
 {
-    this->setWindowTitle("Pothos Flow - " + s);
+    QMainWindow::setWindowTitle(QString("Pothos Flow - %1").arg(s));
 }
 
 void MainWindow::handleShowAbout(void)

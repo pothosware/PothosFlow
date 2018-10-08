@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -134,9 +134,6 @@ public:
     {
         return _sceneSize;
     }
-
-signals:
-    void newTitleSubtext(const QString &);
 
 protected:
     //this widget is visible, populate menu with its tabs

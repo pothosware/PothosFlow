@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -28,9 +28,14 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 public:
 
+    //! Global access to main window
+    static MainWindow *global(void);
+
     MainWindow(QWidget *parent);
 
     ~MainWindow(void);
+
+    void setWindowTitle(const QString &s);
 
 signals:
     void initDone(void);
@@ -38,7 +43,6 @@ signals:
 
 private slots:
     void handleInitDone(void);
-    void handleNewTitleSubtext(const QString &s);
     void handleShowAbout(void);
     void handleShowAboutQt(void);
     void handleColorsDialogAction(void);
