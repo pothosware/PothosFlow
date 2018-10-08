@@ -141,6 +141,7 @@ void DockingTabWidget::setTabText(int index, const QString &label)
 {
     auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
     container->setLabel(label);
+    this->internalUpdate();
     return QTabWidget::setTabText(index, label);
 }
 
@@ -164,7 +165,7 @@ void DockingTabWidget::tabInserted(int index)
     button->resize(16, 16);
     button->setCheckable(false);
     _mapper->setMapping(button, QTabWidget::widget(index));
-    connect(button, SIGNAL(pressed()), _mapper, SLOT(map()));
+    connect(button, SIGNAL(clicked()), _mapper, SLOT(map()));
     this->tabBar()->setTabButton(index, QTabBar::RightSide, button);
 
     this->internalUpdate();
@@ -181,12 +182,14 @@ void DockingTabWidget::internalUpdate(void)
 {
     for (int index = 0; index < this->count(); index++)
     {
+        auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
         auto button = reinterpret_cast<QPushButton *>(this->tabBar()->tabButton(index, QTabBar::RightSide));
+        button->setToolTip((this->isDocked(index)?tr("Undock tab: %1"):tr("Restore tab: %1")).arg(container->label()));
         QString prefix = (this->isDocked(index))?"undock":"dock";
         button->setStyleSheet(
-            QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-16.png"))+
-            QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover-16.png"))+
-            QString("QPushButton:focus{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover-16.png")));
+            QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+".png"))+
+            QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover.png"))+
+            QString("QPushButton:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-down.png")));
     }
 }
 
