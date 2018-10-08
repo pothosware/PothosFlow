@@ -61,8 +61,7 @@ public:
         {
             _layout->addWidget(_widget);
             _widget->setParent(this);
-            _dialogPos = _dialog->mapToGlobal(_dialog->pos());
-            _dialogSize = _dialog->size();
+            _dialogGeometry = _dialog->geometry();
             delete _dialog;
         }
         else //undock into new dialog
@@ -71,14 +70,10 @@ public:
             auto layout = new QVBoxLayout(_dialog);
             _widget->setParent(_dialog);
             layout->addWidget(_widget);
-            _dialog->show(); //must show before setting dimensions or it will be off a little
-            if (_dialogSize.isValid())
-            {
-                _dialog->resize(_dialogSize);
-                _dialog->move(_dialog->mapFromGlobal(_dialogPos));
-            }
-            else _dialog->resize(_tabs->width(), _tabs->height());
+            if (_dialogGeometry.isValid()) _dialog->setGeometry(_dialogGeometry);
+            else _dialog->resize(_tabs->size());
             this->connect(_dialog, &QDialog::finished, this, &DockingPage::handleDialogFinished);
+            _dialog->show();
             _widget->show();
 
             //TODO select a different tab if it exists
@@ -102,8 +97,7 @@ private:
     QString _label;
     QWidget *_widget;
     QTabWidget *_tabs;
-    QSize _dialogSize;
-    QPoint _dialogPos;
+    QRect _dialogGeometry;
 };
 
 /***********************************************************************
