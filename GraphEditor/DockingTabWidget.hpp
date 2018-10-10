@@ -20,9 +20,6 @@ public:
     //! The title for the dialog box
     void setDialogTitle(const QString &title);
 
-    //! Is the widget at this index docked or in an external dialog?
-    bool isDocked(const int index) const;
-
     //! Get the currently selected tab widget
     QWidget *currentWidget(void) const;
 
@@ -41,6 +38,23 @@ public:
     //! Get the tab text at the specified index
     QString tabText(int index) const;
 
+    //! Is the widget at this index docked or in an external dialog?
+    bool isDocked(int index) const;
+
+    //! Set the dock state of the specified index
+    void setDocked(int index, const bool docked);
+
+    /*!
+     * Save the dialog geometry of the specified page.
+     * Even when a page is docked, it may have previous geometry to save.
+     */
+    QByteArray saveGeometry(int index) const;
+
+    /*!
+     * Restore the dialog geometry of the specified page.
+     */
+    bool restoreGeometry(int index, const QByteArray &geometry);
+
 private slots:
     void handleUndockButton(QWidget *);
 
@@ -49,6 +63,8 @@ protected:
     void tabRemoved(int index);
 
 private:
+    class DockingPage;
+    DockingPage *page(const int index) const;
     void internalUpdate(void);
     QSignalMapper *_mapper;
     QString _dialogTitle;

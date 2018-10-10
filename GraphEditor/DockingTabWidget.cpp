@@ -17,7 +17,7 @@
  * The docking page holds the actual internal tab page widget
  * but can display it inside of a dialog when in undocked mode.
  **********************************************************************/
-class DockingPage : public QWidget
+class DockingTabWidget::DockingPage : public QWidget
 {
     Q_OBJECT
 public:
@@ -61,7 +61,7 @@ public:
         {
             _layout->addWidget(_widget);
             _widget->setParent(this);
-            _dialogGeometry = _dialog->geometry();
+            _dialogGeometry = _dialog->saveGeometry();
             delete _dialog;
         }
         else //undock into new dialog
@@ -70,8 +70,8 @@ public:
             auto layout = new QVBoxLayout(_dialog);
             _widget->setParent(_dialog);
             layout->addWidget(_widget);
-            if (_dialogGeometry.isValid()) _dialog->setGeometry(_dialogGeometry);
-            else _dialog->resize(_tabs->size());
+            if (_dialogGeometry.isEmpty()) _dialog->resize(_tabs->size());
+            else _dialog->restoreGeometry(_dialogGeometry);
             this->connect(_dialog, &QDialog::finished, this, &DockingPage::handleDialogFinished);
             _dialog->show();
             _widget->show();
@@ -83,6 +83,22 @@ public:
     void updateDialogTitle(const QString &title)
     {
         if (_dialog) _dialog->setWindowTitle(QString("[%1] %2").arg(_label).arg(title));
+    }
+
+    QByteArray saveGeometry(void) const
+    {
+        if (this->isDocked()) return _dialogGeometry;
+        return _dialog->saveGeometry();
+    }
+
+    bool restoreGeometry(const QByteArray &geometry)
+    {
+        if (this->isDocked())
+        {
+            _dialogGeometry = geometry;
+            return true;
+        }
+        return _dialog->restoreGeometry(geometry);
     }
 
 private slots:
@@ -97,7 +113,7 @@ private:
     QString _label;
     QWidget *_widget;
     QTabWidget *_tabs;
-    QRect _dialogGeometry;
+    QByteArray _dialogGeometry;
 };
 
 /***********************************************************************
@@ -121,12 +137,6 @@ void DockingTabWidget::setDialogTitle(const QString &title)
     this->internalUpdate();
 }
 
-bool DockingTabWidget::isDocked(const int index) const
-{
-    auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
-    return container->isDocked();
-}
-
 QWidget *DockingTabWidget::currentWidget(void) const
 {
     auto container = reinterpret_cast<DockingPage *>(QTabWidget::currentWidget());
@@ -135,8 +145,7 @@ QWidget *DockingTabWidget::currentWidget(void) const
 
 QWidget *DockingTabWidget::widget(int index) const
 {
-    auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
-    return container->widget();
+    return this->page(index)->widget();
 }
 
 int DockingTabWidget::addTab(QWidget *page, const QString &label)
@@ -153,16 +162,34 @@ int DockingTabWidget::insertTab(int index, QWidget *page, const QString &label)
 
 void DockingTabWidget::setTabText(int index, const QString &label)
 {
-    auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
-    container->setLabel(label);
+    this->page(index)->setLabel(label);
     this->internalUpdate();
     return QTabWidget::setTabText(index, label);
 }
 
 QString DockingTabWidget::tabText(int index) const
 {
-    auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
-    return container->label();
+    return this->page(index)->label();
+}
+
+bool DockingTabWidget::isDocked(int index) const
+{
+    return this->page(index)->isDocked();
+}
+
+void DockingTabWidget::setDocked(int index, const bool docked)
+{
+    return this->page(index)->setDocked(docked);
+}
+
+QByteArray DockingTabWidget::saveGeometry(int index) const
+{
+    return this->page(index)->saveGeometry();
+}
+
+bool DockingTabWidget::restoreGeometry(int index, const QByteArray &geometry)
+{
+    return this->page(index)->restoreGeometry(geometry);
 }
 
 void DockingTabWidget::handleUndockButton(QWidget *widget)
@@ -192,11 +219,16 @@ void DockingTabWidget::tabRemoved(int index)
     QTabWidget::tabRemoved(index);
 }
 
+DockingTabWidget::DockingPage *DockingTabWidget::page(const int index) const
+{
+    return reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
+}
+
 void DockingTabWidget::internalUpdate(void)
 {
     for (int index = 0; index < this->count(); index++)
     {
-        auto container = reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
+        auto container = this->page(index);
         container->updateDialogTitle(_dialogTitle);
         const bool docked = container->isDocked();
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -47,6 +47,9 @@ QByteArray GraphEditor::dumpState(void) const
         QJsonArray graphObjects;
         page["pageName"] = this->tabText(pageNo);
         page["selected"] = (this->currentIndex() == pageNo);
+        page["docked"] = this->isDocked(pageNo);
+        auto geometry = this->saveGeometry(pageNo);
+        if (not geometry.isEmpty()) page["geometry"] = QString(geometry.toBase64());
 
         //serialize an object list sorted by ID for each major graph object type
         for (const auto &graphType : {GRAPH_BLOCK, GRAPH_BREAKER, GRAPH_CONNECTION, GRAPH_WIDGET})
