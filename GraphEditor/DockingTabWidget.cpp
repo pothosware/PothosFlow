@@ -11,6 +11,9 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QPointer>
+#include <QAction>
+#include <QShortcut>
+#include "MainWindow/MainActions.hpp"
 #include <iostream>
 
 /***********************************************************************
@@ -67,6 +70,22 @@ public:
         else //undock into new dialog
         {
             _dialog = new QDialog(this);
+
+            //the dialog will not have top level main actions
+            //and will not react to key shortcuts used by the main window
+            //to deal with this, iterate the main actions
+            //and tie in any actions with key shortcuts
+            for (auto child : MainActions::global()->children())
+            {
+                auto action = qobject_cast<QAction *>(child);
+                if (action == nullptr) continue;
+                auto keys = action->shortcut();
+                if (keys.isEmpty()) continue;
+                auto shortcut = new QShortcut(_dialog);
+                shortcut->setKey(keys);
+                this->connect(shortcut, &QShortcut::activated, action, &QAction::trigger);
+            }
+
             auto layout = new QVBoxLayout(_dialog);
             _widget->setParent(_dialog);
             layout->addWidget(_widget);
@@ -75,8 +94,6 @@ public:
             this->connect(_dialog, &QDialog::finished, this, &DockingPage::handleDialogFinished);
             _dialog->show();
             _widget->show();
-
-            //TODO select a different tab if it exists
         }
     }
 
@@ -206,6 +223,16 @@ void DockingTabWidget::handleUndockButton(QWidget *widget)
 {
     auto container = reinterpret_cast<DockingPage *>(widget);
     container->setDocked(not container->isDocked());
+
+    //select a different docked tab, since this tab now appears blank
+    if (container->isDocked()) return; //its docked, skip selection change
+    for (int index = 0; index < this->count(); index++)
+    {
+        if (not this->page(index)->isDocked()) continue;
+        this->setCurrentIndex(index);
+        break;
+    }
+
     this->internalUpdate();
 }
 
