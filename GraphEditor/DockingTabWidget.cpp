@@ -80,9 +80,13 @@ public:
         }
     }
 
-    void updateDialogTitle(const QString &title)
+    void internalUpdate(void)
     {
-        if (_dialog) _dialog->setWindowTitle(QString("[%1] %2").arg(_label).arg(title));
+        if (_dialog)
+        {
+            _dialog->setWindowTitle(QString("Pothos Flow - [%1] %2").arg(_label).arg(this->windowTitle()));
+            _dialog->setWindowModified(this->isWindowModified());
+        }
     }
 
     QByteArray saveGeometry(void) const
@@ -131,9 +135,15 @@ DockingTabWidget::~DockingTabWidget(void)
     return;
 }
 
-void DockingTabWidget::setDialogTitle(const QString &title)
+void DockingTabWidget::setWindowModified(const bool modified)
 {
-    _dialogTitle = title;
+    QTabWidget::setWindowModified(modified);
+    this->internalUpdate();
+}
+
+void DockingTabWidget::setWindowTitle(const QString &title)
+{
+    QTabWidget::setWindowTitle(title);
     this->internalUpdate();
 }
 
@@ -229,7 +239,9 @@ void DockingTabWidget::internalUpdate(void)
     for (int index = 0; index < this->count(); index++)
     {
         auto container = this->page(index);
-        container->updateDialogTitle(_dialogTitle);
+        container->setWindowTitle(this->windowTitle());
+        container->setWindowModified(this->isWindowModified());
+        container->internalUpdate();
         const bool docked = container->isDocked();
 
         auto button = reinterpret_cast<QPushButton *>(this->tabBar()->tabButton(index, QTabBar::RightSide));

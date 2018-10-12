@@ -220,9 +220,10 @@ void GraphEditor::updateEnabledActions(void)
     //[*] is a placeholder for the windowModified property
     QString subtext = this->getCurrentFilePath();
     if (subtext.isEmpty()) subtext = tr("untitled");
-    MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
     MainWindow::global()->setWindowTitle(tr("Editing %1[*]").arg(subtext));
-    this->setDialogTitle(subtext);
+    MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
+    this->setWindowTitle(subtext+"[*]");
+    this->setWindowModified(this->hasUnsavedChanges());
 }
 
 void GraphEditor::handleCurrentChanged(int)

@@ -17,8 +17,11 @@ public:
     DockingTabWidget(QWidget *parent = nullptr);
     ~DockingTabWidget(void);
 
+    //! Set the modified property (used for window title)
+    void setWindowModified(const bool modified);
+
     //! The title for the dialog box
-    void setDialogTitle(const QString &title);
+    void setWindowTitle(const QString &title);
 
     //! Get the currently selected tab widget
     QWidget *currentWidget(void) const;
