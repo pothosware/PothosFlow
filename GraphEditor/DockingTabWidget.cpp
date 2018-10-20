@@ -163,9 +163,12 @@ bool DockingTabWidget::isActive(void) const
 {
     //active if one of the dialogs is active
     auto activeWindow = QApplication::activeWindow();
-    for (int index = 0; index < this->count(); index++)
+    if (activeWindow != nullptr)
     {
-        if (this->page(index)->dialog() == activeWindow) return true;
+        for (int index = 0; index < this->count(); index++)
+        {
+            if (this->page(index)->dialog() == activeWindow) return true;
+        }
     }
 
     //use default visibility for this widget when the main window is active
@@ -191,9 +194,12 @@ void DockingTabWidget::clear(void)
 int DockingTabWidget::activeIndex(void) const
 {
     auto activeWindow = QApplication::activeWindow();
-    for (int index = 0; index < this->count(); index++)
+    if (activeWindow != nullptr)
     {
-        if (this->page(index)->dialog() == activeWindow) return index;
+        for (int index = 0; index < this->count(); index++)
+        {
+            if (this->page(index)->dialog() == activeWindow) return index;
+        }
     }
     return this->currentIndex();
 }
