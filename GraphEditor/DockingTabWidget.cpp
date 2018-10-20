@@ -307,13 +307,16 @@ void DockingTabWidget::handleUndockButton(QWidget *widget)
     auto container = reinterpret_cast<DockingPage *>(widget);
     container->setDocked(not container->isDocked());
 
-    //select a different docked tab, since this tab now appears blank
-    if (container->isDocked()) return; //its docked, skip selection change
+    //when docking: select the tab that just got docked
+    //when undocking: select a different docked tab, since this tab now appears blank
     for (int index = 0; index < this->count(); index++)
     {
-        if (not this->page(index)->isDocked()) continue;
-        this->setCurrentIndex(index);
-        break;
+        if ((container->isDocked() and this->page(index) == container) or
+            (not container->isDocked() and this->page(index)->isDocked()))
+        {
+            this->setCurrentIndex(index);
+            break;
+        }
     }
 
     this->internalUpdate();
