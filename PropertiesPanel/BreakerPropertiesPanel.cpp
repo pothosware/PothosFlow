@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -62,7 +62,7 @@ BreakerPropertiesPanel::BreakerPropertiesPanel(GraphBreaker *breaker, QWidget *p
             .arg(_breaker->getNodeName().toHtmlEscaped());
         for (auto obj : _breaker->draw()->getGraphEditor()->getGraphObjects(GRAPH_BREAKER))
         {
-            auto breaker = dynamic_cast<GraphBreaker *>(obj);
+            auto breaker = qobject_cast<GraphBreaker *>(obj);
             assert(breaker != nullptr);
             if (breaker->getNodeName() != _breaker->getNodeName()) continue;
             info += tr("<h3>%1 %2</h3>")
@@ -71,7 +71,7 @@ BreakerPropertiesPanel::BreakerPropertiesPanel(GraphBreaker *breaker, QWidget *p
             info += "<ul>";
             for (auto subObj : _breaker->draw()->getGraphEditor()->getGraphObjects(GRAPH_CONNECTION))
             {
-                auto conn = dynamic_cast<GraphConnection *>(subObj);
+                auto conn = qobject_cast<GraphConnection *>(subObj);
                 assert(conn != nullptr);
                 const auto &epOther = breaker->isInput()? conn->getOutputEndpoint() : conn->getInputEndpoint();
                 const auto &epSelf = breaker->isInput()? conn->getInputEndpoint() : conn->getOutputEndpoint();

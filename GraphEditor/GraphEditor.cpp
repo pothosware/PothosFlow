@@ -45,7 +45,7 @@ static const size_t POLL_WIDGET_CHANGES_MS = 1000;
 GraphEditor::GraphEditor(QWidget *parent):
     QTabWidget(parent),
     _logger(Poco::Logger::get("PothosFlow.GraphEditor")),
-    _parentTabWidget(dynamic_cast<QTabWidget *>(parent)),
+    _parentTabWidget(qobject_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
     _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
@@ -281,7 +281,7 @@ GraphConnection *GraphEditor::makeConnection(const GraphConnectionEndpoint &ep0,
     //duplicate check
     for (auto obj : this->getGraphObjects(GRAPH_CONNECTION))
     {
-        auto conn = dynamic_cast<GraphConnection *>(obj);
+        auto conn = qobject_cast<GraphConnection *>(obj);
         assert(conn != nullptr);
         if (
             (conn->getOutputEndpoint() == ep0 and conn->getInputEndpoint() == ep1) or
@@ -312,7 +312,7 @@ static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnection
 {
     for (auto obj : editor->getGraphObjects(GRAPH_CONNECTION))
     {
-        auto conn = dynamic_cast<GraphConnection *>(obj);
+        auto conn = qobject_cast<GraphConnection *>(obj);
         assert(conn != nullptr);
         if (not (conn->getOutputEndpoint().getObj()->scene() == conn->getInputEndpoint().getObj()->scene())) continue;
         if (not (conn->getOutputEndpoint() == ep)) continue;
@@ -321,7 +321,7 @@ static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnection
             const auto &pairs = conn->getSigSlotPairs();
             if (not pairs.empty() and pairs.at(0).first != signalName) continue;
         }
-        auto breaker = dynamic_cast<GraphBreaker *>(conn->getInputEndpoint().getObj().data());
+        auto breaker = qobject_cast<GraphBreaker *>(conn->getInputEndpoint().getObj().data());
         if (breaker == nullptr) continue;
         return breaker;
     }
@@ -346,7 +346,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
     std::vector<GraphConnection *> boundaryConnections;
     for (auto obj : this->getGraphObjects(GRAPH_CONNECTION))
     {
-        auto conn = dynamic_cast<GraphConnection *>(obj);
+        auto conn = qobject_cast<GraphConnection *>(obj);
         assert(conn != nullptr);
 
         //Connection has the same endpoints, so make sure that the parent is corrected to the endpoint
@@ -414,7 +414,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
             for (auto obj : this->getGraphObjects(GRAPH_BREAKER))
             {
                 if (obj->draw() != epIn.getObj()->draw()) continue;
-                auto outBreaker = dynamic_cast<GraphBreaker *>(obj);
+                auto outBreaker = qobject_cast<GraphBreaker *>(obj);
                 assert(outBreaker != nullptr);
                 if (outBreaker->isInput()) continue;
                 if (outBreaker->getNodeName() != name) continue;
@@ -451,7 +451,7 @@ void GraphEditor::handleAddBlock(const QJsonObject &blockDesc)
     QPointF where(std::rand()%100, std::rand()%100);
 
     //determine where, a nice point on the visible drawing area sort of upper left
-    auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
+    auto view = qobject_cast<QGraphicsView *>(this->currentWidget());
     where += view->mapToScene(this->size().width()/4, this->size().height()/4);
 
     this->handleAddBlock(blockDesc, where);
@@ -515,7 +515,7 @@ void GraphEditor::handleCreateOutputBreaker(void)
 
 void GraphEditor::handleInsertGraphWidget(QObject *obj)
 {
-    auto block = dynamic_cast<GraphBlock *>(obj);
+    auto block = qobject_cast<GraphBlock *>(obj);
     assert(block != nullptr);
     assert(block->isGraphWidget());
 
@@ -667,7 +667,7 @@ void GraphEditor::handlePaste(void)
     }
 
     //determine an acceptable position to center the paste
-    auto view = dynamic_cast<QGraphicsView *>(this->currentWidget());
+    auto view = qobject_cast<QGraphicsView *>(this->currentWidget());
     auto pastePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
     if (not view->sceneRect().contains(pastePos))
     {
@@ -833,7 +833,7 @@ void GraphEditor::handleSetEnabled(const bool enb)
     for (auto obj : draw->getObjectsSelected())
     {
         //stash the graph widget's actual block
-        auto graphWidget = dynamic_cast<GraphWidget *>(obj);
+        auto graphWidget = qobject_cast<GraphWidget *>(obj);
         if (graphWidget != nullptr) obj = graphWidget->getGraphBlock();
         if (obj->isEnabled() != enb) objs.insert(obj);
     }
@@ -887,7 +887,7 @@ void GraphEditor::handleAffinityZoneClicked(const QString &zone)
 
     for (auto obj : draw->getObjectsSelected(GRAPH_BLOCK))
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
+        auto block = qobject_cast<GraphBlock *>(obj);
         assert(block != nullptr);
         block->setAffinityZone(zone);
     }
@@ -898,7 +898,7 @@ void GraphEditor::handleAffinityZoneChanged(const QString &zone)
 {
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
+        auto block = qobject_cast<GraphBlock *>(obj);
         assert(block != nullptr);
         if (block->getAffinityZone() == zone) block->changed();
     }
@@ -938,7 +938,7 @@ void GraphEditor::handleBlockDisplayModeChange(void)
 {
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
+        auto block = qobject_cast<GraphBlock *>(obj);
         assert(block != nullptr);
         block->changed();
     }
@@ -962,7 +962,7 @@ void GraphEditor::handleBlockXcrement(const int adj)
     GraphObjectList changedObjects;
     for (auto obj : draw->getObjectsSelected(GRAPH_BLOCK))
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
+        auto block = qobject_cast<GraphBlock *>(obj);
         assert(block != nullptr);
         for (const auto &propKey : block->getProperties())
         {
@@ -1096,14 +1096,14 @@ void GraphEditor::updateGraphEditorMenus(void)
     bool hasGraphWidgetsToInsert = false;
     for (auto obj : this->getGraphObjects(GRAPH_BLOCK))
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
+        auto block = qobject_cast<GraphBlock *>(obj);
         assert(block != nullptr);
         if (not block->isGraphWidget()) continue;
 
         //does block have an active graph display?
         for (auto subObj : this->getGraphObjects(GRAPH_WIDGET))
         {
-            auto display = dynamic_cast<GraphWidget *>(subObj);
+            auto display = qobject_cast<GraphWidget *>(subObj);
             assert(display != nullptr);
             if (display->getGraphBlock() == block) goto next_block;
         }
@@ -1123,7 +1123,7 @@ void GraphEditor::updateGraphEditorMenus(void)
 
 GraphDraw *GraphEditor::getGraphDraw(const int index) const
 {
-    auto draw = dynamic_cast<GraphDraw *>(this->widget(index));
+    auto draw = qobject_cast<GraphDraw *>(this->widget(index));
     assert(draw != nullptr);
     return draw;
 }
@@ -1201,7 +1201,7 @@ void GraphEditor::handlePollWidgetTimer(void)
     QStringList changedIds;
     for (auto obj : this->getGraphObjects(GRAPH_WIDGET))
     {
-        auto graphWidget = dynamic_cast<const GraphWidget *>(obj);
+        auto graphWidget = qobject_cast<const GraphWidget *>(obj);
         assert(graphWidget != nullptr);
         if (not graphWidget->didWidgetStateChange()) continue;
         auto graphBlock = graphWidget->getGraphBlock();

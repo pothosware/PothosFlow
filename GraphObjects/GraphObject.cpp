@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphObject.hpp"
@@ -39,7 +39,7 @@ GraphObject::GraphObject(QObject *parent):
     QGraphicsObject(),
     _impl(new Impl())
 {
-    auto view = dynamic_cast<QGraphicsView *>(parent);
+    auto view = qobject_cast<QGraphicsView *>(parent);
     assert(view != nullptr);
     view->scene()->addItem(this);
     this->setFlag(QGraphicsItem::ItemIsSelectable);
@@ -52,7 +52,7 @@ GraphObject::~GraphObject(void)
 
 GraphDraw *GraphObject::draw(void) const
 {
-    auto draw = dynamic_cast<GraphDraw *>(this->scene()->views().at(0));
+    auto draw = qobject_cast<GraphDraw *>(this->scene()->views().at(0));
     assert(draw != nullptr);
     return draw;
 }

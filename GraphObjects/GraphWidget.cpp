@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidget.hpp"
@@ -222,7 +222,7 @@ void GraphWidget::deserialize(const QJsonObject &obj)
         auto blockId = obj["blockId"].toString();
         auto graphObj = editor->getObjectById(blockId, GRAPH_BLOCK);
         if (graphObj == nullptr) throw Pothos::NotFoundException("GraphWidget::deserialize()", "cant resolve block with ID: '"+blockId.toStdString()+"'");
-        auto graphBlock = dynamic_cast<GraphBlock *>(graphObj);
+        auto graphBlock = qobject_cast<GraphBlock *>(graphObj);
         assert(graphBlock != nullptr);
         this->setGraphBlock(graphBlock);
     }

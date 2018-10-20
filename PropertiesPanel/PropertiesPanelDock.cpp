@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -68,12 +68,12 @@ void PropertiesPanelDock::launchEditor(QObject *obj)
     }
 
     //extract the graph object
-    auto graph = dynamic_cast<GraphEditor *>(obj);
-    auto block = dynamic_cast<GraphBlock *>(obj);
-    auto breaker = dynamic_cast<GraphBreaker *>(obj);
-    auto connection = dynamic_cast<GraphConnection *>(obj);
-    auto widget = dynamic_cast<GraphWidget *>(obj);
-    auto graphObject = dynamic_cast<GraphObject *>(obj);
+    auto graph = qobject_cast<GraphEditor *>(obj);
+    auto block = qobject_cast<GraphBlock *>(obj);
+    auto breaker = qobject_cast<GraphBreaker *>(obj);
+    auto connection = qobject_cast<GraphConnection *>(obj);
+    auto widget = qobject_cast<GraphWidget *>(obj);
+    auto graphObject = qobject_cast<GraphObject *>(obj);
 
     if (widget != nullptr) block = widget->getGraphBlock();
     if (graph != nullptr) _propertiesPanel = new GraphPropertiesPanel(graph, this);

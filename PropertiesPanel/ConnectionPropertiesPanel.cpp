@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -187,7 +187,7 @@ QTreeWidget *ConnectionPropertiesPanel::makePortListWidget(QWidget *parent, cons
 
     //query the signal/slot ports
     QStringList portKeys;
-    auto block = dynamic_cast<GraphBlock *>(ep.getObj().data());
+    auto block = qobject_cast<GraphBlock *>(ep.getObj().data());
     if (block != nullptr) switch(ep.getConnectableAttrs().direction)
     {
     case GRAPH_CONN_SLOT: portKeys = block->getSlotPorts(); break;

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine.hpp"
@@ -86,7 +86,7 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     BlockInfos blockInfos;
     for (auto obj : graphObjects)
     {
-        auto block = dynamic_cast<GraphBlock *>(obj);
+        auto block = qobject_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
         _blockEvalMapper->setMapping(block, block);
         connect(block, SIGNAL(triggerEvalEvent(void)), _blockEvalMapper, SLOT(map(void)));
@@ -114,7 +114,7 @@ void EvalEngine::submitActivateTopology(const bool active)
 
 void EvalEngine::submitBlock(QObject *obj)
 {
-    auto block = dynamic_cast<GraphBlock *>(obj);
+    auto block = qobject_cast<GraphBlock *>(obj);
     assert(block != nullptr);
     QMetaObject::invokeMethod(_impl, "submitBlock", Qt::QueuedConnection, Q_ARG(BlockInfo, blockToBlockInfo(block)));
 }

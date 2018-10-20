@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -47,7 +47,7 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
 
 GraphEditor *GraphEditorTabs::getGraphEditor(const int i) const
 {
-    return dynamic_cast<GraphEditor *>(this->widget(i));
+    return qobject_cast<GraphEditor *>(this->widget(i));
 }
 
 GraphEditor *GraphEditorTabs::getCurrentGraphEditor(void) const
@@ -103,7 +103,7 @@ void GraphEditorTabs::handleOpen(const QString &filePath)
     //filter out files that are already open
     for (int j = 0; j < this->count(); j++)
     {
-        auto editor = dynamic_cast<GraphEditor *>(this->widget(j));
+        auto editor = qobject_cast<GraphEditor *>(this->widget(j));
         assert(editor != nullptr);
         if (editor->getCurrentFilePath() == filePath)
         {
@@ -123,7 +123,7 @@ void GraphEditorTabs::handleOpen(const QString &filePath)
 
 void GraphEditorTabs::handleSave(void)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    auto editor = qobject_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
     this->handleSave(editor);
 }
@@ -146,7 +146,7 @@ static QString defaultSavePath(void)
 
 void GraphEditorTabs::handleSaveAs(void)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    auto editor = qobject_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
 
     QString lastPath = editor->getCurrentFilePath();
@@ -169,7 +169,7 @@ void GraphEditorTabs::handleSaveAs(void)
 
 void GraphEditorTabs::handleReload(void)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    auto editor = qobject_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
     this->doReloadDialog(editor);
 }
@@ -178,7 +178,7 @@ void GraphEditorTabs::handleSaveAll(void)
 {
     for (int i = 0; i < this->count(); i++)
     {
-        auto editor = dynamic_cast<GraphEditor *>(this->widget(i));
+        auto editor = qobject_cast<GraphEditor *>(this->widget(i));
         assert(editor != nullptr);
         this->handleSave(editor);
     }
@@ -187,14 +187,14 @@ void GraphEditorTabs::handleSaveAll(void)
 
 void GraphEditorTabs::handleClose(void)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    auto editor = qobject_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
     this->handleClose(editor);
 }
 
 void GraphEditorTabs::handleClose(int index)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->widget(index));
+    auto editor = qobject_cast<GraphEditor *>(this->widget(index));
     assert(editor != nullptr);
     this->handleClose(editor);
 }
@@ -226,7 +226,7 @@ void GraphEditorTabs::handleExit(QCloseEvent *event)
     //exit logic -- save changes dialogs
     for (int i = 0; i < this->count(); i++)
     {
-        auto editor = dynamic_cast<GraphEditor *>(this->widget(i));
+        auto editor = qobject_cast<GraphEditor *>(this->widget(i));
         assert(editor != nullptr);
         if (not editor->hasUnsavedChanges()) continue;
 
@@ -251,7 +251,7 @@ void GraphEditorTabs::handleExit(QCloseEvent *event)
 
 void GraphEditorTabs::handleExport(void)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    auto editor = qobject_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
 
     auto path = editor->getCurrentFilePath();
@@ -263,7 +263,7 @@ void GraphEditorTabs::handleExport(void)
 
 void GraphEditorTabs::handleExportAs(void)
 {
-    auto editor = dynamic_cast<GraphEditor *>(this->currentWidget());
+    auto editor = qobject_cast<GraphEditor *>(this->currentWidget());
     assert(editor != nullptr);
 
     QString lastPath = editor->getCurrentFilePath();
@@ -338,7 +338,7 @@ void GraphEditorTabs::saveState(void)
     QStringList files;
     for (int i = 0; i < this->count(); i++)
     {
-        auto editor = dynamic_cast<GraphEditor *>(this->widget(i));
+        auto editor = qobject_cast<GraphEditor *>(this->widget(i));
         assert(editor != nullptr);
         files.push_back(editor->getCurrentFilePath());
     }

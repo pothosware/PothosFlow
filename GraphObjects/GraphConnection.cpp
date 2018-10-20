@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphConnection.hpp"
@@ -76,7 +76,7 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
     connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
 
     //connect eval signal to check if the endpoint exists and delete this connection
-    auto graphBlock = dynamic_cast<GraphBlock *>(ep.getObj().data());
+    auto graphBlock = qobject_cast<GraphBlock *>(ep.getObj().data());
     if (graphBlock != nullptr)
     {
         connect(ep.getObj(), SIGNAL(evalDoneEvent(void)), this, SLOT(handleEndPointEventRecheck(void)));
@@ -89,7 +89,7 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
 void GraphConnection::unregisterEndpoint(const GraphConnectionEndpoint &ep)
 {
     if (not ep.isValid()) return;
-    auto graphBlockOut = dynamic_cast<GraphBlock *>(ep.getObj().data());
+    auto graphBlockOut = qobject_cast<GraphBlock *>(ep.getObj().data());
     if (graphBlockOut != nullptr) graphBlockOut->unregisterEndpoint(ep);
 }
 
@@ -137,7 +137,7 @@ void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
 {
     //check that the output endpoint is possible
     auto epOut = this->getOutputEndpoint();
-    auto blockOut = dynamic_cast<GraphBlock *>(epOut.getObj().data());
+    auto blockOut = qobject_cast<GraphBlock *>(epOut.getObj().data());
     if (blockOut != nullptr and epOut.getConnectableAttrs().direction == GRAPH_CONN_SIGNAL)
     {
         const auto &keys = blockOut->getSignalPorts();
@@ -147,7 +147,7 @@ void GraphConnection::addSigSlotPair(const SigSlotPair &sigSlot)
 
     //check that the input endpoint is possible
     auto epIn = this->getInputEndpoint();
-    auto blockIn = dynamic_cast<GraphBlock *>(epIn.getObj().data());
+    auto blockIn = qobject_cast<GraphBlock *>(epIn.getObj().data());
     if (blockIn != nullptr and epIn.getConnectableAttrs().direction == GRAPH_CONN_SLOT)
     {
         const auto &keys = blockIn->getSlotPorts();

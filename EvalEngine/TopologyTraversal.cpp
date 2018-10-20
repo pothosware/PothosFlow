@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "TopologyEval.hpp"
@@ -23,8 +23,8 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(
     if (it != traversed.end()) return inputEndpoints;
     traversed.push_back(inputEp);
 
-    auto inputBlock = dynamic_cast<GraphBlock *>(inputEp.getObj().data());
-    auto inputBreaker = dynamic_cast<GraphBreaker *>(inputEp.getObj().data());
+    auto inputBlock = qobject_cast<GraphBlock *>(inputEp.getObj().data());
+    auto inputBreaker = qobject_cast<GraphBreaker *>(inputEp.getObj().data());
 
     if (inputBlock != nullptr)
     {
@@ -36,7 +36,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(
         auto nodeName = inputBreaker->getNodeName();
         for (auto graphObject : graphObjects)
         {
-            auto breaker = dynamic_cast<GraphBreaker *>(graphObject);
+            auto breaker = qobject_cast<GraphBreaker *>(graphObject);
             if (breaker == nullptr) continue;
             if (not breaker->isEnabled()) continue;
             if (breaker->getNodeName() != nodeName) continue;
@@ -45,7 +45,7 @@ static std::vector<GraphConnectionEndpoint> traverseInputEps(
             //this is the recursive part
             for (auto graphSubObject : graphObjects)
             {
-                auto connection = dynamic_cast<GraphConnection *>(graphSubObject);
+                auto connection = qobject_cast<GraphConnection *>(graphSubObject);
                 if (connection == nullptr) continue;
                 if (not connection->isEnabled()) continue;
                 if (connection->getOutputEndpoint().getObj() != breaker) continue;
@@ -69,7 +69,7 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
     ConnectionInfos connections;
     for (auto graphObject : graphObjects)
     {
-        auto connection = dynamic_cast<GraphConnection *>(graphObject);
+        auto connection = qobject_cast<GraphConnection *>(graphObject);
         if (connection == nullptr) continue;
         if (not connection->isEnabled()) continue;
         if (not connection->getInputEndpoint().isValid()) continue;
@@ -81,7 +81,7 @@ ConnectionInfos TopologyEval::getConnectionInfo(const GraphObjectList &graphObje
 
             //ignore connections from output breakers
             //we will come back to them from the block to breaker to block path
-            auto outputBreaker = dynamic_cast<GraphBreaker *>(outputEp.getObj().data());
+            auto outputBreaker = qobject_cast<GraphBreaker *>(outputEp.getObj().data());
             if (outputBreaker != nullptr) continue;
 
             for (const auto &subEp : traverseInputEps(inputEp, graphObjects))

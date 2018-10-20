@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -88,7 +88,7 @@ QStringList AffinityZonesDock::zones(void) const
     QStringList zones;
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        auto editor = qobject_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
         assert(editor != nullptr);
         zones.push_back(editor->zoneName());
     }
@@ -99,7 +99,7 @@ QColor AffinityZonesDock::zoneToColor(const QString &zone)
 {
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        auto editor = qobject_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
         assert(editor != nullptr);
         if (zone == editor->zoneName()) return editor->color();
     }
@@ -110,7 +110,7 @@ QJsonObject AffinityZonesDock::zoneToConfig(const QString &zone)
 {
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        auto editor = qobject_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
         assert(editor != nullptr);
         if (zone == editor->zoneName()) return editor->getCurrentConfig();
     }
@@ -198,7 +198,7 @@ void AffinityZonesDock::updateTabColors(void)
 {
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        auto editor = qobject_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
         _editorsTabs->setTabIcon(i, colorToWidgetIcon(editor->color()));
     }
 }
@@ -216,7 +216,7 @@ void AffinityZonesDock::saveAffinityZoneEditorsState(void)
 
     for (int i = 0; i < _editorsTabs->count(); i++)
     {
-        auto editor = dynamic_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
+        auto editor = qobject_cast<AffinityZoneEditor *>(_editorsTabs->widget(i));
         assert(editor != nullptr);
         const auto jsonDoc = QJsonDocument(editor->getCurrentConfig());
         const auto value = jsonDoc.toJson(QJsonDocument::Compact);

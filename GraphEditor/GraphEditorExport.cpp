@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Josh Blum
+// Copyright (c) 2016-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -66,7 +66,7 @@ void GraphEditor::exportToJSONTopology(const QString &fileName)
     std::map<size_t, const GraphBlock*> uidToBlock;
     for (const auto *obj : graphObjects)
     {
-        const auto block = dynamic_cast<const GraphBlock *>(obj);
+        const auto block = qobject_cast<const GraphBlock *>(obj);
         if (block == nullptr) continue;
         if (not block->isEnabled()) continue;
         if (block->isGraphWidget()) continue;

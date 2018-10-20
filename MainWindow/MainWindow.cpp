@@ -218,7 +218,7 @@ void MainWindow::handleFullScreenViewAction(const bool toggle)
     {
         for (auto child : this->children())
         {
-            auto dockWidget = dynamic_cast<QDockWidget *>(child);
+            auto dockWidget = qobject_cast<QDockWidget *>(child);
             if (dockWidget != nullptr) _widgetToOldVisibility[dockWidget];
         }
         _widgetToOldVisibility[this->menuBar()];
@@ -246,7 +246,7 @@ void MainWindow::handleReloadPlugins(void)
     //stop evaluation on all graph editor
     for (int i = 0; i < _editorTabs->count(); i++)
     {
-        auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
+        auto editor = qobject_cast<GraphEditor *>(_editorTabs->widget(i));
         if (editor != nullptr) editor->stopEvaluation();
     }
 
@@ -262,7 +262,7 @@ void MainWindow::handleReloadPlugins(void)
     //start evaluation on all graph editor
     for (int i = 0; i < _editorTabs->count(); i++)
     {
-        auto editor = dynamic_cast<GraphEditor *>(_editorTabs->widget(i));
+        auto editor = qobject_cast<GraphEditor *>(_editorTabs->widget(i));
         if (editor != nullptr) editor->restartEvaluation();
     }
 

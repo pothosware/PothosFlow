@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphDraw.hpp"
@@ -31,7 +31,7 @@
 
 GraphDraw::GraphDraw(QWidget *parent):
     QGraphicsView(parent),
-    _graphEditor(dynamic_cast<GraphEditor *>(parent)),
+    _graphEditor(qobject_cast<GraphEditor *>(parent)),
     _zoomScale(1.0),
     _selectionState(0)
 {
@@ -220,7 +220,7 @@ void GraphDraw::updateEnabledActions(void)
     //and enable/disable the actions in the move graph objects submenu
     for (auto child : mainMenu->moveGraphObjectsMenu->children())
     {
-        auto action = dynamic_cast<QAction *>(child);
+        auto action = qobject_cast<QAction *>(child);
         if (action != nullptr) action->setEnabled(selectedNoC);
     }
 }
