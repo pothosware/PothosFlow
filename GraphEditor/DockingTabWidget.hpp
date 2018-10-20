@@ -17,6 +17,19 @@ public:
     DockingTabWidget(QWidget *parent = nullptr);
     ~DockingTabWidget(void);
 
+    //! Is this widget active in the main window (or one of its dialogs active)
+    bool isActive(void) const;
+
+    //! remove tabs, but do not delete widgets
+    void clear(void);
+
+    /*!
+     * Get the active page index.
+     * This is the page that has mouse focus,
+     * which may be a dialog when undocked.
+     */
+    int activeIndex(void) const;
+
     //! Set the modified property (used for window title)
     void setWindowModified(const bool modified);
 
@@ -57,6 +70,12 @@ public:
      * Restore the dialog geometry of the specified page.
      */
     bool restoreGeometry(int index, const QByteArray &geometry);
+
+    //! Save the complete widget state (dialogs, geometry, selected index)
+    QVariant saveWidgetState(void) const;
+
+    //! Restore the widget state from saved state (return true for success)
+    void restoreWidgetState(const QVariant &state);
 
 private slots:
     void handleUndockButton(QWidget *);

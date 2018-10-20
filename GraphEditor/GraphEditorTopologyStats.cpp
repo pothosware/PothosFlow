@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 Josh Blum
+// Copyright (c) 2015-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -129,7 +129,7 @@ private:
 
 void GraphEditor::handleShowTopologyStatsDialog(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
 
     //create the dialog
     auto dialog = new TopologyStatsDialog(_evalEngine, this);

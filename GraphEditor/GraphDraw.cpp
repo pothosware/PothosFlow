@@ -94,7 +94,6 @@ void GraphDraw::handleGraphDebugViewChange(void)
         this->scene()->addItem(_graphBoundingBoxes.get());
     }
 
-    if (not this->isVisible()) return;
     this->render();
 }
 

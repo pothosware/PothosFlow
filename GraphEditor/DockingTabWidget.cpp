@@ -13,7 +13,9 @@
 #include <QPointer>
 #include <QAction>
 #include <QShortcut>
+#include <QApplication>
 #include "MainWindow/MainActions.hpp"
+#include "MainWindow/MainWindow.hpp"
 #include <iostream>
 
 /***********************************************************************
@@ -40,6 +42,11 @@ public:
     QWidget *widget(void) const
     {
         return _widget;
+    }
+
+    QDialog *dialog(void) const
+    {
+        return _dialog;
     }
 
     const QString &label(void) const
@@ -152,6 +159,45 @@ DockingTabWidget::~DockingTabWidget(void)
     return;
 }
 
+bool DockingTabWidget::isActive(void) const
+{
+    //active if one of the dialogs is active
+    auto activeWindow = QApplication::activeWindow();
+    for (int index = 0; index < this->count(); index++)
+    {
+        if (this->page(index)->dialog() == activeWindow) return true;
+    }
+
+    //use default visibility for this widget when the main window is active
+    if (activeWindow == MainWindow::global()) return QTabWidget::isVisible();
+
+    //otherwise is not active
+    return false;
+}
+
+void DockingTabWidget::clear(void)
+{
+    for (int index = 0; index < this->count(); index++)
+    {
+        //de-parent the actual widget and delete the page
+        //its the job of the caller to delete with widget
+        auto page = this->page(index);
+        page->widget()->setParent(nullptr);
+        page->deleteLater();
+    }
+    return QTabWidget::clear();
+}
+
+int DockingTabWidget::activeIndex(void) const
+{
+    auto activeWindow = QApplication::activeWindow();
+    for (int index = 0; index < this->count(); index++)
+    {
+        if (this->page(index)->dialog() == activeWindow) return index;
+    }
+    return this->currentIndex();
+}
+
 void DockingTabWidget::setWindowModified(const bool modified)
 {
     QTabWidget::setWindowModified(modified);
@@ -217,6 +263,37 @@ QByteArray DockingTabWidget::saveGeometry(int index) const
 bool DockingTabWidget::restoreGeometry(int index, const QByteArray &geometry)
 {
     return this->page(index)->restoreGeometry(geometry);
+}
+
+QVariant DockingTabWidget::saveWidgetState(void) const
+{
+    QVariantMap data;
+    data["index"] = this->currentIndex();
+    QVariantList tabs;
+    for (int index = 0; index < this->count(); index++)
+    {
+        QVariantMap tabData;
+        tabData["docked"] = this->page(index)->isDocked();
+        tabData["geometry"] = this->saveGeometry(index);
+        tabs.push_back(tabData);
+    }
+    data["tabs"] = tabs;
+    return QVariant(data);
+}
+
+void DockingTabWidget::restoreWidgetState(const QVariant &state)
+{
+    if (state.isNull()) return;
+    const auto data = state.toMap();
+    if (data.isEmpty()) return;
+    this->setCurrentIndex(data["index"].toInt());
+    const auto tabs = data["tabs"].toList();
+    for (int index = 0; index < std::min(tabs.size(), this->count()); index++)
+    {
+        const auto tabData = tabs[index].toMap();
+        this->page(index)->setDocked(tabData["docked"].toBool());
+        this->restoreGeometry(index, tabData["geometry"].toByteArray());
+    }
 }
 
 void DockingTabWidget::handleUndockButton(QWidget *widget)

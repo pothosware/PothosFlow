@@ -143,7 +143,6 @@ public slots:
     void handleStateChange(const GraphState &state);
 
 private slots:
-    void handleCurrentChanged(int);
     void handleCreateGraphPage(void);
     void handleRenameGraphPage(void);
     void handleDeleteGraphPage(void);
@@ -202,7 +201,7 @@ private:
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;
-    std::map<size_t, int> _stateToLastTabIndex;
+    std::map<size_t, QVariant> _stateToLastDisplayState;
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);
