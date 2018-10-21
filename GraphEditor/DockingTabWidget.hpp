@@ -77,12 +77,17 @@ public:
     //! Restore the widget state from saved state (return true for success)
     void restoreWidgetState(const QVariant &state);
 
+signals:
+    //! Called when active window changes (dialog vs main window focus)
+    void activeChanged(void);
+
 private slots:
     void handleUndockButton(QWidget *);
 
 protected:
     void tabInserted(int index);
     void tabRemoved(int index);
+    bool eventFilter(QObject *object, QEvent *event);
 
 private:
     class DockingPage;

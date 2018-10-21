@@ -86,6 +86,7 @@ public:
         else //undock into new dialog
         {
             _dialog = new QDialog(this);
+            _dialog->installEventFilter(_tabs);
 
             //the dialog will not have top level main actions
             //and will not react to key shortcuts used by the main window
@@ -188,6 +189,7 @@ DockingTabWidget::DockingTabWidget(QWidget *parent):
     QTabWidget(parent),
     _mapper(new QSignalMapper(this))
 {
+    MainWindow::global()->installEventFilter(this);
     this->connect(_mapper, SIGNAL(mapped(QWidget *)), this, SLOT(handleUndockButton(QWidget *)));
 }
 
@@ -373,6 +375,13 @@ void DockingTabWidget::tabInserted(int index)
 void DockingTabWidget::tabRemoved(int index)
 {
     QTabWidget::tabRemoved(index);
+}
+
+bool DockingTabWidget::eventFilter(QObject *, QEvent *event)
+{
+    //emit signal if any windows became active (dialogs or main window)
+    if (event->type() == QEvent::WindowActivate) this->activeChanged();
+    return false;
 }
 
 DockingTabWidget::DockingPage *DockingTabWidget::page(const int index) const

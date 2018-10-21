@@ -104,6 +104,7 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(_pollWidgetTimer, &QTimer::timeout, this, &GraphEditor::handlePollWidgetTimer);
     connect(MainMenu::global()->editMenu, &QMenu::aboutToShow, this, &GraphEditor::updateGraphEditorMenus);
+    connect(this, &DockingTabWidget::activeChanged, this, &GraphEditor::updateEnabledActions);
     _pollWidgetTimer->start(POLL_WIDGET_CHANGES_MS);
 }
 
