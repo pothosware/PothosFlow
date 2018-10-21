@@ -18,6 +18,14 @@
 #include "MainWindow/MainWindow.hpp"
 #include <iostream>
 
+static QString dockingButtonStyle(const bool docked)
+{
+    const QString prefix = docked?"undock":"dock";
+    return  QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+".png"))+
+            QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover.png"))+
+            QString("QPushButton:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-down.png"));
+}
+
 /***********************************************************************
  * The docking page holds the actual internal tab page widget
  * but can display it inside of a dialog when in undocked mode.
@@ -57,6 +65,7 @@ public:
     void setLabel(const QString &label)
     {
         _label = label;
+        this->internalUpdate();
     }
 
     bool isDocked(void) const
@@ -102,15 +111,43 @@ public:
             _dialog->show();
             _widget->show();
         }
+        this->internalUpdate();
     }
 
     void internalUpdate(void)
     {
+        //sync the tab window's title text to the dialog
         if (_dialog)
         {
-            _dialog->setWindowTitle(QString("Pothos Flow - [%1] %2").arg(_label).arg(this->windowTitle()));
-            _dialog->setWindowModified(this->isWindowModified());
+            _dialog->setWindowTitle(QString("Pothos Flow - [%1] %2").arg(_label).arg(_tabs->windowTitle()));
+            _dialog->setWindowModified(_tabs->isWindowModified());
         }
+
+        //update the tab bar for this widget
+        const auto index = this->tabIndex();
+        if (index == -1) return; //shouldn't happen
+
+        //set the tool tip
+        auto tabBar = _tabs->tabBar();
+        const bool docked = this->isDocked();
+        tabBar->setTabToolTip(index, (docked?tr("Undock tab: %1"):tr("Restore tab: %1")).arg(_label));
+
+        //set the button style sheet
+        auto button = qobject_cast<QPushButton *>(tabBar->tabButton(index, QTabBar::RightSide));
+        if (button == nullptr) return; //didn't allocate button yet
+        static const auto dockedStyle = dockingButtonStyle(true);
+        static const auto undockedStyle = dockingButtonStyle(false);
+        const auto &style = docked?dockedStyle:undockedStyle;
+        if (button->styleSheet() != style) button->setStyleSheet(style);
+    }
+
+    int tabIndex(void) const
+    {
+        for (int index = 0; index < _tabs->count(); index++)
+        {
+            if (_tabs->widget(index) == this) return index;
+        }
+        return -1;
     }
 
     QByteArray saveGeometry(void) const
@@ -207,18 +244,18 @@ int DockingTabWidget::activeIndex(void) const
 void DockingTabWidget::setWindowModified(const bool modified)
 {
     QTabWidget::setWindowModified(modified);
-    this->internalUpdate();
+    this->internalUpdate(); //updates all dialogs
 }
 
 void DockingTabWidget::setWindowTitle(const QString &title)
 {
     QTabWidget::setWindowTitle(title);
-    this->internalUpdate();
+    this->internalUpdate(); //updates all dialogs
 }
 
 QWidget *DockingTabWidget::currentWidget(void) const
 {
-    auto container = reinterpret_cast<DockingPage *>(QTabWidget::currentWidget());
+    auto container = qobject_cast<DockingPage *>(QTabWidget::currentWidget());
     return container->widget();
 }
 
@@ -242,7 +279,6 @@ int DockingTabWidget::insertTab(int index, QWidget *page, const QString &label)
 void DockingTabWidget::setTabText(int index, const QString &label)
 {
     this->page(index)->setLabel(label);
-    this->internalUpdate();
     return QTabWidget::setTabText(index, label);
 }
 
@@ -304,7 +340,7 @@ void DockingTabWidget::restoreWidgetState(const QVariant &state)
 
 void DockingTabWidget::handleUndockButton(QWidget *widget)
 {
-    auto container = reinterpret_cast<DockingPage *>(widget);
+    auto container = qobject_cast<DockingPage *>(widget);
     container->setDocked(not container->isDocked());
 
     //when docking: select the tab that just got docked
@@ -318,8 +354,6 @@ void DockingTabWidget::handleUndockButton(QWidget *widget)
             break;
         }
     }
-
-    this->internalUpdate();
 }
 
 void DockingTabWidget::tabInserted(int index)
@@ -331,39 +365,26 @@ void DockingTabWidget::tabInserted(int index)
     _mapper->setMapping(button, QTabWidget::widget(index));
     connect(button, SIGNAL(clicked()), _mapper, SLOT(map()));
     this->tabBar()->setTabButton(index, QTabBar::RightSide, button);
+    this->page(index)->internalUpdate();
 
-    this->internalUpdate();
     QTabWidget::tabInserted(index);
 }
 
 void DockingTabWidget::tabRemoved(int index)
 {
-    this->internalUpdate();
     QTabWidget::tabRemoved(index);
 }
 
 DockingTabWidget::DockingPage *DockingTabWidget::page(const int index) const
 {
-    return reinterpret_cast<DockingPage *>(QTabWidget::widget(index));
+    return qobject_cast<DockingPage *>(QTabWidget::widget(index));
 }
 
 void DockingTabWidget::internalUpdate(void)
 {
     for (int index = 0; index < this->count(); index++)
     {
-        auto container = this->page(index);
-        container->setWindowTitle(this->windowTitle());
-        container->setWindowModified(this->isWindowModified());
-        container->internalUpdate();
-        const bool docked = container->isDocked();
-
-        auto button = reinterpret_cast<QPushButton *>(this->tabBar()->tabButton(index, QTabBar::RightSide));
-        button->setToolTip((docked?tr("Undock tab: %1"):tr("Restore tab: %1")).arg(container->label()));
-        const QString prefix = docked?"undock":"dock";
-        button->setStyleSheet(
-            QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+".png"))+
-            QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover.png"))+
-            QString("QPushButton:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-down.png")));
+        this->page(index)->internalUpdate();
     }
 }
 
