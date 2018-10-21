@@ -444,16 +444,15 @@ void GraphEditor::handleAddBlock(const QJsonObject &blockDesc)
     QPointF where(std::rand()%100, std::rand()%100);
 
     //determine where, a nice point on the visible drawing area sort of upper left
-    auto view = qobject_cast<QGraphicsView *>(this->currentWidget());
+    auto view = qobject_cast<QGraphicsView *>(this->getCurrentGraphDraw());
     where += view->mapToScene(this->size().width()/4, this->size().height()/4);
 
-    this->handleAddBlock(blockDesc, where);
+    this->handleAddBlock(blockDesc, where, this->getCurrentGraphDraw());
 }
 
-void GraphEditor::handleAddBlock(const QJsonObject &blockDesc, const QPointF &where)
+void GraphEditor::handleAddBlock(const QJsonObject &blockDesc, const QPointF &where, GraphDraw *draw)
 {
     if (blockDesc.isEmpty()) return;
-    auto draw = this->getCurrentGraphDraw();
     auto block = new GraphBlock(draw);
     block->setBlockDesc(blockDesc);
 

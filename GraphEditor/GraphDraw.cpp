@@ -128,7 +128,7 @@ void GraphDraw::dropEvent(QDropEvent *event)
 {
     const auto byteArray = event->mimeData()->data("binary/json/pothos_block");
     const auto blockDesc = QJsonDocument::fromBinaryData(byteArray).object();
-    this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()));
+    this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()), this);
     event->acceptProposedAction();
 }
 

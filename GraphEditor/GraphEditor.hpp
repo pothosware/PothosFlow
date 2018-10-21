@@ -69,7 +69,7 @@ public:
         return not _stateManager->isCurrentSaved();
     }
 
-    void handleAddBlock(const QJsonObject &, const QPointF &);
+    void handleAddBlock(const QJsonObject &, const QPointF &, GraphDraw *draw);
 
     //! force a re-rendering of the graph page
     void render(void);
