@@ -18,14 +18,6 @@
 #include "MainWindow/MainWindow.hpp"
 #include <iostream>
 
-static QString dockingButtonStyle(const bool docked)
-{
-    const QString prefix = docked?"undock":"dock";
-    return  QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+".png"))+
-            QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-hover.png"))+
-            QString("QPushButton:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-"+prefix+"-down.png"));
-}
-
 /***********************************************************************
  * The docking page holds the actual internal tab page widget
  * but can display it inside of a dialog when in undocked mode.
@@ -136,10 +128,7 @@ public:
         //set the button style sheet
         auto button = qobject_cast<QPushButton *>(tabBar->tabButton(index, QTabBar::RightSide));
         if (button == nullptr) return; //didn't allocate button yet
-        static const auto dockedStyle = dockingButtonStyle(true);
-        static const auto undockedStyle = dockingButtonStyle(false);
-        const auto &style = docked?dockedStyle:undockedStyle;
-        if (button->styleSheet() != style) button->setStyleSheet(style);
+        if (docked != button->isChecked()) button->setChecked(docked); //sync state
     }
 
     int tabIndex(void) const
@@ -363,7 +352,16 @@ void DockingTabWidget::tabInserted(int index)
     //create custom button for dock/undock
     auto button = new QPushButton(this->tabBar());
     button->resize(16, 16);
-    button->setCheckable(false);
+    button->setCheckable(true);
+    button->setChecked(true);
+    static const auto buttonStyle =
+        QString("QPushButton{border-image: url(%1);}").arg(makeIconPath("dockingtab-dock.png"))+
+        QString("QPushButton:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-dock-hover.png"))+
+        QString("QPushButton:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-dock-down.png"))+
+        QString("QPushButton:checked{border-image: url(%1);}").arg(makeIconPath("dockingtab-undock.png"))+
+        QString("QPushButton:checked:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-undock-hover.png"))+
+        QString("QPushButton:checked:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-undock-down.png"));
+    button->setStyleSheet(buttonStyle);
     _mapper->setMapping(button, QTabWidget::widget(index));
     connect(button, SIGNAL(clicked()), _mapper, SLOT(map()));
     this->tabBar()->setTabButton(index, QTabBar::RightSide, button);
