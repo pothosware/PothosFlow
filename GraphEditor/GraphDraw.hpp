@@ -18,6 +18,7 @@ class GraphDraw : public QGraphicsView
     Q_OBJECT
 public:
     GraphDraw(QWidget *parent);
+    ~GraphDraw(void);
 
     GraphObjectList getObjectsSelected(const int selectionFlags = ~0);
 

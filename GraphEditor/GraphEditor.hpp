@@ -5,9 +5,9 @@
 #include <Pothos/Config.hpp>
 #include "GraphObjects/GraphObject.hpp"
 #include "GraphEditor/GraphState.hpp"
+#include "GraphEditor/DockingTabWidget.hpp"
 #include <Poco/Logger.h>
 #include <QJsonObject>
-#include <QTabWidget>
 #include <QPointer>
 
 class GraphConnection;
@@ -17,7 +17,7 @@ class QTabWidget;
 class EvalEngine;
 class QTimer;
 
-class GraphEditor : public QTabWidget
+class GraphEditor : public DockingTabWidget
 {
     Q_OBJECT
 public:
@@ -69,7 +69,7 @@ public:
         return not _stateManager->isCurrentSaved();
     }
 
-    void handleAddBlock(const QJsonObject &, const QPointF &);
+    void handleAddBlock(const QJsonObject &, const QPointF &, GraphDraw *draw);
 
     //! force a re-rendering of the graph page
     void render(void);
@@ -143,7 +143,6 @@ public slots:
     void handleStateChange(const GraphState &state);
 
 private slots:
-    void handleCurrentChanged(int);
     void handleCreateGraphPage(void);
     void handleRenameGraphPage(void);
     void handleDeleteGraphPage(void);
@@ -202,7 +201,7 @@ private:
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;
-    std::map<size_t, int> _stateToLastTabIndex;
+    std::map<size_t, QVariant> _stateToLastDisplayState;
 
     //! update enabled actions based on state - after a change or when editor becomes visible
     void updateEnabledActions(void);

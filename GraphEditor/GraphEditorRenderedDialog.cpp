@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -138,7 +138,7 @@ private:
 
 void GraphEditor::handleShowRenderedGraphDialog(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
 
     //create the dialog
     auto dialog = new RenderedGraphDialog(_evalEngine, this);

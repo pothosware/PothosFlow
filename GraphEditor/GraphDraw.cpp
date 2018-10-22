@@ -72,6 +72,11 @@ GraphDraw::GraphDraw(QWidget *parent):
     this->handleGraphDebugViewChange();
 }
 
+GraphDraw::~GraphDraw(void)
+{
+    return;
+}
+
 void GraphDraw::handleGraphDebugViewChange(void)
 {
     auto actions = MainActions::global();
@@ -89,7 +94,6 @@ void GraphDraw::handleGraphDebugViewChange(void)
         this->scene()->addItem(_graphBoundingBoxes.get());
     }
 
-    if (not this->isVisible()) return;
     this->render();
 }
 
@@ -124,7 +128,7 @@ void GraphDraw::dropEvent(QDropEvent *event)
 {
     const auto byteArray = event->mimeData()->data("binary/json/pothos_block");
     const auto blockDesc = QJsonDocument::fromBinaryData(byteArray).object();
-    this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()));
+    this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()), this);
     event->acceptProposedAction();
 }
 

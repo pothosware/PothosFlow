@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -110,6 +110,8 @@ void GraphEditor::loadState(const QByteArray &data)
         const auto pageName = pageObj["pageName"].toString();
         this->insertTab(pageNo, new GraphDraw(this), pageName);
         if (pageObj["selected"].toBool(false)) this->setCurrentIndex(pageNo);
+        this->restoreGeometry(pageNo, QByteArray::fromBase64(pageObj["geometry"].toString().toUtf8()));
+        this->setDocked(pageNo, pageObj["docked"].toBool(true));
     }
 
     ////////////////////////////////////////////////////////////////////

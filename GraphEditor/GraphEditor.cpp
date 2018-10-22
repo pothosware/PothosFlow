@@ -43,7 +43,7 @@
 static const size_t POLL_WIDGET_CHANGES_MS = 1000;
 
 GraphEditor::GraphEditor(QWidget *parent):
-    QTabWidget(parent),
+    DockingTabWidget(parent),
     _logger(Poco::Logger::get("PothosFlow.GraphEditor")),
     _parentTabWidget(qobject_cast<QTabWidget *>(parent)),
     _moveGraphObjectsMapper(new QSignalMapper(this)),
@@ -67,7 +67,6 @@ GraphEditor::GraphEditor(QWidget *parent):
 
     //connect handlers that work at the page-level of control
     connect(QApplication::clipboard(), SIGNAL(dataChanged(void)), this, SLOT(handleClipboardDataChange(void)));
-    connect(this, &GraphEditor::currentChanged, this, &GraphEditor::handleCurrentChanged);
     connect(_stateManager, &GraphStateManager::newStateSelected, this, &GraphEditor::handleResetState);
     connect(actions->createGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleCreateGraphPage(void)));
     connect(actions->renameGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleRenameGraphPage(void)));
@@ -104,6 +103,8 @@ GraphEditor::GraphEditor(QWidget *parent):
     connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
     connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
     connect(_pollWidgetTimer, &QTimer::timeout, this, &GraphEditor::handlePollWidgetTimer);
+    connect(MainMenu::global()->editMenu, &QMenu::aboutToShow, this, &GraphEditor::updateGraphEditorMenus);
+    connect(this, &DockingTabWidget::activeChanged, this, &GraphEditor::updateEnabledActions);
     _pollWidgetTimer->start(POLL_WIDGET_CHANGES_MS);
 }
 
@@ -179,14 +180,13 @@ void GraphEditor::showEvent(QShowEvent *event)
     //load our state monitor into the actions dock
     GraphActionsDock::global()->setActiveWidget(_stateManager);
 
-    this->updateGraphEditorMenus();
     this->updateEnabledActions();
     QWidget::showEvent(event);
 }
 
 void GraphEditor::updateEnabledActions(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto actions = MainActions::global();
 
     actions->undoAction->setEnabled(_stateManager->isPreviousAvailable());
@@ -220,48 +220,41 @@ void GraphEditor::updateEnabledActions(void)
     //[*] is a placeholder for the windowModified property
     QString subtext = this->getCurrentFilePath();
     if (subtext.isEmpty()) subtext = tr("untitled");
-    MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
     MainWindow::global()->setWindowTitle(tr("Editing %1[*]").arg(subtext));
-}
-
-void GraphEditor::handleCurrentChanged(int)
-{
-    if (not this->isVisible()) return;
-    this->updateGraphEditorMenus();
+    MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
+    this->setWindowTitle(subtext+"[*]");
+    this->setWindowModified(this->hasUnsavedChanges());
 }
 
 void GraphEditor::handleCreateGraphPage(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     const QString newName = QInputDialog::getText(this, tr("Create page"),
         tr("New page name"), QLineEdit::Normal, tr("untitled"));
     if (newName.isEmpty()) return;
     this->addTab(new GraphDraw(this), newName);
-    this->updateGraphEditorMenus();
 
     handleStateChange(GraphState("document-new", tr("Create graph page ") + newName));
 }
 
 void GraphEditor::handleRenameGraphPage(void)
 {
-    if (not this->isVisible()) return;
-    const auto oldName = this->tabText(this->currentIndex());
+    if (not this->isActive()) return;
+    const auto oldName = this->tabText(this->activeIndex());
     const QString newName = QInputDialog::getText(this, tr("Rename page"),
         tr("New page name"), QLineEdit::Normal, oldName);
     if (newName.isEmpty()) return;
-    this->setTabText(this->currentIndex(), newName);
-    this->updateGraphEditorMenus();
+    this->setTabText(this->activeIndex(), newName);
 
     handleStateChange(GraphState("edit-rename", tr("Rename graph page ") + oldName + " -> " + newName));
 }
 
 void GraphEditor::handleDeleteGraphPage(void)
 {
-    if (not this->isVisible()) return;
-    const auto oldName = this->tabText(this->currentIndex());
-    this->removeTab(this->currentIndex());
+    if (not this->isActive()) return;
+    const auto oldName = this->tabText(this->activeIndex());
+    this->removeTab(this->activeIndex());
     if (this->count() == 0) this->makeDefaultPage();
-    this->updateGraphEditorMenus();
 
     handleStateChange(GraphState("edit-delete", tr("Delete graph page ") + oldName));
 }
@@ -330,7 +323,7 @@ static GraphBreaker *findInputBreaker(GraphEditor *editor, const GraphConnection
 
 void GraphEditor::handleMoveGraphObjects(const int index)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     if (index >= this->count()) return;
     auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Move %1 to %2").arg(draw->getSelectionDescription(~GRAPH_CONNECTION), this->tabText(index));
@@ -447,20 +440,19 @@ void GraphEditor::handleMoveGraphObjects(const int index)
 
 void GraphEditor::handleAddBlock(const QJsonObject &blockDesc)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     QPointF where(std::rand()%100, std::rand()%100);
 
     //determine where, a nice point on the visible drawing area sort of upper left
-    auto view = qobject_cast<QGraphicsView *>(this->currentWidget());
+    auto view = qobject_cast<QGraphicsView *>(this->getCurrentGraphDraw());
     where += view->mapToScene(this->size().width()/4, this->size().height()/4);
 
-    this->handleAddBlock(blockDesc, where);
+    this->handleAddBlock(blockDesc, where, this->getCurrentGraphDraw());
 }
 
-void GraphEditor::handleAddBlock(const QJsonObject &blockDesc, const QPointF &where)
+void GraphEditor::handleAddBlock(const QJsonObject &blockDesc, const QPointF &where, GraphDraw *draw)
 {
     if (blockDesc.isEmpty()) return;
-    auto draw = this->getCurrentGraphDraw();
     auto block = new GraphBlock(draw);
     block->setBlockDesc(blockDesc);
 
@@ -486,7 +478,7 @@ void GraphEditor::handleAddBlock(const QJsonObject &blockDesc, const QPointF &wh
 
 void GraphEditor::handleCreateBreaker(const bool isInput)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
 
     const auto dirName = isInput?tr("input"):tr("output");
     const auto newName = QInputDialog::getText(this, tr("Create %1 breaker").arg(dirName),
@@ -532,7 +524,7 @@ void GraphEditor::handleInsertGraphWidget(QObject *obj)
 
 void GraphEditor::handleCut(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Cut %1").arg(draw->getSelectionDescription());
 
@@ -552,7 +544,7 @@ void GraphEditor::handleCut(void)
 
 void GraphEditor::handleCopy(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
 
     QJsonArray jsonObjs;
@@ -602,7 +594,7 @@ static GraphObjectList handlePasteType(GraphDraw *draw, const QJsonArray &graphO
 
 void GraphEditor::handlePaste(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
 
     auto mimeData = QApplication::clipboard()->mimeData();
@@ -682,13 +674,13 @@ void GraphEditor::handlePaste(void)
 
 void GraphEditor::handleClipboardDataChange(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     this->updateEnabledActions();
 }
 
 void GraphEditor::handleSelectAll(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     for (auto obj : draw->getGraphObjects())
     {
@@ -717,7 +709,7 @@ void GraphEditor::deleteFlagged(void)
 
 void GraphEditor::handleDelete(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     auto desc = tr("Delete %1").arg(draw->getSelectionDescription());
 
@@ -734,7 +726,7 @@ void GraphEditor::handleDelete(void)
 
 void GraphEditor::handleRotateLeft(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     const auto objs = draw->getObjectsSelected(~GRAPH_CONNECTION);
     if (objs.isEmpty()) return;
@@ -749,7 +741,7 @@ void GraphEditor::handleRotateLeft(void)
 
 void GraphEditor::handleRotateRight(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     const auto objs = draw->getObjectsSelected(~GRAPH_CONNECTION);
     if (objs.isEmpty()) return;
@@ -764,7 +756,7 @@ void GraphEditor::handleRotateRight(void)
 
 void GraphEditor::handleObjectProperties(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     const auto objs = draw->getObjectsSelected();
     if (not objs.isEmpty()) emit draw->modifyProperties(objs.at(0));
@@ -772,13 +764,13 @@ void GraphEditor::handleObjectProperties(void)
 
 void GraphEditor::handleGraphProperties(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     emit this->getCurrentGraphDraw()->modifyProperties(this);
 }
 
 void GraphEditor::handleZoomIn(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     if (draw->zoomScale() >= GraphDrawZoomMax) return;
     draw->setZoomScale(draw->zoomScale() + GraphDrawZoomStep);
@@ -786,7 +778,7 @@ void GraphEditor::handleZoomIn(void)
 
 void GraphEditor::handleZoomOut(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     if (draw->zoomScale() <= GraphDrawZoomMin) return;
     draw->setZoomScale(draw->zoomScale() - GraphDrawZoomStep);
@@ -794,22 +786,22 @@ void GraphEditor::handleZoomOut(void)
 
 void GraphEditor::handleZoomOriginal(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     draw->setZoomScale(1.0);
 }
 
 void GraphEditor::handleUndo(void)
 {
-    if (not this->isVisible()) return;
-    assert(_stateManager->isPreviousAvailable());
+    if (not this->isActive()) return;
+    if (not _stateManager->isPreviousAvailable()) return;
     this->handleResetState(_stateManager->getCurrentIndex()-1);
 }
 
 void GraphEditor::handleRedo(void)
 {
-    if (not this->isVisible()) return;
-    assert(_stateManager->isSubsequentAvailable());
+    if (not this->isActive()) return;
+    if (not _stateManager->isSubsequentAvailable()) return;
     this->handleResetState(_stateManager->getCurrentIndex()+1);
 }
 
@@ -825,7 +817,7 @@ void GraphEditor::handleDisable(void)
 
 void GraphEditor::handleSetEnabled(const bool enb)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
 
     //get a set of all selected objects that can be changed
@@ -851,7 +843,7 @@ void GraphEditor::handleSetEnabled(const bool enb)
 
 void GraphEditor::handleReeval(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     if (_evalEngine == nullptr) return;
     _evalEngine->submitReeval(draw->getObjectsSelected(GRAPH_BLOCK));
@@ -859,7 +851,7 @@ void GraphEditor::handleReeval(void)
 
 void GraphEditor::handleResetState(int stateNo)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
 
     //Resets the state of whoever is modding the properties:
     //Do this before loading the state, otherwise a potential
@@ -867,14 +859,13 @@ void GraphEditor::handleResetState(int stateNo)
     auto draw = this->getCurrentGraphDraw();
     emit draw->modifyProperties(nullptr);
 
-    //Restore the last displayed page in stateNo,
-    //and not the saved viewed page in stateNo.
-    const int lastPageNo = _stateToLastTabIndex.at(stateNo);
+    //Restore the last display state in stateNo,
+    //and not the saved display state in stateNo.
+    const auto lastDisplayState = _stateToLastDisplayState[stateNo];
 
     _stateManager->resetTo(stateNo);
     this->loadState(_stateManager->current().dump);
-    this->setCurrentIndex(lastPageNo);
-    this->updateGraphEditorMenus();
+    this->restoreWidgetState(lastDisplayState);
     this->render();
 
     this->updateExecutionEngine();
@@ -882,7 +873,7 @@ void GraphEditor::handleResetState(int stateNo)
 
 void GraphEditor::handleAffinityZoneClicked(const QString &zone)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
 
     for (auto obj : draw->getObjectsSelected(GRAPH_BLOCK))
@@ -909,6 +900,10 @@ void GraphEditor::handleAffinityZoneChanged(const QString &zone)
 
 void GraphEditor::handleStateChange(const GraphState &state)
 {
+    //always store the last display state with the state
+    //we use this to restore the last display state when undo/reset
+    _stateToLastDisplayState[_stateManager->getCurrentIndex()] = this->saveWidgetState();
+
     //empty states tell us to simply reset to the current known point
     if (state.iconName.isEmpty() and state.description.isEmpty())
     {
@@ -921,13 +916,12 @@ void GraphEditor::handleStateChange(const GraphState &state)
     _stateManager->post(stateWithDump);
     this->render();
 
-    this->updateGraphEditorMenus();
     this->updateExecutionEngine();
 }
 
 void GraphEditor::handleToggleActivateTopology(const bool enable)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     if (_evalEngine == nullptr) return;
     _evalEngine->submitActivateTopology(enable);
     _isTopologyActive = enable;
@@ -942,7 +936,7 @@ void GraphEditor::handleBlockDisplayModeChange(void)
         assert(block != nullptr);
         block->changed();
     }
-    if (this->isVisible()) this->render();
+    if (this->isActive()) this->render();
 }
 
 void GraphEditor::handleBlockIncrement(void)
@@ -957,7 +951,7 @@ void GraphEditor::handleBlockDecrement(void)
 
 void GraphEditor::handleBlockXcrement(const int adj)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto draw = this->getCurrentGraphDraw();
     GraphObjectList changedObjects;
     for (auto obj : draw->getObjectsSelected(GRAPH_BLOCK))
@@ -1040,7 +1034,6 @@ void GraphEditor::load(void)
     _stateManager->resetToDefault();
     handleStateChange(GraphState("document-new", tr("Load topology from file")));
     _stateManager->saveCurrent();
-    this->updateGraphEditorMenus();
     this->render();
 
     if (_autoActivate)
@@ -1074,18 +1067,14 @@ void GraphEditor::render(void)
 
 void GraphEditor::updateGraphEditorMenus(void)
 {
-    if (not this->isVisible()) return;
+    if (not this->isActive()) return;
     auto mainMenu = MainMenu::global();
-
-    //always store the last visible page with the state
-    //we use this to restore the last viewed page when undo/reset
-    _stateToLastTabIndex[_stateManager->getCurrentIndex()] = this->currentIndex();
 
     auto menu = mainMenu->moveGraphObjectsMenu;
     menu->clear();
     for (int i = 0; i < this->count(); i++)
     {
-        if (i == this->currentIndex()) continue;
+        if (i == this->activeIndex()) continue;
         auto action = menu->addAction(QString("%1 (%2)").arg(this->tabText(i)).arg(i));
         connect(action, SIGNAL(triggered(void)), _moveGraphObjectsMapper, SLOT(map(void)));
         _moveGraphObjectsMapper->setMapping(action, i);
@@ -1130,7 +1119,7 @@ GraphDraw *GraphEditor::getGraphDraw(const int index) const
 
 GraphDraw *GraphEditor::getCurrentGraphDraw(void) const
 {
-    return this->getGraphDraw(this->currentIndex());
+    return this->getGraphDraw(this->activeIndex());
 }
 
 GraphObjectList GraphEditor::getGraphObjects(const int selectionFlags) const
