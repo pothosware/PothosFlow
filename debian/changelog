@@ -1,3 +1,9 @@
+pothos-flow (0.6.2-1) unstable; urgency=low
+
+  * Release 0.6.2 (2018-12-29)
+
+ -- Josh Blum <josh@pothosware.com>  Sat, 29 Dec 2018 19:04:50 -0000
+
 pothos-flow (0.6.1-1) unstable; urgency=low
 
   * Release 0.6.1 (2018-04-27)
