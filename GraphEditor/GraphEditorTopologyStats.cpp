@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2018 Josh Blum
+// Copyright (c) 2015-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -47,7 +47,6 @@ public:
         _autoReloadButton->setCheckable(true);
 
         //setup the JSON stats tree
-        _statsTree->setHeaderLabels(QStringList(tr("Block Stats")));
         _statsScroller->setWidget(_statsTree);
         _statsScroller->setWidgetResizable(true);
 
@@ -64,6 +63,7 @@ public:
 private slots:
     void handleManualReload(void)
     {
+        this->updateStatusLabel(tr("Manual loading"));
         _watcher->setFuture(QtConcurrent::run(std::bind(&EvalEngine::getTopologyJSONStats, _evalEngine)));
     }
 
@@ -71,50 +71,65 @@ private slots:
     {
         if (enb) _timer->start(1000);
         else _timer->stop();
+        if (enb) this->updateStatusLabel(tr("Automatic loading"));
+        else this->updateStatusLabel(tr("Automatic stopped"));
     }
 
     void handleWatcherDone(void)
     {
         const auto jsonStats = _watcher->result();
-        if (jsonStats.isNull())
+
+        if (_timer->isActive())
         {
-            QMessageBox msgBox(QMessageBox::Critical, tr("Topology stats error"), tr("no stats - is the topology active?"));
-            msgBox.exec();
+            if (jsonStats.isNull()) this->updateStatusLabel(tr("Automatic holding"));
+            else this->updateStatusLabel(tr("Automatic acquisition"));
         }
         else
         {
-            const auto result = QJsonDocument::fromJson(jsonStats);
-            const auto topObj = result.object();
-            for (const auto &name : topObj.keys())
+            if (jsonStats.isNull()) this->updateStatusLabel(tr("Topology inactive"));
+            else this->updateStatusLabel(tr("Manual acquisition"));
+        }
+
+        //the topology is not active, leave the stats up for display
+        if (jsonStats.isNull()) return;
+
+        //update the status display
+        const auto result = QJsonDocument::fromJson(jsonStats);
+        const auto topObj = result.object();
+        for (const auto &name : topObj.keys())
+        {
+            const auto dataObj = topObj[name].toObject();
+
+            auto &item = _statsItems[name];
+            if (item == nullptr)
             {
-                const auto dataObj = topObj[name].toObject();
-
-                auto &item = _statsItems[name];
-                if (item == nullptr)
-                {
-                    const auto title = dataObj["blockName"].toString();
-                    item = new QTreeWidgetItem(QStringList(title));
-                    _statsTree->addTopLevelItem(item);
-                }
-
-                auto &label = _statsLabels[name];
-                if (label == nullptr)
-                {
-                    label = new QLabel(_statsTree);
-                    label->setStyleSheet("QLabel{background:white;margin:1px;}");
-                    label->setWordWrap(true);
-                    label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-                    label->setTextInteractionFlags(Qt::TextSelectableByMouse);
-                    auto subItem = new QTreeWidgetItem(item);
-                    _statsTree->setItemWidget(subItem, 0, label);
-                }
-
-                label->setText(QJsonDocument(dataObj).toJson(QJsonDocument::Indented));
+                const auto title = dataObj["blockName"].toString();
+                item = new QTreeWidgetItem(QStringList(title));
+                _statsTree->addTopLevelItem(item);
             }
+
+            auto &label = _statsLabels[name];
+            if (label == nullptr)
+            {
+                label = new QLabel(_statsTree);
+                label->setStyleSheet("QLabel{background:white;margin:1px;}");
+                label->setWordWrap(true);
+                label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+                label->setTextInteractionFlags(Qt::TextSelectableByMouse);
+                auto subItem = new QTreeWidgetItem(item);
+                _statsTree->setItemWidget(subItem, 0, label);
+            }
+
+            label->setText(QJsonDocument(dataObj).toJson(QJsonDocument::Indented));
         }
     }
 
 private:
+    void updateStatusLabel(const QString &st)
+    {
+        _statsTree->setHeaderLabel(tr("Block Stats - %1").arg(st));
+    }
+
     EvalEngine *_evalEngine;
     QVBoxLayout *_topLayout;
     QPushButton *_manualReloadButton;
