@@ -3,6 +3,8 @@ This this the changelog file for the Pothos Flow toolkit.
 Release 0.7.0 (pending)
 ==========================
 
+- Graph dialogs use the associated graph editor's window title
+
 - Status label for topology stats monitoring mode
   Removed the error dialog, and allow status monitor to remain
   in the automatic reload mode while the topology is inactive.

@@ -24,8 +24,9 @@ class TopologyStatsDialog : public QDialog
     Q_OBJECT
 public:
 
-    TopologyStatsDialog(EvalEngine *evalEngine, QWidget *parent):
+    TopologyStatsDialog(EvalEngine *evalEngine, GraphEditor *parent):
         QDialog(parent),
+        _graphEditor(parent),
         _evalEngine(evalEngine),
         _topLayout(new QVBoxLayout(this)),
         _manualReloadButton(new QPushButton(makeIconFromTheme("view-refresh"), tr("Manual Reload"), this)),
@@ -36,7 +37,6 @@ public:
         _watcher(new QFutureWatcher<QByteArray>(this))
     {
         //create layouts
-        this->setWindowTitle(tr("Topology stats viewer"));
         auto formsLayout = new QHBoxLayout();
         _topLayout->addLayout(formsLayout);
         formsLayout->addWidget(_manualReloadButton);
@@ -51,12 +51,14 @@ public:
         _statsScroller->setWidgetResizable(true);
 
         //connect the signals
-        connect(_manualReloadButton, SIGNAL(pressed(void)), this, SLOT(handleManualReload(void)));
-        connect(_autoReloadButton, SIGNAL(clicked(bool)), this, SLOT(handleAutomaticReload(bool)));
-        connect(_timer, SIGNAL(timeout(void)), this, SLOT(handleManualReload(void)));
-        connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleWatcherDone(void)));
+        connect(_manualReloadButton, &QPushButton::pressed, this, &TopologyStatsDialog::handleManualReload);
+        connect(_autoReloadButton, &QPushButton::clicked, this, &TopologyStatsDialog::handleAutomaticReload);
+        connect(_timer, &QTimer::timeout, this, &TopologyStatsDialog::handleManualReload);
+        connect(_watcher, &QFutureWatcher<QByteArray>::finished, this, &TopologyStatsDialog::handleWatcherDone);
+        connect(_graphEditor, &GraphEditor::windowTitleUpdated, this, &TopologyStatsDialog::handleWindowTitleUpdated);
 
         //initialize
+        this->handleWindowTitleUpdated();
         this->handleManualReload();
     }
 
@@ -124,12 +126,19 @@ private slots:
         }
     }
 
+    void handleWindowTitleUpdated(void)
+    {
+        this->setWindowTitle(tr("Topology stats - %1").arg(_graphEditor->windowTitle()));
+        this->setWindowModified(_graphEditor->isWindowModified());
+    }
+
 private:
     void updateStatusLabel(const QString &st)
     {
         _statsTree->setHeaderLabel(tr("Block Stats - %1").arg(st));
     }
 
+    GraphEditor *_graphEditor;
     EvalEngine *_evalEngine;
     QVBoxLayout *_topLayout;
     QPushButton *_manualReloadButton;
