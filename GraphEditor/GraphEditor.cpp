@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine/EvalEngine.hpp"
@@ -224,6 +224,7 @@ void GraphEditor::updateEnabledActions(void)
     MainWindow::global()->setWindowModified(this->hasUnsavedChanges());
     this->setWindowTitle(subtext+"[*]");
     this->setWindowModified(this->hasUnsavedChanges());
+    emit this->windowTitleUpdated();
 }
 
 void GraphEditor::handleCreateGraphPage(void)

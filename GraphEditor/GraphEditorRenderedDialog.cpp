@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -24,8 +24,9 @@ class RenderedGraphDialog : public QDialog
 {
     Q_OBJECT
 public:
-    RenderedGraphDialog(EvalEngine *evalEngine, QWidget *parent):
+    RenderedGraphDialog(EvalEngine *evalEngine, GraphEditor *parent):
         QDialog(parent),
+        _graphEditor(parent),
         _evalEngine(evalEngine),
         _topLayout(new QVBoxLayout(this)),
         _modeOptions(new QComboBox(this)),
@@ -34,7 +35,6 @@ public:
         _currentView(nullptr)
     {
         //create layouts
-        this->setWindowTitle(tr("Rendered topology viewer"));
         auto formsLayout = new QHBoxLayout();
         _topLayout->addLayout(formsLayout);
 
@@ -56,8 +56,10 @@ public:
         connect(_modeOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(handleChange(int)));
         connect(_portOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(handleChange(int)));
         connect(_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(handleProcessDone(int, QProcess::ExitStatus)));
+        connect(_graphEditor, &GraphEditor::windowTitleUpdated, this, &RenderedGraphDialog::handleWindowTitleUpdated);
 
         //initialize
+        this->handleWindowTitleUpdated();
         QPixmap pixmap(parent->size());
         pixmap.fill(Qt::white);
         installNewView(pixmap);
@@ -106,6 +108,12 @@ private slots:
         }
     }
 
+    void handleWindowTitleUpdated(void)
+    {
+        this->setWindowTitle(tr("Rendered topology - %1").arg(_graphEditor->windowTitle()));
+        this->setWindowModified(_graphEditor->isWindowModified());
+    }
+
     void displayErrorMessage(const QString &errorMsg)
     {
         QMessageBox msgBox(QMessageBox::Critical, tr("Topology render error"), tr("Image generation failed!\n%1").arg(errorMsg));
@@ -127,6 +135,7 @@ private slots:
     }
 
 private:
+    GraphEditor *_graphEditor;
     EvalEngine *_evalEngine;
     QVBoxLayout *_topLayout;
     QComboBox *_modeOptions;
