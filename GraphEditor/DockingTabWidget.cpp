@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2018 Josh Blum
+// Copyright (c) 2018-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "DockingTabWidget.hpp"
@@ -73,7 +73,8 @@ public:
             _layout->addWidget(_widget);
             _widget->setParent(this);
             _dialogGeometry = _dialog->saveGeometry();
-            delete _dialog;
+            _dialog->deleteLater(); //delete later, may have events pending
+            _dialog.clear(); //clear the qpointer so it has a null state
         }
         else //undock into new dialog
         {
