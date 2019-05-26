@@ -4,6 +4,8 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(PothosFlow CXX)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
 if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
     find_package(Pothos "0.6.0" CONFIG REQUIRED)
 else()
