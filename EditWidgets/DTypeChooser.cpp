@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2019 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
@@ -144,11 +144,14 @@ static QWidget *makeDTypeChooser(const QJsonArray &, const QJsonObject &kwargs, 
         for (int bytes = 64; bytes >= 32; bytes /= 2)
         {
             if (kwargs[keyPrefix+"float"].toInt(0)!=0) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[QString(keyPrefix+"float%1").arg(bytes)].toInt(0)!=0) comboBox->addItem(QString("%1Float%2").arg(namePrefix).arg(bytes), QString("\"%1float%2\"").arg(aliasPrefix).arg(bytes));
         }
         for (int bytes = 64; bytes >= 8; bytes /= 2)
         {
             if (kwargs[keyPrefix+"int"].toInt(0)!=0) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[QString(keyPrefix+"int%1").arg(bytes)].toInt(0)!=0) comboBox->addItem(QString("%1Int%2").arg(namePrefix).arg(bytes), QString("\"%1int%2\"").arg(aliasPrefix).arg(bytes));
             if (kwargs[keyPrefix+"uint"].toInt(0)!=0) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
+            if (kwargs[QString(keyPrefix+"uint%1").arg(bytes)].toInt(0)!=0) comboBox->addItem(QString("%1UInt%2").arg(namePrefix).arg(bytes), QString("\"%1uint%2\"").arg(aliasPrefix).arg(bytes));
         }
     }
     return dtypeChooser;
