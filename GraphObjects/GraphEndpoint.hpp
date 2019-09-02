@@ -3,12 +3,11 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
+#include "GraphObjects/GraphObject.hpp"
 #include <QPointer>
 #include <QString>
 #include <QPointF>
 #include <QHash>
-
-class GraphObject;
 
 enum GraphConnectableDirection
 {
