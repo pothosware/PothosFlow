@@ -3,11 +3,11 @@
 
 #pragma once
 #include <Pothos/Config.hpp>
-#include "GraphObjects/GraphObject.hpp"
 #include <QPointer>
 #include <QString>
 #include <QPointF>
-#include <QHash>
+
+class GraphObject;
 
 enum GraphConnectableDirection
 {
@@ -53,10 +53,7 @@ namespace std
         typedef GraphConnectableKey argument_type;
         typedef std::size_t value_type;
 
-        value_type operator()(argument_type const& s) const
-        {
-            return qHash(s.id) ^ (qHash(s.direction) << 1);
-        }
+        value_type operator()(argument_type const& s) const noexcept;
     };
 }
 
@@ -89,10 +86,6 @@ namespace std
         typedef GraphConnectionEndpoint argument_type;
         typedef std::size_t value_type;
 
-        value_type operator()(argument_type const& s) const
-        {
-            return std::hash<GraphConnectableKey>()(s.getKey()) ^
-            (std::hash<size_t>()(size_t(s.getObj().data())) << 1);
-        }
+        value_type operator()(argument_type const& s) const noexcept;
     };
 }
