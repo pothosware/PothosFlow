@@ -103,7 +103,7 @@ list(APPEND SOURCES ${RESOURCES_QRC})
 ########################################################################
 # Resource file - adds an icon to Pothos Flow executable
 ########################################################################
-if (WIN32)
+if (MSVC)
     set(ICON_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/icons/PothosFlow.ico)
     set(RES_FILES "${CMAKE_CURRENT_BINARY_DIR}/PothosFlow.rc")
     file(WRITE "${RES_FILES}" "id ICON \"${ICON_SOURCE}\"")
@@ -112,7 +112,7 @@ if (WIN32)
     set(CMAKE_RC_COMPILE_OBJECT
         "<CMAKE_RC_COMPILER> <FLAGS> -O coff <DEFINES> -i <SOURCE> -o <OBJECT>")
     list(APPEND SOURCES ${RES_FILES})
-endif (WIN32)
+endif (MSVC)
 
 if (APPLE)
     set(ICON_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/icons/PothosFlow.icns)

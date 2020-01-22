@@ -3,6 +3,7 @@
 
 #include "GraphObjects/GraphEndpoint.hpp"
 #include "GraphObjects/GraphObject.hpp"
+#include <QHash>
 
 GraphConnectableKey::GraphConnectableKey(const QString &id, const GraphConnectableDirection direction):
     id(id),
@@ -55,4 +56,15 @@ bool GraphConnectionEndpoint::isValid(void) const
 bool operator==(const GraphConnectionEndpoint &ep0, const GraphConnectionEndpoint &ep1)
 {
     return ep0.getObj() == ep1.getObj() and ep0.getKey() == ep1.getKey();
+}
+
+std::hash<GraphConnectableKey>::value_type std::hash<GraphConnectableKey>::operator()(argument_type const& s) const noexcept
+{
+    return qHash(s.id) ^ (qHash(s.direction) << 1);
+}
+
+std::hash<GraphConnectionEndpoint>::value_type std::hash<GraphConnectionEndpoint>::operator()(argument_type const& s) const noexcept
+{
+    return std::hash<GraphConnectableKey>()(s.getKey()) ^
+        (std::hash<size_t>()(size_t(s.getObj().data())) << 1);
 }
