@@ -11,6 +11,8 @@ Release 0.7.0 (pending)
 
 - Support for multiple monitors and editor undocking
 
+- Added ifdef for Poco 1.10 logging API change
+
 Release 0.6.2 (2018-12-29)
 ==========================
 

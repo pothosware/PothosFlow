@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2020 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MessageWindow/LoggerChannel.hpp"
@@ -10,7 +10,11 @@ LoggerChannel::LoggerChannel(QObject *parent):
     QObject(parent),
     _logger(Poco::Logger::get("")),
     _oldLevel(_logger.getLevel()),
-    _splitter(dynamic_cast<Poco::SplitterChannel *>(_logger.getChannel()))
+    #if POCO_VERSION < 0x010A0000
+    _splitter(dynamic_cast<Poco::SplitterChannel *>(_logger.getChannel()), true)
+    #else
+    _splitter(_logger.getChannel()->cast<Poco::SplitterChannel>())
+    #endif
 {
     _logger.setLevel(Poco::Message::PRIO_TRACE); //lowest level -> shows everything
     if (_splitter) _splitter->addChannel(this);
