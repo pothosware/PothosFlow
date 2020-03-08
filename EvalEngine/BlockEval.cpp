@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2017 Josh Blum
+//                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockEval.hpp"
@@ -279,6 +280,21 @@ bool BlockEval::evaluationProcedure(void)
                     _lastBlockStatus.overlayDesc = jsonDoc.object();
                     _lastBlockStatus.overlayDescStr = overlayBytes;
                 }
+            }
+        }
+        catch(const Pothos::ProxyExceptionMessage &ex)
+        {
+            // If overlay() throws an exception, log the exception's message. We need to specifically
+            // check for the error string corresponding to the call not existing to avoid logging the
+            // error caught when PothosFlow attempts to call a nonexistent function.
+            static const std::string noOverlayErrorString = "call(overlay): method does not exist in registry";
+            if(std::string::npos == ex.message().find(noOverlayErrorString))
+            {
+                poco_error_f2(
+                    _logger,
+                    "%s:overlay() threw the following exception: %s",
+                    proxyBlock.call<std::string>("getName"),
+                    ex.message());
             }
         }
         catch (...)
