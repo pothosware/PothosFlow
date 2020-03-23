@@ -57,6 +57,8 @@ static QWidget *makeSpinBox(const QJsonArray &, const QJsonObject &kwargs, QWidg
     auto spinBox = new SpinBox(parent);
     spinBox->setMinimum(kwargs["minimum"].toInt(std::numeric_limits<int>::min()));
     spinBox->setMaximum(kwargs["maximum"].toInt(std::numeric_limits<int>::max()));
+    spinBox->setSingleStep(kwargs["step"].toInt(1));
+    spinBox->setDisplayIntegerBase(kwargs["base"].toInt(10));
     return spinBox;
 }
 
