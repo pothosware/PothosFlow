@@ -3,6 +3,7 @@
 
 #include "MessageWindow/LoggerChannel.hpp"
 #include <Poco/SplitterChannel.h>
+#include <Poco/Version.h>
 
 static const long QUEUE_MAX_DEPTH = 30;
 
@@ -13,7 +14,7 @@ LoggerChannel::LoggerChannel(QObject *parent):
     #if POCO_VERSION < 0x010A0000
     _splitter(dynamic_cast<Poco::SplitterChannel *>(_logger.getChannel()), true)
     #else
-    _splitter(_logger.getChannel()->cast<Poco::SplitterChannel>())
+    _splitter(_logger.getChannel().cast<Poco::SplitterChannel>())
     #endif
 {
     _logger.setLevel(Poco::Message::PRIO_TRACE); //lowest level -> shows everything
