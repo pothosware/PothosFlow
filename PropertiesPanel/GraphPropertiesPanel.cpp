@@ -232,7 +232,8 @@ QStringList GraphPropertiesPanel::getChangeDescList(void) const
     //look for reorder of variable list
     if (
         _originalVariableNames != _graphEditor->listGlobals() and
-        QSet<QString>::fromList(_originalVariableNames) == QSet<QString>::fromList(_graphEditor->listGlobals())
+        QSet<QString>(_originalVariableNames.begin(), _originalVariableNames.end()) ==
+        QSet<QString>(_graphEditor->listGlobals().begin(), _graphEditor->listGlobals().end())
     )
     {
         changes.push_back(tr("Reordered variables"));
@@ -288,7 +289,7 @@ void GraphPropertiesPanel::handleCreateVariable(void)
     QString errorMsg;
 
     //check for a legal variable name
-    if (name.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
+    if (name.count(QRegularExpression("^[a-zA-Z]\\w*$")) != 1)
     {
         errorMsg = tr("'%1' is not a legal variable name").arg(name);
     }

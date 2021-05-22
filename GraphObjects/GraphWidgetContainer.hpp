@@ -43,7 +43,11 @@ signals:
     void resized(void);
 
 protected:
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void enterEvent(QEvent *event);
+#else
+    void enterEvent(QEnterEvent *event);
+#endif
     void leaveEvent(QEvent *event);
     void updateShowGrip(void);
     void paintEvent(QPaintEvent *event);

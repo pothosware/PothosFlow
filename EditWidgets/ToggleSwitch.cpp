@@ -101,7 +101,6 @@ protected:
         const int h = this->height();
         const auto &palette = this->palette();
         p.setRenderHint(QPainter::Antialiasing);
-        p.setRenderHint(QPainter::HighQualityAntialiasing);
         p.setRenderHint(QPainter::SmoothPixmapTransform);
 
         //the border color to show selection
@@ -130,8 +129,8 @@ protected:
 
     void wheelEvent(QWheelEvent *e)
     {
-        const bool checked = e->delta() > 0;
-        if (e->delta() != 0 and checked != this->isChecked())
+        const bool checked = e->angleDelta().y() > 0;
+        if (e->angleDelta().y() != 0 and checked != this->isChecked())
         {
             this->setChecked(checked);
             this->handleToggled(checked);

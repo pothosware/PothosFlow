@@ -31,7 +31,7 @@ public slots:
     {
         if (s.startsWith("\"") and s.endsWith("\""))
         {
-            auto s0 = s.midRef(1, s.size()-2).toString();
+            auto s0 = QStringView{s}.mid(1, s.size()-2).toString();
             QLineEdit::setText(s0.replace("\\\"", "\"")); //unescape
         }
         else QLineEdit::setText(s);

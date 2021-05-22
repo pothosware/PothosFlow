@@ -56,7 +56,7 @@ QByteArray GraphEditor::dumpState(void) const
         {
             auto draw = this->getGraphDraw(pageNo);
             auto objs = draw->getGraphObjects(graphType);
-            qSort(objs.begin(), objs.end(), [](const GraphObject *lhs, const GraphObject *rhs)
+            std::sort(objs.begin(), objs.end(), [](const GraphObject *lhs, const GraphObject *rhs)
             {
                 return QString::compare(lhs->getId(), rhs->getId()) < 0;
             });

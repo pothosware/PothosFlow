@@ -120,7 +120,11 @@ void GraphWidgetContainer::setSelected(const bool selected)
         .arg(GraphWidgetBackgroundColor));
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void GraphWidgetContainer::enterEvent(QEvent *event)
+#else
+void GraphWidgetContainer::enterEvent(QEnterEvent *event)
+#endif
 {
     this->updateShowGrip();
     QWidget::enterEvent(event);

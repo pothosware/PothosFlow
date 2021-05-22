@@ -137,7 +137,6 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         QPainter painter(&pixmap);
         painter.translate(-bounds.topLeft()+QPoint(1,1));
         painter.setRenderHint(QPainter::Antialiasing);
-        painter.setRenderHint(QPainter::HighQualityAntialiasing);
         painter.setRenderHint(QPainter::SmoothPixmapTransform);
         _block->render(painter);
         painter.end();

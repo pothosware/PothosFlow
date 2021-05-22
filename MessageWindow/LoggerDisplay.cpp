@@ -99,7 +99,11 @@ void LoggerDisplay::resizeEvent(QResizeEvent *event)
     return QStackedWidget::resizeEvent(event);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void LoggerDisplay::enterEvent(QEvent *event)
+#else
+void LoggerDisplay::enterEvent(QEnterEvent *event)
+#endif
 {
     _clearButton->show();
     _clearButton->move(_text->viewport()->width()-_clearButton->width(), 0);

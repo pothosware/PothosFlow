@@ -16,7 +16,7 @@ public:
     //! Global access to main splash
     static MainSplash *global(void);
 
-    MainSplash(QWidget *parent);
+    MainSplash();
 
     void postMessage(const QString &msg);
 };

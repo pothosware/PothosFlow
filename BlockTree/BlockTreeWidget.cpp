@@ -90,7 +90,6 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     painter.translate(-bounds.topLeft()+QPoint(1,1));
     //painter.scale(zoomScale, zoomScale); //TODO get zoomscale from draw
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
     renderBlock->render(painter);
     renderBlock.reset();
@@ -98,8 +97,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
 
     //create the drag object
     auto mimeData = new QMimeData();
-    const QJsonDocument jsonDoc(blockItem->getBlockDesc());
-    mimeData->setData("binary/json/pothos_block", jsonDoc.toBinaryData());
+    mimeData->setData("binary/json/pothos_block", QJsonDocument::fromVariant(blockItem->getBlockDesc()).toJson());
     auto drag = new QDrag(this);
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
@@ -200,8 +198,7 @@ QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
         auto b = dynamic_cast<BlockTreeWidgetItem *>(item);
         if (b == nullptr) continue;
         auto mimeData = new QMimeData();
-        const QJsonDocument jsonDoc(b->getBlockDesc());
-        mimeData->setData("binary/json/pothos_block", jsonDoc.toBinaryData());
+        mimeData->setData("binary/json/pothos_block", QJsonDocument::fromVariant(b->getBlockDesc()).toJson());
         return mimeData;
     }
     return QTreeWidget::mimeData(items);

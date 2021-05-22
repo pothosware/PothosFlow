@@ -30,7 +30,11 @@ private:
     QToolButton *_clearButton;
     QTimer *_timer;
 
-    void resizeEvent(QResizeEvent *event);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void enterEvent(QEvent *event);
+#else
+    void enterEvent(QEnterEvent *event);
+#endif
+    void resizeEvent(QResizeEvent *event);
     void leaveEvent(QEvent *event);
 };

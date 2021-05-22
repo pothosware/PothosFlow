@@ -46,7 +46,6 @@ GraphDraw::GraphDraw(QWidget *parent):
 
     //set high quality rendering
     this->setRenderHint(QPainter::Antialiasing);
-    this->setRenderHint(QPainter::HighQualityAntialiasing);
     this->setRenderHint(QPainter::SmoothPixmapTransform);
 
     //init settings
@@ -127,8 +126,15 @@ void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 void GraphDraw::dropEvent(QDropEvent *event)
 {
     const auto byteArray = event->mimeData()->data("binary/json/pothos_block");
-    const auto blockDesc = QJsonDocument::fromBinaryData(byteArray).object();
-    this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()), this);
+    QJsonParseError err;
+    const auto blockDesc = QJsonDocument::fromJson(byteArray, &err);
+    if (blockDesc.isNull() or !blockDesc.isObject()) {
+	// fixme: pull logger into this file and log info from `err`.
+        return;
+    }
+    const auto obj = blockDesc.object();
+
+    this->getGraphEditor()->handleAddBlock(obj, this->mapToScene(event->pos()), this);
     event->acceptProposedAction();
 }
 

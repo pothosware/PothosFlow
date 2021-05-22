@@ -14,7 +14,7 @@
 #include <cassert>
 #include <iostream>
 #include <QApplication>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSet>
 
 //! Number of milliseconds until the overlay is considered expired
@@ -250,7 +250,7 @@ bool BlockEval::evaluationProcedure(void)
     {
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: empty ID"));
     }
-    else if (_newBlockInfo.id.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
+    else if (_newBlockInfo.id.count(QRegularExpression("^[a-zA-Z]\\w*$")) != 1)
     {
         _lastBlockStatus.blockErrorMsgs.push_back(
             tr("'%1' is not a legal ID").arg(_newBlockInfo.id));
@@ -508,7 +508,7 @@ QStringList BlockEval::getConstantsUsed(const QString &expr, const size_t depth)
 
     //create a recursive list of used constants by traversing expressions
     QStringList used;
-    for (const auto &tok : expr.split(QRegExp("\\W"), QString::SkipEmptyParts))
+    for (const auto &tok : expr.split(QRegularExpression("\\W"), Qt::SkipEmptyParts))
     {
         //is this token a constant? then inspect it
         if (_newBlockInfo.constants.count(tok) != 0)
@@ -582,7 +582,7 @@ bool BlockEval::applyConstants(void)
 {
     EVAL_TRACER_FUNC();
     //determine which constants were removed from the last eval
-    auto removedConstants = _lastBlockInfo.constantNames.toSet();
+    QSet<QString> removedConstants(_lastBlockInfo.constantNames.begin(), _lastBlockInfo.constantNames.end());
     for (const auto &name : _newBlockInfo.constantNames)
     {
         removedConstants.remove(name);

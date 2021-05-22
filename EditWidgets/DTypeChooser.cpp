@@ -118,7 +118,7 @@ private:
     {
         if (s.startsWith("\"") and s.endsWith("\""))
         {
-            return s.midRef(1, s.size()-2).toString();
+            return QStringView{s}.mid(1, s.size()-2).toString();
         }
         return s;
     }

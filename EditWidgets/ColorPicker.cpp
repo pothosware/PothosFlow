@@ -53,7 +53,7 @@ public slots:
     void setValue(const QString &value)
     {
         if (_value.size() < 2) return;
-        _value = value.midRef(1, value.size()-2).toString();
+        _value = QStringView{value}.mid(1, value.size()-2).toString();
         QtColorPicker::setCurrentColor(_value);
     }
 

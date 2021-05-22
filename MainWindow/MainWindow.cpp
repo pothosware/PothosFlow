@@ -34,7 +34,7 @@ MainWindow *MainWindow::global(void)
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     _logger(Poco::Logger::get("PothosFlow.MainWindow")),
-    _splash(new MainSplash(this)),
+    _splash(new MainSplash()),
     _settings(new MainSettings(this)),
     _actions(nullptr),
     _blockCache(nullptr),

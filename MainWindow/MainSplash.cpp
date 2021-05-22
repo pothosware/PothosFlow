@@ -12,8 +12,8 @@ MainSplash *MainSplash::global(void)
     return globalMainSplash;
 }
 
-MainSplash::MainSplash(QWidget *parent):
-    QSplashScreen(parent, QPixmap(makeIconPath("PothosSplash.png")))
+MainSplash::MainSplash():
+    QSplashScreen(QPixmap(makeIconPath("PothosSplash.png")))
 {
     globalMainSplash = this;
 }

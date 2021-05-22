@@ -1,7 +1,10 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.9)
+
+cmake_minimum_required(VERSION 3.20)
+add_compile_definitions(QT_DISABLE_DEPRECATED_BEFORE=0x050F00)
+set(CMAKE_CXX_STANDARD 17)
 project(PothosFlow CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -19,17 +22,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${Pothos_INCLUDE_DIRS})
 
 ########################################################################
-# QT4 devel setup
-########################################################################
-#find_package(Qt4 COMPONENTS QtCore QtGui)
-#if(NOT QT4_FOUND)
-#    return()
-#endif()
-#include(${QT_USE_FILE})
-#list(APPEND Pothos_LIBRARIES ${QT_LIBRARIES})
-
-########################################################################
-# QT5 devel setup
+# QT5/QT6 devel setup
 ########################################################################
 #http://www.kdab.com/using-cmake-with-qt-5/
 # Tell CMake to run moc when necessary:
@@ -38,17 +31,23 @@ set(CMAKE_AUTOMOC ON)
 # to always look for includes there:
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# Widgets finds its own dependencies.
-find_package(Qt5Widgets)
-
-if(Qt5Widgets_FOUND)
-    include_directories(${Qt5Widgets_INCLUDE_DIRS})
-    add_definitions(${Qt5Widgets_DEFINITIONS})
-    list(APPEND Pothos_LIBRARIES ${Qt5Widgets_LIBRARIES})
+find_package(Qt6Widgets)
+if (NOT Qt6Widgets_FOUND)
+	find_package(Qt5Widgets)
+	if(Qt5Widgets_FOUND)
+	    include_directories(${Qt5Widgets_INCLUDE_DIRS})
+	    add_definitions(${Qt5Widgets_DEFINITIONS})
+	    list(APPEND Pothos_LIBRARIES ${Qt5Widgets_LIBRARIES})
+	endif()
+	find_package(Qt5Concurrent)
+else()
+	include_directories(${Qt6Widgets_INCLUDE_DIRS})
+	add_definitions(${Qt6Widgets_DEFINITIONS})
+	list(APPEND Pothos_LIBRARIES ${Qt6Widgets_LIBRARIES})
+	find_package(Qt6Concurrent)
 endif()
 
 # Widgets finds its own dependencies.
-find_package(Qt5Concurrent)
 
 if(Qt5Concurrent_FOUND)
     include_directories(${Qt5Concurrent_INCLUDE_DIRS})

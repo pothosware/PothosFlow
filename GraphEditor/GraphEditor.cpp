@@ -29,7 +29,7 @@
 #include <QScreen>
 #include <QClipboard>
 #include <QMimeData>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTimer>
 #include <QUuid>
 #include <QFileInfo>
@@ -158,11 +158,12 @@ QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) co
 
     //find a reasonable name and index
     size_t index = 0;
-    QRegExp rx("(.*)(\\d+)"); rx.indexIn(idBase);
-    if (rx.captureCount() == 2 and not rx.cap(1).isEmpty() and not rx.cap(2).isEmpty())
+    QRegularExpression rx("(.*)(\\d+)");
+    QRegularExpressionMatch rm = rx.match(idBase);
+    if (rx.captureCount() == 2 and not rm.captured(1).isEmpty() and not rm.captured(2).isEmpty())
     {
-        idBase = rx.cap(1);
-        index = rx.cap(2).toInt();
+        idBase = rm.captured(1);
+        index = rm.captured(2).toInt();
     }
 
     //loop for a unique ID name
@@ -554,13 +555,9 @@ void GraphEditor::handleCopy(void)
         jsonObjs.push_back(obj->serialize());
     }
 
-    //to byte array
-    const QJsonDocument jsonDoc(jsonObjs);
-    const auto data = jsonDoc.toBinaryData();
-
     //load the clipboard
     auto mimeData = new QMimeData();
-    mimeData->setData("binary/json/pothos_object_array", data);
+    mimeData->setData("binary/json/pothos_object_array", QJsonDocument::fromVariant(jsonObjs).toJson());
     QApplication::clipboard()->setMimeData(mimeData);
 }
 
@@ -605,8 +602,14 @@ void GraphEditor::handlePaste(void)
 
     //extract object array
     const auto data = mimeData->data("binary/json/pothos_object_array");
-    const auto jsonDoc = QJsonDocument::fromBinaryData(data);
-    auto graphObjects = jsonDoc.array();
+    QJsonParseError err;
+    auto jsonObj = QJsonDocument::fromJson(data, &err);
+    if (jsonObj.isNull() or !jsonObj.isArray()) {
+	// fixme: use and log info from `err`
+        _logger.error("User tried to paste, but clipboard contents corrupted/invalid?");
+        return;
+    }
+    auto graphObjects = jsonObj.array();
 
     //rewrite ids
     std::map<QString, QString> oldIdToNew;
@@ -1208,7 +1211,9 @@ void GraphEditor::handlePollWidgetTimer(void)
         for (const auto &obj : currentState.extraInfo.toStringList()) changedIds.append(obj);
         _stateManager->resetTo(_stateManager->getCurrentIndex()-1);
     }
-    changedIds = changedIds.toSet().toList(); //unique list
+    //unique list
+    QSet<QString> qs(changedIds.begin(), changedIds.end());
+    changedIds = std::move(QList<QString>(qs.begin(), qs.end()));
 
     //emit a new graph state for the change
     const auto desc = (changedIds.size() == 1)? changedIds.front() : tr("multiple widgets");

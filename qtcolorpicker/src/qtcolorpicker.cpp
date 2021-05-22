@@ -45,7 +45,6 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QPainter>
 #include <QPushButton>
 #include <QColorDialog>
@@ -60,6 +59,7 @@
 #include <QGridLayout>
 #include <QHideEvent>
 #include <QKeyEvent>
+#include <QScreen>
 #include <QShowEvent>
 #include <QMouseEvent>
 #include <math.h>
@@ -168,7 +168,7 @@ class ColorPickerItem : public QFrame
     Q_OBJECT
 
 public:
-    ColorPickerItem(const QColor &color = Qt::white, const QString &text = QString::null,
+    ColorPickerItem(const QColor &color = Qt::white, const QString &text = QString(),
 		      QWidget *parent = 0);
     ~ColorPickerItem();
 
@@ -309,8 +309,8 @@ void QtColorPicker::buttonPressed(bool toggled)
 {
     if (!toggled)
         return;
-
-    const QRect desktop = QApplication::desktop()->geometry();
+    const QScreen* qscr = QApplication::primaryScreen();
+    const QRect desktop = qscr->geometry();
     // Make sure the popup is inside the desktop.
     QPoint pos = mapToGlobal(rect().bottomLeft());
     if (pos.x() < desktop.left())
@@ -859,7 +859,7 @@ void ColorPickerPopup::regenerateGrid()
     // one.
     if (grid) delete grid;
     grid = new QGridLayout(this);
-    grid->setMargin(1);
+    grid->setContentsMargins(1,1,1,1);
     grid->setSpacing(0);
 
     int ccol = 0, crow = 0;
@@ -888,12 +888,14 @@ void ColorPickerPopup::regenerateGrid()
 */
 void ColorPickerPopup::getColorFromDialog()
 {
-    bool ok;
-    QRgb rgb = QColorDialog::getRgba(lastSel.rgba(), &ok, parentWidget());
-    if (!ok)
+    QColor col = QColorDialog::getColor(
+		    lastSel, parentWidget(),
+		    QString("Select a color"),
+		    QColorDialog::ShowAlphaChannel);
+
+    if (!col.isValid())
 	return;
 
-    QColor col = QColor::fromRgba(rgb);
     insertColor(col, tr("Custom"), -1);
     lastSel = col;
     emit selected(col);
