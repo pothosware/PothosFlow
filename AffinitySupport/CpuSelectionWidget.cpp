@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "AffinitySupport/CpuSelectionWidget.hpp"
@@ -99,7 +99,7 @@ void CpuSelectionWidget::update(void)
     {
         if (numaNodeSelected and _cpuItems.count(pair.first) != 0) pair.first->setFlags(Qt::NoItemFlags);
         else pair.first->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        pair.first->setBackgroundColor((pair.second)?Qt::green:Qt::white);
+        pair.first->setBackground((pair.second)?Qt::green:Qt::white);
         pair.first->setSelected(false);
     }
 

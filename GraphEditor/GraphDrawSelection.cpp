@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphDraw.hpp"
@@ -46,8 +46,8 @@ void GraphDraw::wheelEvent(QWheelEvent *event)
 
     //ctrl was down, wheel event means zoom in or out:
     auto actions = MainActions::global();
-    if (event->delta() > 0) actions->zoomInAction->activate(QAction::Trigger);
-    if (event->delta() < 0) actions->zoomOutAction->activate(QAction::Trigger);
+    if (event->angleDelta().y() > 0) actions->zoomInAction->activate(QAction::Trigger);
+    if (event->angleDelta().y() < 0) actions->zoomOutAction->activate(QAction::Trigger);
 }
 
 void GraphDraw::mousePressEvent(QMouseEvent *event)

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainSplash.hpp"
@@ -12,7 +12,7 @@ MainSplash *MainSplash::global(void)
     return globalMainSplash;
 }
 
-MainSplash::MainSplash(QWidget *parent):
+MainSplash::MainSplash(QScreen *parent):
     QSplashScreen(parent, QPixmap(makeIconPath("PothosSplash.png")))
 {
     globalMainSplash = this;

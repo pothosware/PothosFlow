@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2016 Josh Blum
+// Copyright (c) 2016-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -16,7 +16,7 @@ public:
     //! Global access to main splash
     static MainSplash *global(void);
 
-    MainSplash(QWidget *parent);
+    MainSplash(QScreen *parent);
 
     void postMessage(const QString &msg);
 };

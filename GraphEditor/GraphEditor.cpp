@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2019 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine/EvalEngine.hpp"
@@ -556,7 +556,7 @@ void GraphEditor::handleCopy(void)
 
     //to byte array
     const QJsonDocument jsonDoc(jsonObjs);
-    const auto data = jsonDoc.toBinaryData();
+    const auto data = jsonDoc.toJson();
 
     //load the clipboard
     auto mimeData = new QMimeData();
@@ -605,7 +605,7 @@ void GraphEditor::handlePaste(void)
 
     //extract object array
     const auto data = mimeData->data("binary/json/pothos_object_array");
-    const auto jsonDoc = QJsonDocument::fromBinaryData(data);
+    const auto jsonDoc = QJsonDocument::fromJson(data);
     auto graphObjects = jsonDoc.array();
 
     //rewrite ids
@@ -1208,7 +1208,8 @@ void GraphEditor::handlePollWidgetTimer(void)
         for (const auto &obj : currentState.extraInfo.toStringList()) changedIds.append(obj);
         _stateManager->resetTo(_stateManager->getCurrentIndex()-1);
     }
-    changedIds = changedIds.toSet().toList(); //unique list
+    changedIds.removeDuplicates(); //unique list
+    changedIds.sort(); //sorted order
 
     //emit a new graph state for the change
     const auto desc = (changedIds.size() == 1)? changedIds.front() : tr("multiple widgets");

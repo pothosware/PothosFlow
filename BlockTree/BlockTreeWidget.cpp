@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "BlockTree/BlockTreeWidget.hpp"
@@ -99,7 +99,7 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     //create the drag object
     auto mimeData = new QMimeData();
     const QJsonDocument jsonDoc(blockItem->getBlockDesc());
-    mimeData->setData("binary/json/pothos_block", jsonDoc.toBinaryData());
+    mimeData->setData("binary/json/pothos_block", jsonDoc.toJson());
     auto drag = new QDrag(this);
     drag->setMimeData(mimeData);
     drag->setPixmap(pixmap);
@@ -201,7 +201,7 @@ QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
         if (b == nullptr) continue;
         auto mimeData = new QMimeData();
         const QJsonDocument jsonDoc(b->getBlockDesc());
-        mimeData->setData("binary/json/pothos_block", jsonDoc.toBinaryData());
+        mimeData->setData("binary/json/pothos_block", jsonDoc.toJson());
         return mimeData;
     }
     return QTreeWidget::mimeData(items);
