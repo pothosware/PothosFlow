@@ -114,7 +114,7 @@ private slots:
             if (label == nullptr)
             {
                 label = new QLabel(_statsTree);
-                label->setStyleSheet("QLabel{background:white;margin:1px;}");
+                label->setStyleSheet("QLabel{margin:1px;}");
                 label->setWordWrap(true);
                 label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
                 label->setTextInteractionFlags(Qt::TextSelectableByMouse);

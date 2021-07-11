@@ -83,7 +83,7 @@ BreakerPropertiesPanel::BreakerPropertiesPanel(GraphBreaker *breaker, QWidget *p
             info += "</ul>";
         }
         auto text = new QLabel(info, this);
-        text->setStyleSheet("QLabel{background:white;margin:1px;}");
+        text->setStyleSheet("QLabel{margin:1px;}");
         text->setWordWrap(true);
         _formLayout->addRow(text);
     }

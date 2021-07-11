@@ -191,7 +191,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         }
 
         _blockInfoDesc = new QLabel(output, _infoTabs);
-        _blockInfoDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+        _blockInfoDesc->setStyleSheet("QLabel{margin:1px;}");
         _blockInfoDesc->setWordWrap(true);
         _blockInfoDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
         _blockInfoDesc->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
@@ -204,7 +204,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     {
         _jsonBlockDesc = new QLabel(_infoTabs);
         _infoTabs->addTab(_jsonBlockDesc, tr("JSON description"));
-        _jsonBlockDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+        _jsonBlockDesc->setStyleSheet("QLabel{margin:1px;}");
         _jsonBlockDesc->setWordWrap(true);
         _jsonBlockDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
         _jsonBlockDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
@@ -214,7 +214,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     {
         _evalTypesDesc = new QLabel(_infoTabs);
         _infoTabs->addTab(_evalTypesDesc, tr("Evaluated types"));
-        _evalTypesDesc->setStyleSheet("QLabel{background:white;margin:1px;}");
+        _evalTypesDesc->setStyleSheet("QLabel{margin:1px;}");
         _evalTypesDesc->setWordWrap(true);
         _evalTypesDesc->setAlignment(Qt::AlignTop | Qt::AlignLeft);
         _evalTypesDesc->setTextInteractionFlags(Qt::TextSelectableByMouse);
