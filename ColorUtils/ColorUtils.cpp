@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "ColorUtils/ColorUtils.hpp"
@@ -10,6 +10,11 @@
 #include <type_traits>
 #include <complex>
 #include <cstdint>
+
+bool isColorDark(const QColor &color)
+{
+    return color.lightnessF() < 0.5;
+}
 
 /***********************************************************************
  * color map helper utilities

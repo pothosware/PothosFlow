@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,6 +7,9 @@
 #include <QColor>
 #include <QString>
 #include <map>
+
+//! Is this color considered a dark color?
+bool isColorDark(const QColor &color);
 
 //! Convert the type name to a displayable color
 QColor typeStrToColor(const QString &typeStr);

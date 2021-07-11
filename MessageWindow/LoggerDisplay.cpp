@@ -1,9 +1,10 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
 #include "MessageWindow/LoggerDisplay.hpp"
 #include "MessageWindow/LoggerChannel.hpp"
+#include "GraphEditor/Constants.hpp"
 #include <QPlainTextEdit>
 #include <QScrollBar>
 #include <QToolButton>
@@ -66,13 +67,13 @@ void LoggerDisplay::handleLogMessage(const Poco::Message &msg)
     QString color;
     switch (msg.getPriority())
     {
-    case Poco::Message::PRIO_INFORMATION: color = "black"; break;
+    case Poco::Message::PRIO_INFORMATION: color = LoggerDisplayInfoLabelColor; break;
     case Poco::Message::PRIO_NOTICE: color = "green"; break;
     case Poco::Message::PRIO_WARNING: color = "orange"; break;
     case Poco::Message::PRIO_ERROR: color = "red"; break;
     case Poco::Message::PRIO_CRITICAL: color = "red"; break;
     case Poco::Message::PRIO_FATAL: color = "red"; break;
-    default: color = "black";
+    default: color = LoggerDisplayInfoLabelColor;
     }
 
     QString sep(":");

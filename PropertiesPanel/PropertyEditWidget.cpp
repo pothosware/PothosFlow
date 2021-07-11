@@ -1,7 +1,8 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "PropertyEditWidget.hpp"
+#include "GraphEditor/Constants.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <QLabel>
 #include <QLocale>
@@ -222,7 +223,7 @@ void PropertyEditWidget::updateInternals(void)
 
     //generate the form label
     auto formLabelText = QString("<span style='color:%1;'><b>%2%3</b></span>")
-        .arg(hasError?"red":"black")
+        .arg(hasError?"red":ProperyEditWidgetFormLabelColor)
         .arg(_formLabelText)
         .arg(this->changed()?"*":"");
     if (hasUnits) formLabelText += QString("<br /><i>%1</i>").arg(_unitsStr);
@@ -234,7 +235,7 @@ void PropertyEditWidget::updateInternals(void)
     //set background color when its valid
     if (_bgColor.isValid()) _editWidget->setStyleSheet(
         QString("#BlockPropertiesEditWidget{background:%1;color:%2;}")
-        .arg(_bgColor.name()).arg((_bgColor.lightnessF() > 0.5)?"black":"white"));
+        .arg(_bgColor.name()).arg(isColorDark(_bgColor)?"white":"black"));
 }
 
 void PropertyEditWidget::handleWidgetChanged(void)

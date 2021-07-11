@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,8 +12,16 @@ static const int GRAPH_BREAKER = (1 << 1);
 static const int GRAPH_CONNECTION = (1 << 2);
 static const int GRAPH_WIDGET = (1 << 3);
 
+//! Default background color
+QString defaultPaletteBackground(void);
+
+/*!
+ * Select between color based on system dark mode
+ */
+QString darkColorSupport(const QString &light, const QString &dark);
+
 static const QString GraphObjectHighlightPenColor = "#33FFFF";
-static const QString GraphObjectDefaultPenColor = "#000000";
+#define GraphObjectDefaultPenColor darkColorSupport("black", "white")
 static const QString GraphObjectDefaultFillColor = "#E8E8E8";
 static const qreal GraphObjectBorderWidth = 0.5;
 
@@ -22,12 +30,12 @@ static const qreal ConnectModeLineWidth = 1.5;
 static const qreal ConnectModeHighlightWidth = 2.0;
 
 static const QString GraphObjectConnPointColor = "#FF85C2";
-static const QString GraphObjectConnLineColor = "#000000";
+#define GraphObjectConnLineColor darkColorSupport("black", "white")
 static const qreal GraphObjectConnPointRadius = 3;
 static const qreal GraphObjectConnLineLength = 10;
 
 static const qreal GraphDrawScrollFudge = 20;
-static const QString GraphDrawBackgroundColor = "#FCFFFF";
+#define GraphDrawBackgroundColor darkColorSupport("#FCFFFF", defaultPaletteBackground())
 static const qreal GraphDrawZoomStep = 0.1;
 static const qreal GraphDrawZoomMax = 1.5;
 static const qreal GraphDrawZoomMin = 0.5;
@@ -66,10 +74,14 @@ static const qreal GraphConnectionSelectPad = 5;
 static const qreal GraphConnectionDisabledXLen = 8;
 static const QString GraphConnectionLineTextColor = "#848482";
 static const QString GraphConnectionLineTextFontSize = "8pt";
-static const QString GraphConnectionDefaultColor = "#000000";
+#define GraphConnectionDefaultColor darkColorSupport("black", "white")
 static const QString GraphConnectionHighlightColor = "#0040FF";
 static const QString GraphConnectionDisabledColor = "#A0A0A0";
 
 static const QString GraphWidgetGripLabelFontSize = "6pt";
-static const QString GraphWidgetGripLabelColor = "#484848";
-static const QString GraphWidgetBackgroundColor = "beige";
+#define GraphWidgetGripLabelColor darkColorSupport("#484848", "white")
+#define GraphWidgetBackgroundColor darkColorSupport("beige", "gray")
+
+#define LoggerDisplayInfoLabelColor darkColorSupport("black", "white")
+
+#define ProperyEditWidgetFormLabelColor darkColorSupport("black", "white")
