@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2021 Josh Blum
+// Copyright (c) 2013-2018 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
@@ -34,7 +34,7 @@ MainWindow *MainWindow::global(void)
 MainWindow::MainWindow(QWidget *parent):
     QMainWindow(parent),
     _logger(Poco::Logger::get("PothosFlow.MainWindow")),
-    _splash(new MainSplash(this->screen())),
+    _splash(new MainSplash(this)),
     _settings(new MainSettings(this)),
     _actions(nullptr),
     _blockCache(nullptr),

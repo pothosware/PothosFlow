@@ -229,11 +229,14 @@ QStringList GraphPropertiesPanel::getChangeDescList(void) const
     QStringList changes;
     const auto &globalNames = _graphEditor->listGlobals();
 
+    //sort variable lists to determine addition or removal
+    auto originalNamesSorted = _originalVariableNames; //copy
+    originalNamesSorted.sort(); //sorted order
+    auto globalNamesSorted = globalNames; //copy
+    globalNamesSorted.sort(); //sorted order
+
     //look for reorder of variable list
-    if (
-        _originalVariableNames != globalNames and
-        QSet<QString>(_originalVariableNames.begin(), _originalVariableNames.end()) == QSet<QString>(globalNames.begin(), globalNames.end())
-    )
+    if (_originalVariableNames != globalNames and originalNamesSorted == globalNamesSorted)
     {
         changes.push_back(tr("Reordered variables"));
     }
