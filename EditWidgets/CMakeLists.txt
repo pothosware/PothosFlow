@@ -19,7 +19,7 @@ POTHOS_MODULE_UTIL(
     TARGET CoreEditWidgets
     SOURCES ${SOURCES}
     LIBRARIES
-        ${Qt5_LIBRARIES}
+        Qt5::Widgets
         PothosQtColorPicker
     DESTINATION flow
 )

@@ -8,7 +8,7 @@ install(
         pothos-flow.desktop
         pothos-flow.xml
         ${pothos_flow_png_icons}
-    DESTINATION share/Pothos/Desktop
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/Pothos/Desktop
     COMPONENT pothos_flow
 )
 
@@ -19,6 +19,6 @@ install(
     PROGRAMS
         install
         uninstall
-    DESTINATION share/Pothos/Desktop
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/Pothos/Desktop
     COMPONENT pothos_flow
 )
