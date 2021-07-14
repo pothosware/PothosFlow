@@ -12,6 +12,8 @@ else()
     find_package(Pothos CONFIG REQUIRED) #in-tree build
 endif()
 
+include(GNUInstallDirs)
+
 ########################################################################
 # Qt devel setup
 ########################################################################
