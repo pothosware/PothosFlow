@@ -4,7 +4,6 @@
 #include "GraphEditor/Constants.hpp"
 #include "ColorUtils/ColorUtils.hpp"
 #include <QLabel>
-#include <iostream>
 
 QString defaultPaletteBackground(void)
 {
