@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 Josh Blum
+// Copyright (c) 2015-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -227,13 +227,16 @@ void GraphPropertiesPanel::handleCommit(void)
 QStringList GraphPropertiesPanel::getChangeDescList(void) const
 {
     QStringList changes;
-    const auto globalNames = _graphEditor->listGlobals();
+    const auto &globalNames = _graphEditor->listGlobals();
+
+    //sort variable lists to determine addition or removal
+    auto originalNamesSorted = _originalVariableNames; //copy
+    originalNamesSorted.sort(); //sorted order
+    auto globalNamesSorted = globalNames; //copy
+    globalNamesSorted.sort(); //sorted order
 
     //look for reorder of variable list
-    if (
-        _originalVariableNames != _graphEditor->listGlobals() and
-        QSet<QString>::fromList(_originalVariableNames) == QSet<QString>::fromList(_graphEditor->listGlobals())
-    )
+    if (_originalVariableNames != globalNames and originalNamesSorted == globalNamesSorted)
     {
         changes.push_back(tr("Reordered variables"));
     }

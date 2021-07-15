@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainSplash.hpp"
@@ -13,7 +13,13 @@ MainSplash *MainSplash::global(void)
 }
 
 MainSplash::MainSplash(QWidget *parent):
-    QSplashScreen(parent, QPixmap(makeIconPath("PothosSplash.png")))
+    QSplashScreen(
+        #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+        parent,
+        #else
+        parent->screen(), //old constructor deprecated 5.15
+        #endif
+        QPixmap(makeIconPath("PothosSplash.png")))
 {
     globalMainSplash = this;
 }

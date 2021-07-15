@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -18,14 +18,6 @@
 #include <QLabel>
 #include <QPainter>
 #include <QJsonDocument>
-
-/*!
- * We could remove the timer with the eval-background system.
- * But rather, it may still be useful to have an idle period
- * in which we accept new edit events before submitting changes.
- * So just leave this as a small number for the time-being.
- */
-static const long UPDATE_TIMER_MS = 500;
 
 BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
     QWidget(parent),

@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphDraw.hpp"
@@ -127,7 +127,7 @@ void GraphDraw::dragMoveEvent(QDragMoveEvent *event)
 void GraphDraw::dropEvent(QDropEvent *event)
 {
     const auto byteArray = event->mimeData()->data("binary/json/pothos_block");
-    const auto blockDesc = QJsonDocument::fromBinaryData(byteArray).object();
+    const auto blockDesc = QJsonDocument::fromJson(byteArray).object();
     this->getGraphEditor()->handleAddBlock(blockDesc, this->mapToScene(event->pos()), this);
     event->acceptProposedAction();
 }

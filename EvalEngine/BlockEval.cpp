@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 //                    2020 Nicholas Corgan
 // SPDX-License-Identifier: BSL-1.0
 
@@ -508,7 +508,12 @@ QStringList BlockEval::getConstantsUsed(const QString &expr, const size_t depth)
 
     //create a recursive list of used constants by traversing expressions
     QStringList used;
-    for (const auto &tok : expr.split(QRegExp("\\W"), QString::SkipEmptyParts))
+    #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+        #define behavior QString::SkipEmptyParts
+    #else
+        #define behavior Qt::SkipEmptyParts //old flags deprecated in 5.14
+    #endif
+    for (const auto &tok : expr.split(QRegExp("\\W"), behavior))
     {
         //is this token a constant? then inspect it
         if (_newBlockInfo.constants.count(tok) != 0)
@@ -581,11 +586,12 @@ bool BlockEval::updateAllProperties(void)
 bool BlockEval::applyConstants(void)
 {
     EVAL_TRACER_FUNC();
+
     //determine which constants were removed from the last eval
-    auto removedConstants = _lastBlockInfo.constantNames.toSet();
+    auto removedConstants = _lastBlockInfo.constantNames; //copy
     for (const auto &name : _newBlockInfo.constantNames)
     {
-        removedConstants.remove(name);
+        removedConstants.removeAll(name);
     }
 
     //unregister all constants from the removed list

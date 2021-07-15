@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2017 Josh Blum
+// Copyright (c) 2017-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -130,8 +130,8 @@ protected:
 
     void wheelEvent(QWheelEvent *e)
     {
-        const bool checked = e->delta() > 0;
-        if (e->delta() != 0 and checked != this->isChecked())
+        const bool checked = e->angleDelta().y() > 0;
+        if (e->angleDelta().y() != 0 and checked != this->isChecked())
         {
             this->setChecked(checked);
             this->handleToggled(checked);
