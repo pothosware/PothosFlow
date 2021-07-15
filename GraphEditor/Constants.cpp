@@ -8,7 +8,7 @@
 QString defaultPaletteBackground(void)
 {
     QLabel label;
-    auto color = label.palette().color(QPalette::Background);
+    auto color = label.palette().color(QPalette::Window);
     return color.name();
 }
 
