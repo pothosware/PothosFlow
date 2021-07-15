@@ -1,5 +1,11 @@
 This this the changelog file for the Pothos Flow toolkit.
 
+Release 0.7.1 (pending)
+==========================
+
+- Update build to support Qt6 and newer cmake target style
+- Fixed deprecated Qt API usage
+
 Release 0.7.0 (2020-07-19)
 ==========================
 
