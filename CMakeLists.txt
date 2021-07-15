@@ -1,7 +1,7 @@
 ########################################################################
 # Project setup
 ########################################################################
-cmake_minimum_required(VERSION 2.8.9)
+cmake_minimum_required(VERSION 3.1.0)
 project(PothosFlow CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -12,56 +12,22 @@ else()
     find_package(Pothos CONFIG REQUIRED) #in-tree build
 endif()
 
-########################################################################
-# Local includes
-########################################################################
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${Pothos_INCLUDE_DIRS})
+include(GNUInstallDirs)
 
 ########################################################################
-# QT4 devel setup
+# Qt devel setup
 ########################################################################
-#find_package(Qt4 COMPONENTS QtCore QtGui)
-#if(NOT QT4_FOUND)
-#    return()
-#endif()
-#include(${QT_USE_FILE})
-#list(APPEND Pothos_LIBRARIES ${QT_LIBRARIES})
-
-########################################################################
-# QT5 devel setup
-########################################################################
-#http://www.kdab.com/using-cmake-with-qt-5/
-# Tell CMake to run moc when necessary:
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent)
+message(STATUS "QT_VERSION_MAJOR=${QT_VERSION_MAJOR}")
 set(CMAKE_AUTOMOC ON)
-# As moc files are generated in the binary dir, tell CMake
-# to always look for includes there:
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-
-# Widgets finds its own dependencies.
-find_package(Qt5Widgets)
-
-if(Qt5Widgets_FOUND)
-    include_directories(${Qt5Widgets_INCLUDE_DIRS})
-    add_definitions(${Qt5Widgets_DEFINITIONS})
-    list(APPEND Pothos_LIBRARIES ${Qt5Widgets_LIBRARIES})
-endif()
-
-# Widgets finds its own dependencies.
-find_package(Qt5Concurrent)
-
-if(Qt5Concurrent_FOUND)
-    include_directories(${Qt5Concurrent_INCLUDE_DIRS})
-    add_definitions(${Qt5Concurrent_DEFINITIONS})
-    list(APPEND Pothos_LIBRARIES ${Qt5Concurrent_LIBRARIES})
-endif()
 
 ########################################################################
 ## Feature registration
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_FLOW "Enable Pothos Flow component" ON "Pothos_FOUND;Qt5Widgets_FOUND;Qt5Concurrent_FOUND" OFF)
+cmake_dependent_option(ENABLE_FLOW "Enable Pothos Flow component" ON "Pothos_FOUND;Qt${QT_VERSION_MAJOR}_FOUND" OFF)
 add_feature_info(Flow ENABLE_FLOW "GUI designer tool for the Pothos framework")
 if (NOT ENABLE_FLOW)
     return()
@@ -70,17 +36,16 @@ endif()
 ########################################################################
 # Color picker library - LGPL separate library
 ########################################################################
-include_directories(qtcolorpicker/src)
 add_library(PothosQtColorPicker SHARED qtcolorpicker/src/qtcolorpicker.cpp)
+target_include_directories(PothosQtColorPicker PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/qtcolorpicker/src)
 set_target_properties(PothosQtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPICKER_EXPORT")
 set_target_properties(PothosQtColorPicker PROPERTIES VERSION 0)
-target_link_libraries(PothosQtColorPicker ${Pothos_LIBRARIES})
+target_link_libraries(PothosQtColorPicker PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 install(TARGETS PothosQtColorPicker
-    LIBRARY DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_flow # .so file
-    ARCHIVE DESTINATION lib${LIB_SUFFIX} COMPONENT pothos_flow # .lib file
-    RUNTIME DESTINATION bin              COMPONENT pothos_flow # .dll file
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # .so file
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # .lib file
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} # .dll file
 )
-list(APPEND Pothos_LIBRARIES PothosQtColorPicker)
 
 ########################################################################
 # Bundle icon resources with executable
@@ -202,10 +167,10 @@ list(APPEND SOURCES
 # build executable
 ########################################################################
 
-set(BUNDLE_DESTINATION bin CACHE STRING "OSX bundle destination")
+set(BUNDLE_DESTINATION ${CMAKE_INSTALL_BINDIR} CACHE STRING "OSX bundle destination")
 
 #under MSVC build a win32 app so a console is not launched with the GUI exe
-if (MSVC)
+if (WIN32)
     set(CMAKE_EXE_LINKER_FLAGS "/entry:mainCRTStartup ${CMAKE_EXE_LINKER_FLAGS}")
     add_executable(PothosFlow WIN32 ${SOURCES})
 
@@ -223,7 +188,7 @@ elseif (APPLE)
         MACOSX_BUNDLE_SHORT_VERSION_STRING "${Pothos_VERSION_MAJOR}.${Pothos_VERSION_MINOR}.${Pothos_VERSION_PATCH}"
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.pothosware.pothosflow"
         MACOSX_BUNDLE_ICON_FILE "PothosFlow.icns"
-        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2013-2017 Josh Blum"
+        MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2013-2021 Josh Blum"
     )
     #provide PothosFlow command line script which calls into the bundle
     set(ABSOLUTE_BUNDLE_DESTINATION ${BUNDLE_DESTINATION})
@@ -233,7 +198,7 @@ elseif (APPLE)
     configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/PothosFlowOSX.sh
         ${CMAKE_CURRENT_BINARY_DIR}/PothosFlow @ONLY)
-    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/PothosFlow DESTINATION bin)
+    install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/PothosFlow DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 #otherwise build a standard UNIX style executable
 else ()
@@ -241,12 +206,16 @@ else ()
     add_subdirectory(Desktop) #freedesktop.org
 endif ()
 
-target_link_libraries(PothosFlow ${Pothos_LIBRARIES})
+target_include_directories(PothosFlow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(PothosFlow PRIVATE Pothos)
+target_link_libraries(PothosFlow PRIVATE PothosQtColorPicker)
+target_link_libraries(PothosFlow PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(PothosFlow PRIVATE Qt${QT_VERSION_MAJOR}::Concurrent)
 
 install(
     TARGETS PothosFlow
     BUNDLE DESTINATION ${BUNDLE_DESTINATION}
-    RUNTIME DESTINATION bin
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     COMPONENT pothos_flow
 )
 
