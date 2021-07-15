@@ -17,7 +17,9 @@ include(GNUInstallDirs)
 ########################################################################
 # Qt devel setup
 ########################################################################
-find_package(Qt5 COMPONENTS Widgets Concurrent)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Concurrent)
+message(STATUS "QT_VERSION_MAJOR=${QT_VERSION_MAJOR}")
 set(CMAKE_AUTOMOC ON)
 
 ########################################################################
@@ -25,7 +27,7 @@ set(CMAKE_AUTOMOC ON)
 ########################################################################
 include(FeatureSummary)
 include(CMakeDependentOption)
-cmake_dependent_option(ENABLE_FLOW "Enable Pothos Flow component" ON "Pothos_FOUND;Qt5_FOUND" OFF)
+cmake_dependent_option(ENABLE_FLOW "Enable Pothos Flow component" ON "Pothos_FOUND;Qt${QT_VERSION_MAJOR}_FOUND" OFF)
 add_feature_info(Flow ENABLE_FLOW "GUI designer tool for the Pothos framework")
 if (NOT ENABLE_FLOW)
     return()
@@ -38,7 +40,7 @@ add_library(PothosQtColorPicker SHARED qtcolorpicker/src/qtcolorpicker.cpp)
 target_include_directories(PothosQtColorPicker PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/qtcolorpicker/src)
 set_target_properties(PothosQtColorPicker PROPERTIES DEFINE_SYMBOL "QT_QTCOLORPICKER_EXPORT")
 set_target_properties(PothosQtColorPicker PROPERTIES VERSION 0)
-target_link_libraries(PothosQtColorPicker PRIVATE Qt5::Widgets)
+target_link_libraries(PothosQtColorPicker PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 install(TARGETS PothosQtColorPicker
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} # .so file
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} # .lib file
@@ -207,8 +209,8 @@ endif ()
 target_include_directories(PothosFlow PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(PothosFlow PRIVATE Pothos)
 target_link_libraries(PothosFlow PRIVATE PothosQtColorPicker)
-target_link_libraries(PothosFlow PRIVATE Qt5::Widgets)
-target_link_libraries(PothosFlow PRIVATE Qt5::Concurrent)
+target_link_libraries(PothosFlow PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(PothosFlow PRIVATE Qt${QT_VERSION_MAJOR}::Concurrent)
 
 install(
     TARGETS PothosFlow
