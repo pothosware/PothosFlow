@@ -28,7 +28,7 @@ public:
         layout->addWidget(_edit, 1);
         layout->addWidget(_button, 0, Qt::AlignRight);
         _button->setMaximumWidth(20);
-        connect(_button, SIGNAL(pressed(void)), this, SLOT(handlePressed(void)));
+        connect(_button, &QPushButton::pressed, this, &FileEntry::handlePressed);
         connect(_edit, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
         connect(_edit, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
         _edit->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style

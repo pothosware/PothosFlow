@@ -65,10 +65,10 @@ MainWindow::MainWindow(QWidget *parent):
     auto mainMenu = new MainMenu(this, _actions);
 
     //connect actions to the main window
-    connect(_actions->exitAction, SIGNAL(triggered(void)), this, SLOT(close(void)));
-    connect(_actions->showAboutAction, SIGNAL(triggered(void)), this, SLOT(handleShowAbout(void)));
-    connect(_actions->showAboutQtAction, SIGNAL(triggered(void)), this, SLOT(handleShowAboutQt(void)));
-    connect(_actions->showColorsDialogAction, SIGNAL(triggered(void)), this, SLOT(handleColorsDialogAction(void)));
+    connect(_actions->exitAction, &QAction::triggered, this, &MainWindow::close);
+    connect(_actions->showAboutAction, &QAction::triggered, this, &MainWindow::handleShowAbout);
+    connect(_actions->showAboutQtAction, &QAction::triggered, this, &MainWindow::handleShowAboutQt);
+    connect(_actions->showColorsDialogAction, &QAction::triggered, this, &MainWindow::handleColorsDialogAction);
     connect(_actions->fullScreenViewAction, SIGNAL(toggled(bool)), this, SLOT(handleFullScreenViewAction(bool)));
     connect(_actions->reloadPluginsAction, SIGNAL(triggered(bool)), this, SLOT(handleReloadPlugins(void)));
 
@@ -111,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent):
     //create block tree (after the block cache)
     _splash->postMessage(tr("Creating block tree..."));
     auto blockTreeDock = new BlockTreeDock(this, _blockCache, _editorTabs);
-    connect(_actions->findAction, SIGNAL(triggered(void)), blockTreeDock, SLOT(activateFind(void)));
+    connect(_actions->findAction, &QAction::triggered, blockTreeDock, &BlockTreeDock::activateFind);
     this->tabifyDockWidget(affinityZonesDock, blockTreeDock);
 
     //create properties panel (make after block cache)

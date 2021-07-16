@@ -94,10 +94,10 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
         //create editable widget
         auto editWidget = new PropertyEditWidget(_block->getPropertyValue(propKey), paramDesc, editMode, this);
-        connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(editWidget, &PropertyEditWidget::widgetChanged, this, &BlockPropertiesPanel::handleWidgetChanged);
         connect(editWidget, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
-        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleWidgetChanged(void)));
-        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
+        connect(editWidget, &PropertyEditWidget::entryChanged, this, &BlockPropertiesPanel::handleWidgetChanged);
+        connect(editWidget, &PropertyEditWidget::commitRequested, this, &BlockPropertiesPanel::handleCommit);
         _propIdToEditWidget[propKey] = editWidget;
         editWidget->setToolTip(this->getParamDocString(propKey));
 

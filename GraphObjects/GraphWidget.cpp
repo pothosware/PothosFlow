@@ -52,7 +52,7 @@ GraphWidget::GraphWidget(QObject *parent):
     _impl(new Impl(this))
 {
     this->setFlag(QGraphicsItem::ItemIsMovable);
-    connect(_impl->container, SIGNAL(resized(void)), this, SLOT(handleWidgetResized(void)));
+    connect(_impl->container, &GraphWidgetContainer::resized, this, &GraphWidget::handleWidgetResized);
     connect(this, SIGNAL(lockedChanged(bool)), _impl->container, SLOT(handleLockedChanged(bool)));
 }
 
@@ -70,7 +70,7 @@ void GraphWidget::setGraphBlock(GraphBlock *block)
     _impl->block = block;
     connect(block, SIGNAL(destroyed(QObject *)), this, SLOT(handleBlockDestroyed(QObject *)));
     connect(block, SIGNAL(IDChanged(const QString &)), this, SLOT(handleBlockIdChanged(const QString &)));
-    connect(block, SIGNAL(evalDoneEvent(void)), this, SLOT(handleBlockEvalDone(void)));
+    connect(block, &GraphBlock::evalDoneEvent, this, &GraphWidget::handleBlockEvalDone);
     this->handleBlockIdChanged(block->getId()); //init value
 }
 

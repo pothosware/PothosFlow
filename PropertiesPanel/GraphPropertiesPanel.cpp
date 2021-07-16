@@ -398,7 +398,7 @@ void GraphPropertiesPanel::createVariableEditWidget(const QString &name)
 
     //selection button
     auto radioButton = new QRadioButton(this);
-    connect(radioButton, SIGNAL(clicked(void)), this, SLOT(updateAllVariableForms(void)));
+    connect(radioButton, &QRadioButton::clicked, this, &GraphPropertiesPanel::updateAllVariableForms);
     editLayout->addWidget(radioButton);
     _varsSelectionGroup->addButton(radioButton);
 
