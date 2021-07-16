@@ -27,8 +27,8 @@ public:
         layout->setContentsMargins(QMargins());
 
         layout->addWidget(_comboBox, 1);
-        connect(_comboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
-        connect(_comboBox, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
+        connect(_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [=](int){emit this->widgetChanged();});
+        connect(_comboBox, &QComboBox::editTextChanged, [=](const QString &){emit this->entryChanged();});
 
         if (editDimension)
         {
@@ -37,8 +37,8 @@ public:
             _spinBox->setPrefix("x");
             _spinBox->setMinimum(1);
             _spinBox->setMaximum(std::numeric_limits<short>::max()); //numeric maximum affects line edit width
-            connect(_spinBox, SIGNAL(editingFinished(void)), this, SIGNAL(widgetChanged(void)));
-            connect(_spinBox, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+            connect(_spinBox, &QSpinBox::editingFinished, [=](void){emit this->widgetChanged();});
+            connect(_spinBox, QOverload<int>::of(&QSpinBox::valueChanged), [=](int){emit this->entryChanged();});
         }
 
         _comboBox->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
@@ -102,16 +102,6 @@ signals:
     void commitRequested(void);
     void widgetChanged(void);
     void entryChanged(void);
-
-private slots:
-    void handleWidgetChanged(const QString &)
-    {
-        emit this->widgetChanged();
-    }
-    void handleEntryChanged(const QString &)
-    {
-        emit this->entryChanged();
-    }
 
 private:
     static QString unQuote(const QString &s)

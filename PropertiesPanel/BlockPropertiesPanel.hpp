@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -37,7 +37,7 @@ private slots:
     //! Handle for all widget change events
     void handleWidgetChanged(void);
 
-    void handleAffinityZoneChanged(const QString &);
+    void handleAffinityZoneChanged(void);
 
     void handleBlockEvalDone(void);
 

@@ -111,7 +111,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _affinityZoneOriginal = _block->getAffinityZone();
         _affinityZoneBox = AffinityZonesDock::global()->makeComboBox(this);
         _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
-        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
+        connect(_affinityZoneBox, QOverload<int>::of(&QComboBox::activated), [=](int){emit this->handleAffinityZoneChanged();});
     }
 
     //errors
@@ -272,7 +272,7 @@ void BlockPropertiesPanel::handleWidgetChanged(void)
     this->updateAllForms(); //quick update for labels
 }
 
-void BlockPropertiesPanel::handleAffinityZoneChanged(const QString &)
+void BlockPropertiesPanel::handleAffinityZoneChanged(void)
 {
     this->handleWidgetChanged();
     emit _block->triggerEvalEvent();
