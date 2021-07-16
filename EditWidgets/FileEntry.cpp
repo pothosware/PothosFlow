@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -45,7 +45,7 @@ public slots:
     {
         if (s.startsWith("\"") and s.endsWith("\""))
         {
-            auto s0 = s.midRef(1, s.size()-2).toString();
+            auto s0 = s.mid(1, s.size()-2);
             _edit->setText(s0.replace("\\\"", "\"")); //unescape
         }
         else _edit->setText(s);

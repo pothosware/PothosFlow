@@ -90,7 +90,6 @@ void BlockTreeWidget::mouseMoveEvent(QMouseEvent *event)
     painter.translate(-bounds.topLeft()+QPoint(1,1));
     //painter.scale(zoomScale, zoomScale); //TODO get zoomscale from draw
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
     renderBlock->render(painter);
     renderBlock.reset();
@@ -193,7 +192,7 @@ bool BlockTreeWidget::blockDescMatchesFilter(const QJsonObject &blockDesc)
     return (candidate.indexOf(searchToken) != -1);
 }
 
-QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> items) const
+QMimeData *BlockTreeWidget::mimeData(const QList<QTreeWidgetItem *> mimeDataRef(items)) const
 {
     for (auto item : items)
     {

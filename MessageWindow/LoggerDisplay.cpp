@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -99,7 +99,7 @@ void LoggerDisplay::resizeEvent(QResizeEvent *event)
     return QStackedWidget::resizeEvent(event);
 }
 
-void LoggerDisplay::enterEvent(QEvent *event)
+void LoggerDisplay::enterEvent(QEnterEventCompat *event)
 {
     _clearButton->show();
     _clearButton->move(_text->viewport()->width()-_clearButton->width(), 0);

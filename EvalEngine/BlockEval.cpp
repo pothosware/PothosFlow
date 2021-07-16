@@ -14,7 +14,7 @@
 #include <cassert>
 #include <iostream>
 #include <QApplication>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSet>
 
 //! Number of milliseconds until the overlay is considered expired
@@ -250,7 +250,7 @@ bool BlockEval::evaluationProcedure(void)
     {
         _lastBlockStatus.blockErrorMsgs.push_back(tr("Error: empty ID"));
     }
-    else if (_newBlockInfo.id.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
+    else if (_newBlockInfo.id.count(QRegularExpression("^[a-zA-Z]\\w*$")) != 1)
     {
         _lastBlockStatus.blockErrorMsgs.push_back(
             tr("'%1' is not a legal ID").arg(_newBlockInfo.id));
@@ -513,7 +513,7 @@ QStringList BlockEval::getConstantsUsed(const QString &expr, const size_t depth)
     #else
         #define behavior Qt::SkipEmptyParts //old flags deprecated in 5.14
     #endif
-    for (const auto &tok : expr.split(QRegExp("\\W"), behavior))
+    for (const auto &tok : expr.split(QRegularExpression("\\W"), behavior))
     {
         //is this token a constant? then inspect it
         if (_newBlockInfo.constants.count(tok) != 0)

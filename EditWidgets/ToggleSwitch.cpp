@@ -101,7 +101,6 @@ protected:
         const int h = this->height();
         const auto &palette = this->palette();
         p.setRenderHint(QPainter::Antialiasing);
-        p.setRenderHint(QPainter::HighQualityAntialiasing);
         p.setRenderHint(QPainter::SmoothPixmapTransform);
 
         //the border color to show selection

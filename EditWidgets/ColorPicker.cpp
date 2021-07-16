@@ -1,4 +1,4 @@
-// Copyright (c) 2016-2017 Josh Blum
+// Copyright (c) 2016-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -53,7 +53,7 @@ public slots:
     void setValue(const QString &value)
     {
         if (_value.size() < 2) return;
-        _value = value.midRef(1, value.size()-2).toString();
+        _value = value.mid(1, value.size()-2);
         QtColorPicker::setCurrentColor(_value);
     }
 

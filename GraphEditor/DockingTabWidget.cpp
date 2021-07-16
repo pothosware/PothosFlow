@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2019 Josh Blum
+// Copyright (c) 2018-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "DockingTabWidget.hpp"
@@ -322,7 +322,7 @@ void DockingTabWidget::restoreWidgetState(const QVariant &state)
     if (data.isEmpty()) return;
     this->setCurrentIndex(data["index"].toInt());
     const auto tabs = data["tabs"].toList();
-    for (int index = 0; index < std::min(tabs.size(), this->count()); index++)
+    for (int index = 0; index < std::min<int>(tabs.size(), this->count()); index++)
     {
         const auto tabData = tabs[index].toMap();
         this->page(index)->setDocked(tabData["docked"].toBool());
