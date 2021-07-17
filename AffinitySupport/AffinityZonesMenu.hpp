@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2014 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,7 +7,6 @@
 #include <QMenu>
 #include <QPointer>
 
-class QSignalMapper;
 class AffinityZonesDock;
 
 /*!
@@ -25,9 +24,7 @@ signals:
 
 private slots:
     void handleZonesChanged(void);
-    void handleMapperClicked(const QString &);
 
 private:
-    QSignalMapper *_clickMapper;
     QPointer<AffinityZonesDock> _dock;
 };

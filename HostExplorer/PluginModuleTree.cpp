@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/PluginModuleTree.hpp"
@@ -77,7 +77,7 @@ PluginModuleTree::PluginModuleTree(QWidget *parent):
         this, SLOT(handleWatcherDone(void)));
 }
 
-void PluginModuleTree::handeInfoRequest(const std::string &uriStr)
+void PluginModuleTree::handleInfoRequest(const std::string &uriStr)
 {
     if (_watcher->isRunning()) return;
     while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);

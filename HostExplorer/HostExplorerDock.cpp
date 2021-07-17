@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2016 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -12,7 +12,6 @@
 #include <QLabel>
 #include <QMovie>
 #include <QTabBar>
-#include <QSignalMapper>
 #include <Pothos/Remote.hpp>
 #include <iostream>
 
@@ -22,9 +21,7 @@
 HostExplorerDock::HostExplorerDock(QWidget *parent):
     QDockWidget(parent),
     _table(new HostSelectionTable(this)),
-    _tabs(new QTabWidget(this)),
-    _startMapper(new QSignalMapper(this)),
-    _stopMapper(new QSignalMapper(this))
+    _tabs(new QTabWidget(this))
 {
     this->setObjectName("HostExplorerDock");
     this->setWindowTitle(tr("Host Explorer"));
@@ -34,29 +31,21 @@ HostExplorerDock::HostExplorerDock(QWidget *parent):
     auto layout = new QVBoxLayout(this->widget());
     layout->addWidget(_table);
 
-    _tabs->addTab(new SystemInfoTree(_tabs), tr("System Info"));
-    _tabs->addTab(new PluginRegistryTree(_tabs), tr("Plugin Registry"));
-    _tabs->addTab(new PluginModuleTree(_tabs), tr("Plugin Modules"));
+    addTabAndConnect(new SystemInfoTree(_tabs), tr("System Info"));
+    addTabAndConnect(new PluginRegistryTree(_tabs), tr("Plugin Registry"));
+    addTabAndConnect(new PluginModuleTree(_tabs), tr("Plugin Modules"));
     layout->addWidget(_tabs, 1);
 
-    //connect mappers
-    connect(_startMapper, SIGNAL(mapped(const int)), this, SLOT(start(const int)));
-    connect(_stopMapper, SIGNAL(mapped(const int)), this, SLOT(stop(const int)));
     connect(_table, &HostSelectionTable::hostUriListChanged, this, &HostExplorerDock::hostUriListChanged);
+}
 
-    //connect handlers for node info so the tabs update
-    for (int i = 0; i < _tabs->count(); i++)
-    {
-        connect(
-            _table, SIGNAL(hostInfoRequest(const std::string &)),
-            _tabs->widget(i), SLOT(handeInfoRequest(const std::string &)));
-
-        connect(_tabs->widget(i), SIGNAL(startLoad(void)), _startMapper, SLOT(map(void)));
-        _startMapper->setMapping(_tabs->widget(i), i);
-
-        connect(_tabs->widget(i), SIGNAL(stopLoad(void)), _stopMapper, SLOT(map(void)));
-        _stopMapper->setMapping(_tabs->widget(i), i);
-    }
+template <typename T>
+void HostExplorerDock::addTabAndConnect(T *tabWidget, const QString &name)
+{
+    const auto index = _tabs->addTab(tabWidget, name);
+    connect(_table, &HostSelectionTable::hostInfoRequest, tabWidget, &T::handleInfoRequest);
+    connect(tabWidget, &T::startLoad, [=](void){emit this->start(index);});
+    connect(tabWidget, &T::stopLoad, [=](void){emit this->stop(index);});
 }
 
 QStringList HostExplorerDock::hostUriList(void) const
