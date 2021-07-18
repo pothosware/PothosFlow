@@ -183,9 +183,7 @@ void EvalEngineImpl::evaluate(void)
 
     //Do not evaluate when there are pending events in the queue.
     //Evaluate only after all events received - AKA event compression.
-    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if (this->thread()->eventDispatcher()->hasPendingEvents()) return;
-    #endif
+    if (_lastRxInvokeCount != _invokeCount) return;
 
     //Only evaluate if require evaluate was flagged by a slot
     if (not _requireEval) return;
@@ -285,7 +283,7 @@ void EvalEngineImpl::evaluate(void)
             _blockEvals.clear();
             emit this->deactivateDesign();
             //cause an immediate re-evaluation
-            QMetaObject::invokeMethod(this, "handleMonitorTimeout", Qt::QueuedConnection);
+            invokeMethod("handleMonitorTimeout", Qt::QueuedConnection);
         }
     }
 

@@ -44,7 +44,7 @@ EvalEngine::EvalEngine(QObject *parent):
 
 EvalEngine::~EvalEngine(void)
 {
-    QMetaObject::invokeMethod(_impl, "submitCleanup", Qt::BlockingQueuedConnection);
+    _impl->invokeMethod("submitCleanup", Qt::BlockingQueuedConnection);
     delete _impl;
     _thread->quit();
     if (not _thread->wait(THREAD_JOIN_MAX_MS))
@@ -97,46 +97,46 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     const auto connInfos = TopologyEval::getConnectionInfo(graphObjects);
 
     //submit the information to the eval thread object
-    QMetaObject::invokeMethod(_impl, "submitTopology", Qt::QueuedConnection, Q_ARG(BlockInfos, blockInfos), Q_ARG(ConnectionInfos, connInfos));
+    _impl->invokeMethod("submitTopology", Qt::QueuedConnection, Q_ARG(BlockInfos, blockInfos), Q_ARG(ConnectionInfos, connInfos));
 }
 
 void EvalEngine::submitReeval(const GraphObjectList &graphObjects)
 {
     std::vector<size_t> uids;
     for (auto obj : graphObjects) uids.push_back(obj->uid());
-    QMetaObject::invokeMethod(_impl, "submitReeval", Qt::QueuedConnection, Q_ARG(std::vector<size_t>, uids));
+    _impl->invokeMethod("submitReeval", Qt::QueuedConnection, Q_ARG(std::vector<size_t>, uids));
 }
 
 void EvalEngine::submitActivateTopology(const bool active)
 {
-    QMetaObject::invokeMethod(_impl, "submitActivateTopology", Qt::QueuedConnection, Q_ARG(bool, active));
+    _impl->invokeMethod("submitActivateTopology", Qt::QueuedConnection, Q_ARG(bool, active));
 }
 
 void EvalEngine::submitBlock(QObject *obj)
 {
     auto block = qobject_cast<GraphBlock *>(obj);
     assert(block != nullptr);
-    QMetaObject::invokeMethod(_impl, "submitBlock", Qt::QueuedConnection, Q_ARG(BlockInfo, blockToBlockInfo(block)));
+    _impl->invokeMethod("submitBlock", Qt::QueuedConnection, Q_ARG(BlockInfo, blockToBlockInfo(block)));
 }
 
 QByteArray EvalEngine::getTopologyDotMarkup(const QByteArray &config)
 {
     QByteArray result;
-    QMetaObject::invokeMethod(_impl, "getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
+    _impl->invokeMethod("getTopologyDotMarkup", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
     return result;
 }
 
 QByteArray EvalEngine::getTopologyJSONDump(const QByteArray &config)
 {
     QByteArray result;
-    QMetaObject::invokeMethod(_impl, "getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
+    _impl->invokeMethod("getTopologyJSONDump", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result), Q_ARG(QByteArray, config));
     return result;
 }
 
 QByteArray EvalEngine::getTopologyJSONStats(void)
 {
     QByteArray result;
-    QMetaObject::invokeMethod(_impl, "getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result));
+    _impl->invokeMethod("getTopologyJSONStats", Qt::BlockingQueuedConnection, Q_RETURN_ARG(QByteArray, result));
     return result;
 }
 
@@ -147,7 +147,7 @@ void EvalEngine::handleAffinityZonesChanged(void)
     {
         zoneInfos[zoneName] = _affinityDock->zoneToConfig(zoneName);
     }
-    QMetaObject::invokeMethod(_impl, "submitZoneInfo", Qt::QueuedConnection, Q_ARG(ZoneInfos, zoneInfos));
+    _impl->invokeMethod("submitZoneInfo", Qt::QueuedConnection, Q_ARG(ZoneInfos, zoneInfos));
 }
 
 void EvalEngine::handleEvalThreadHeartBeat(void)
