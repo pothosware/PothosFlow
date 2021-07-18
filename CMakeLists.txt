@@ -131,6 +131,7 @@ list(APPEND SOURCES
     HostExplorer/HostSelectionTable.cpp
     HostExplorer/HostExplorerDock.cpp
 
+    GraphEditor/Constants.cpp
     GraphEditor/GraphState.cpp
     GraphEditor/GraphEditorTabs.cpp
     GraphEditor/GraphEditor.cpp

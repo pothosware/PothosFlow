@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include "AffinitySupport/CpuSelectionWidget.hpp"
+#include "GraphEditor/Constants.hpp"
 #include <QLabel>
 #include <QTableWidget>
 #include <QHeaderView>
@@ -99,7 +100,8 @@ void CpuSelectionWidget::update(void)
     {
         if (numaNodeSelected and _cpuItems.count(pair.first) != 0) pair.first->setFlags(Qt::NoItemFlags);
         else pair.first->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-        pair.first->setBackground((pair.second)?Qt::green:Qt::white);
+        pair.first->setBackground((pair.second)?Qt::green:QColor(defaultPaletteBackground()));
+        pair.first->setForeground((pair.second)?Qt::black:QColor(defaultPaletteForeground()));
         pair.first->setSelected(false);
     }
 
