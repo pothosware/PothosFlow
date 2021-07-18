@@ -223,7 +223,7 @@ void PropertyEditWidget::updateInternals(void)
 
     //generate the form label
     auto formLabelText = QString("<span style='color:%1;'><b>%2%3</b></span>")
-        .arg(hasError?"red":ProperyEditWidgetFormLabelColor)
+        .arg(hasError?"red":defaultPaletteForeground())
         .arg(_formLabelText)
         .arg(this->changed()?"*":"");
     if (hasUnits) formLabelText += QString("<br /><i>%1</i>").arg(_unitsStr);

@@ -15,6 +15,9 @@ static const int GRAPH_WIDGET = (1 << 3);
 //! Default background color
 QString defaultPaletteBackground(void);
 
+//! Default window text color
+QString defaultPaletteForeground(void);
+
 /*!
  * Select between color based on system dark mode
  */
@@ -81,7 +84,3 @@ static const QString GraphConnectionDisabledColor = "#A0A0A0";
 static const QString GraphWidgetGripLabelFontSize = "6pt";
 #define GraphWidgetGripLabelColor darkColorSupport("#484848", "white")
 #define GraphWidgetBackgroundColor darkColorSupport("beige", "gray")
-
-#define LoggerDisplayInfoLabelColor darkColorSupport("black", "white")
-
-#define ProperyEditWidgetFormLabelColor darkColorSupport("black", "white")
