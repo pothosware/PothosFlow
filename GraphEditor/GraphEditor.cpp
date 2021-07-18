@@ -158,8 +158,7 @@ QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) co
 
     //find a reasonable name and index
     size_t index = 0;
-    const auto rx = QRegularExpression("(.*)(\\d+)").match(idBase);
-    if (rx.hasMatch() and not rx.captured(1).isEmpty() and not rx.captured(2).isEmpty())
+    if (const auto rx = QRegularExpression("(.+)(\\d+)").match(idBase); rx.hasMatch())
     {
         idBase = rx.captured(1);
         index = rx.captured(2).toInt();
