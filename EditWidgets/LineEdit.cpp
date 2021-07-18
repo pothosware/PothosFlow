@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -16,8 +16,8 @@ public:
     LineEdit(QWidget *parent):
         QLineEdit(parent)
     {
-        connect(this, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
-        connect(this, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        connect(this, &QLineEdit::textEdited, [=](const QString &){emit this->entryChanged();});
+        connect(this, &QLineEdit::returnPressed, this, &LineEdit::commitRequested);
     }
 
 public slots:
@@ -35,12 +35,6 @@ signals:
     void commitRequested(void);
     void widgetChanged(void);
     void entryChanged(void);
-
-private slots:
-    void handleTextEdited(const QString &)
-    {
-        emit this->entryChanged();
-    }
 };
 
 /***********************************************************************

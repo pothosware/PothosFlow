@@ -29,8 +29,8 @@ public:
         layout->addWidget(_button, 0, Qt::AlignRight);
         _button->setMaximumWidth(20);
         connect(_button, &QPushButton::pressed, this, &FileEntry::handlePressed);
-        connect(_edit, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
-        connect(_edit, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        connect(_edit, &QLineEdit::textEdited, [=](const QString &){emit this->entryChanged();});
+        connect(_edit, &QLineEdit::returnPressed, this, &FileEntry::commitRequested);
         _edit->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
     }
 
@@ -66,11 +66,6 @@ private slots:
         if (filePath.isEmpty()) return;
         this->setValue(filePath);
         emit this->widgetChanged();
-    }
-
-    void handleTextEdited(const QString &)
-    {
-        emit this->entryChanged();
     }
 
 private:

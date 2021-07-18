@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2017 Josh Blum
+// Copyright (c) 2017-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -18,7 +18,7 @@ public:
         _onText(onText),
         _offText(offText)
     {
-        connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
+        connect(this, &QCheckBox::toggled, this, &CheckBox::handleToggled);
     }
 
 public slots:

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -17,8 +17,8 @@ public:
     SpinBox(QWidget *parent):
         QSpinBox(parent)
     {
-        connect(this, SIGNAL(editingFinished(void)), this, SIGNAL(widgetChanged(void)));
-        connect(this, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+        connect(this, &SpinBox::editingFinished, this, &SpinBox::widgetChanged);
+        connect(this, QOverload<int>::of(&SpinBox::valueChanged), [=](int){this->handleWidgetChanged();});
     }
 
 public slots:
@@ -39,7 +39,7 @@ signals:
     void entryChanged(void);
 
 private slots:
-    void handleWidgetChanged(const QString &)
+    void handleWidgetChanged(void)
     {
         _value = QSpinBox::text();
         emit this->widgetChanged();

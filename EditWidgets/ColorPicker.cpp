@@ -41,7 +41,7 @@ public:
             this->insertColor(QColor(253,253,150), tr("Pastel yellow"));
         }
         else throw std::runtime_error("ColorPicker mode must be default or pastel");
-        connect(this, SIGNAL(colorChanged(const QColor &)), this, SLOT(handleColorChanged(const QColor &)));
+        connect(this, &QtColorPicker::colorChanged, this, &ColorPicker::handleColorChanged);
     }
 
 public slots:

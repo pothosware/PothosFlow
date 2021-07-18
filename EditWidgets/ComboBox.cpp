@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -19,8 +19,8 @@ public:
         QComboBox(parent),
         _nonEditCount(0)
     {
-        connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(handleWidgetChanged(int)));
-        connect(this, SIGNAL(editTextChanged(const QString &)), this, SLOT(handleEntryChanged(const QString &)));
+        connect(this, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ComboBox::handleWidgetChanged);
+        connect(this, &QComboBox::editTextChanged, this, &ComboBox::handleEntryChanged);
         this->view()->setObjectName("BlockPropertiesEditWidget"); //to pick up eval color style
     }
 
@@ -30,7 +30,7 @@ public:
         //line-edit should be non-null when enabled
         if (this->lineEdit() != nullptr)
         {
-            connect(this->lineEdit(), SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+            connect(this->lineEdit(), &QLineEdit::returnPressed, this, &ComboBox::commitRequested);
         }
     }
 
