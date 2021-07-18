@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,7 +12,6 @@
 
 class HostUriQLineEdit;
 class QToolButton;
-class QSignalMapper;
 class QTimer;
 
 //! information stored about a node
@@ -55,8 +54,6 @@ private slots:
 
     void handleAdd(const QString &uri);
 
-    void handleNodeQueryComplete(void);
-
     void handleUpdateStatus(void);
 
 private:
@@ -68,9 +65,9 @@ private:
     void showErrorMessage(const QString &errMsg);
     HostUriQLineEdit *_lineEdit;
     QToolButton *_addButton;
-    QSignalMapper *_removeMapper;
     QTimer *_timer;
-    QFutureWatcher<std::vector<NodeInfo>> *_watcher;
+    typedef QFutureWatcher<std::vector<NodeInfo>> FutureWatcherT;
+    FutureWatcherT *_watcher;
     std::map<QString, size_t> _uriToRow;
     std::map<QString, NodeInfo> _uriToInfo;
     static const size_t nCols = 4;

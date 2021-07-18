@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -7,7 +7,6 @@
 #include <QLineEdit>
 #include <QHBoxLayout>
 #include <QToolButton>
-#include <QSignalMapper>
 #include <QTimer>
 #include <QToolTip>
 #include <QFuture>
@@ -17,8 +16,6 @@
 #include <Pothos/Proxy.hpp>
 #include <Pothos/System.hpp>
 #include <Pothos/Util/Network.hpp>
-#include <map>
-#include <iostream>
 #include <functional> //std::bind
 
 /***********************************************************************
@@ -168,9 +165,8 @@ HostSelectionTable::HostSelectionTable(QWidget *parent):
     QTableWidget(parent),
     _lineEdit(new HostUriQLineEdit(this)),
     _addButton(makeToolButton(this, "list-add")),
-    _removeMapper(new QSignalMapper(this)),
     _timer(new QTimer(this)),
-    _watcher(new QFutureWatcher<std::vector<NodeInfo>>(this))
+    _watcher(new FutureWatcherT(this))
 {
     this->setColumnCount(nCols);
     size_t col = 0;
@@ -186,12 +182,11 @@ HostSelectionTable::HostSelectionTable(QWidget *parent):
     this->setSpan(0, 1, 1, nCols-1);
 
     //connect entry related widgets
-    connect(_addButton, SIGNAL(clicked(void)), _lineEdit, SLOT(handleReturnPressed(void)));
+    connect(_addButton, &QToolButton::clicked, [=](void){_lineEdit->handleReturnPressed();});
     connect(_lineEdit, &HostUriQLineEdit::handleUriEntered, this, &HostSelectionTable::handleAdd);
-    connect(_removeMapper, SIGNAL(mapped(const QString &)), this, SLOT(handleRemove(const QString &)));
     connect(_timer, &QTimer::timeout, this, &HostSelectionTable::handleUpdateStatus);
-    connect(_watcher, SIGNAL(finished(void)), this, SLOT(handleNodeQueryComplete(void)));
-    connect(this, SIGNAL(cellClicked(int, int)), this, SLOT(handleCellClicked(int, int)));
+    connect(_watcher, &FutureWatcherT::finished, [=](void){this->reloadRows(_watcher->result());});
+    connect(this, &HostSelectionTable::cellClicked, this, &HostSelectionTable::handleCellClicked);
 
     this->reloadTable();
     _timer->start(5000/*ms*/);
@@ -250,11 +245,6 @@ void HostSelectionTable::handleAdd(const QString &uri)
     {
         this->showErrorMessage(QString::fromStdString(ex.displayText()));
     }
-}
-
-void HostSelectionTable::handleNodeQueryComplete(void)
-{
-    this->reloadRows(_watcher->result());
 }
 
 void HostSelectionTable::handleUpdateStatus(void)
@@ -324,8 +314,7 @@ void HostSelectionTable::reloadTable(void)
         _uriToRow[uri] = row;
         auto removeButton = makeToolButton(this, "list-remove");
         this->setCellWidget(row, 0, removeButton);
-        connect(removeButton, SIGNAL(clicked(void)), _removeMapper, SLOT(map()));
-        _removeMapper->setMapping(removeButton, uri);
+        connect(removeButton, &QToolButton::clicked, [=](void){handleRemove(uri);});
         row++;
     }
 

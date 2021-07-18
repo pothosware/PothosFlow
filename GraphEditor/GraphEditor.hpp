@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,7 +12,6 @@
 
 class GraphConnection;
 class GraphDraw;
-class QSignalMapper;
 class QTabWidget;
 class EvalEngine;
 class QTimer;
@@ -150,7 +149,7 @@ private slots:
     void handleRenameGraphPage(void);
     void handleDeleteGraphPage(void);
     void handleMoveGraphObjects(const int index);
-    void handleAddBlock(const QJsonObject &);
+    void handleAddBlockSlot(const QJsonObject &);
     void handleCreateBreaker(const bool isInput);
     void handleCreateInputBreaker(void);
     void handleCreateOutputBreaker(void);
@@ -198,9 +197,6 @@ private:
     void makeDefaultPage(void);
 
     void deleteFlagged(void);
-
-    QSignalMapper *_moveGraphObjectsMapper;
-    QSignalMapper *_insertGraphWidgetsMapper;
 
     QString _currentFilePath;
     QPointer<GraphStateManager> _stateManager;

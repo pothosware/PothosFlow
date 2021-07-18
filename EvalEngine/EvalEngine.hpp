@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -12,7 +12,6 @@ class QThread;
 class QTimer;
 class EvalEngineImpl;
 class AffinityZonesDock;
-class QSignalMapper;
 class EvalTracer;
 
 /*!
@@ -28,6 +27,9 @@ public:
     EvalEngine(QObject *parent);
 
     ~EvalEngine(void);
+
+signals:
+    void deactivateDesign(void);
 
 public slots:
 
@@ -76,7 +78,6 @@ private:
     QThread *_thread;
     QTimer *_monitorTimer;
     EvalEngineImpl *_impl;
-    QSignalMapper *_blockEvalMapper;
     AffinityZonesDock *_affinityDock;
     std::chrono::system_clock::time_point _lastHeartBeat;
 };
