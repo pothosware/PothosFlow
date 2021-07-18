@@ -3,6 +3,7 @@ This this the changelog file for the Pothos Flow toolkit.
 Release 0.7.1 (pending)
 ==========================
 
+- Support systems with dark mode themes
 - Update build to support Qt6 and newer cmake target style
 - Fixed deprecated Qt API usage
 
