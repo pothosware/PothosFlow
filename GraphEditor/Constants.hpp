@@ -13,10 +13,10 @@ static const int GRAPH_CONNECTION = (1 << 2);
 static const int GRAPH_WIDGET = (1 << 3);
 
 //! Default background color
-QString defaultPaletteBackground(void);
+const QString &defaultPaletteBackground(void);
 
 //! Default window text color
-QString defaultPaletteForeground(void);
+const QString &defaultPaletteForeground(void);
 
 /*!
  * Select between color based on system dark mode

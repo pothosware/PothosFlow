@@ -3,20 +3,22 @@
 
 #include "GraphEditor/Constants.hpp"
 #include "ColorUtils/ColorUtils.hpp"
-#include <QLabel>
+#include <QApplication>
+#include <QPalette>
 
 static QColor getDefaultPaletteColor(const QPalette::ColorRole role)
 {
-    return QLabel().palette().color(role);
+    QWidget *nullWidget(nullptr); //default palette, unspecified widget
+    return QApplication::palette(nullWidget).color(role);
 }
 
-QString defaultPaletteBackground(void)
+const QString &defaultPaletteBackground(void)
 {
     const static QString color = getDefaultPaletteColor(QPalette::Window).name();
     return color;
 }
 
-QString defaultPaletteForeground(void)
+const QString &defaultPaletteForeground(void)
 {
     const static QString color = getDefaultPaletteColor(QPalette::WindowText).name();
     return color;
