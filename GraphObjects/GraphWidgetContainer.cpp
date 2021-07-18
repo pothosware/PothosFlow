@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphWidgetContainer.hpp"
@@ -120,7 +120,7 @@ void GraphWidgetContainer::setSelected(const bool selected)
         .arg(GraphWidgetBackgroundColor));
 }
 
-void GraphWidgetContainer::enterEvent(QEvent *event)
+void GraphWidgetContainer::enterEvent(QEnterEventCompat *event)
 {
     this->updateShowGrip();
     QWidget::enterEvent(event);

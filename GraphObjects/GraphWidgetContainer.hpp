@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -43,10 +43,10 @@ signals:
     void resized(void);
 
 protected:
-    void enterEvent(QEvent *event);
-    void leaveEvent(QEvent *event);
+    void enterEvent(QEnterEventCompat *event) override;
+    void leaveEvent(QEvent *event) override;
     void updateShowGrip(void);
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event) override;
 
 private slots:
     void handleLockedChanged(const bool locked);

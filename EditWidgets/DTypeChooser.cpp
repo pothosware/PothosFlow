@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Framework/DType.hpp>
@@ -118,7 +118,7 @@ private:
     {
         if (s.startsWith("\"") and s.endsWith("\""))
         {
-            return s.midRef(1, s.size()-2).toString();
+            return s.mid(1, s.size()-2);
         }
         return s;
     }

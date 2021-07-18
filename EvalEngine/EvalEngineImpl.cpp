@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngineImpl.hpp"
@@ -183,7 +183,9 @@ void EvalEngineImpl::evaluate(void)
 
     //Do not evaluate when there are pending events in the queue.
     //Evaluate only after all events received - AKA event compression.
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if (this->thread()->eventDispatcher()->hasPendingEvents()) return;
+    #endif
 
     //Only evaluate if require evaluate was flagged by a slot
     if (not _requireEval) return;

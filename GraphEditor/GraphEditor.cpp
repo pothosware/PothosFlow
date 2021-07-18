@@ -29,7 +29,7 @@
 #include <QScreen>
 #include <QClipboard>
 #include <QMimeData>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTimer>
 #include <QUuid>
 #include <QFileInfo>
@@ -158,11 +158,10 @@ QString GraphEditor::newId(const QString &hint, const QStringList &blacklist) co
 
     //find a reasonable name and index
     size_t index = 0;
-    QRegExp rx("(.*)(\\d+)"); rx.indexIn(idBase);
-    if (rx.captureCount() == 2 and not rx.cap(1).isEmpty() and not rx.cap(2).isEmpty())
+    if (const auto rx = QRegularExpression("(.+)(\\d+)").match(idBase); rx.hasMatch())
     {
-        idBase = rx.cap(1);
-        index = rx.cap(2).toInt();
+        idBase = rx.captured(1);
+        index = rx.captured(2).toInt();
     }
 
     //loop for a unique ID name

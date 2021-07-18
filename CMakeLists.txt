@@ -220,6 +220,13 @@ install(
     COMPONENT pothos_flow
 )
 
+#Qt 6 changed the signature on enterEvent() signature type
+if ("${Qt${QT_VERSION_MAJOR}_VERSION}" VERSION_LESS "6.0")
+    target_compile_definitions(PothosFlow PRIVATE -DQEnterEventCompat=QEvent)
+else()
+    target_compile_definitions(PothosFlow PRIVATE -DQEnterEventCompat=QEnterEvent)
+endif()
+
 ########################################################################
 # Edit widgets module
 ########################################################################

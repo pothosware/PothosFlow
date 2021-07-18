@@ -45,7 +45,6 @@
 ****************************************************************************/
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QPainter>
 #include <QPushButton>
 #include <QColorDialog>
@@ -310,9 +309,9 @@ void QtColorPicker::buttonPressed(bool toggled)
     if (!toggled)
         return;
 
-    const QRect desktop = QApplication::desktop()->geometry();
+    const QRect desktop = this->parentWidget()->geometry();
     // Make sure the popup is inside the desktop.
-    QPoint pos = mapToGlobal(rect().bottomLeft());
+    QPoint pos = rect().bottomLeft();
     if (pos.x() < desktop.left())
        pos.setX(desktop.left());
     if (pos.y() < desktop.top())
@@ -322,7 +321,7 @@ void QtColorPicker::buttonPressed(bool toggled)
        pos.setX(desktop.width() - popup->sizeHint().width());
     if ((pos.y() + popup->sizeHint().height()) > desktop.bottom())
        pos.setY(desktop.bottom() - popup->sizeHint().height());
-    popup->move(pos);
+    popup->move(mapToGlobal(pos));
 
     if (ColorPickerItem *item = popup->find(col))
         item->setSelected(true);
@@ -859,7 +858,7 @@ void ColorPickerPopup::regenerateGrid()
     // one.
     if (grid) delete grid;
     grid = new QGridLayout(this);
-    grid->setMargin(1);
+    grid->setContentsMargins(1, 1, 1, 1);
     grid->setSpacing(0);
 
     int ccol = 0, crow = 0;

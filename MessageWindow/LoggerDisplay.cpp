@@ -100,7 +100,7 @@ void LoggerDisplay::resizeEvent(QResizeEvent *event)
     return QStackedWidget::resizeEvent(event);
 }
 
-void LoggerDisplay::enterEvent(QEvent *event)
+void LoggerDisplay::enterEvent(QEnterEventCompat *event)
 {
     _clearButton->show();
     _clearButton->move(_text->viewport()->width()-_clearButton->width(), 0);

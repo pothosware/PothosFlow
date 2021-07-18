@@ -7,6 +7,7 @@
 #include "GraphPropertiesPanel.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include <Pothos/Util/EvalEnvironment.hpp>
+#include <QRegularExpression>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QFormLayout>
@@ -291,7 +292,7 @@ void GraphPropertiesPanel::handleCreateVariable(void)
     QString errorMsg;
 
     //check for a legal variable name
-    if (name.count(QRegExp("^[a-zA-Z]\\w*$")) != 1)
+    if (name.count(QRegularExpression("^[a-zA-Z]\\w*$")) != 1)
     {
         errorMsg = tr("'%1' is not a legal variable name").arg(name);
     }

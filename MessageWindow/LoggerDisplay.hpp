@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2015 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -30,7 +30,7 @@ private:
     QToolButton *_clearButton;
     QTimer *_timer;
 
-    void resizeEvent(QResizeEvent *event);
-    void enterEvent(QEvent *event);
-    void leaveEvent(QEvent *event);
+    void resizeEvent(QResizeEvent *event) override;
+    void enterEvent(QEnterEventCompat *event) override;
+    void leaveEvent(QEvent *event) override;
 };

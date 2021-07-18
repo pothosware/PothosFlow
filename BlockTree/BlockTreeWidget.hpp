@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -40,15 +40,22 @@ private slots:
 
 private:
 
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event) override;
 
-    void mouseMoveEvent(QMouseEvent *event);
+    void mouseMoveEvent(QMouseEvent *event) override;
 
     void populate(void);
 
     bool blockDescMatchesFilter(const QJsonObject &blockDesc);
 
-    QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const;
+    //qt6 changed the function signature to be a reference
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    #define mimeDataRef(name) name
+    #else
+    #define mimeDataRef(name) &name
+    #endif
+
+    QMimeData *mimeData(const QList<QTreeWidgetItem *> mimeDataRef(items)) const override;
 
     GraphEditorTabs *_editorTabs;
     QString _filter;

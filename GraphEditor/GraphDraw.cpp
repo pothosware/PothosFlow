@@ -46,7 +46,6 @@ GraphDraw::GraphDraw(QWidget *parent):
 
     //set high quality rendering
     this->setRenderHint(QPainter::Antialiasing);
-    this->setRenderHint(QPainter::HighQualityAntialiasing);
     this->setRenderHint(QPainter::SmoothPixmapTransform);
 
     //init settings
