@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/FormLayout.hpp"
@@ -72,7 +72,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         formLayout->addRow(tr("Host URI"), _hostsBox);
         _hostsBox->setEditable(true);
         _hostsBox->setToolTip(tr("Select the URI for a local or remote host"));
-        connect(_hostsBox, SIGNAL(activated(int)), this, SLOT(handleUriChanged(int)));
+        connect(_hostsBox, QOverload<int>::of(&QComboBox::activated), this, &AffinityZoneEditor::handleUriChanged);
         connect(_hostExplorerDock, &HostExplorerDock::hostUriListChanged, this, &AffinityZoneEditor::handleHostListChanged);
         this->handleHostListChanged();
     }
@@ -115,7 +115,7 @@ AffinityZoneEditor::AffinityZoneEditor(const QString &zoneName, QWidget *parent,
         _yieldModeBox->addItem(tr("Hybrid"), "HYBRID");
         _yieldModeBox->addItem(tr("Spin"), "SPIN");
         _yieldModeBox->setToolTip(tr("Yield mode specifies the internal threading mechanisms"));
-        connect(_yieldModeBox, SIGNAL(activated(int)), this, SLOT(handleComboChanged(int)));
+        connect(_yieldModeBox, QOverload<int>::of(&QComboBox::activated), this, &AffinityZoneEditor::handleComboChanged);
     }
 }
 

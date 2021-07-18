@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/MainWindow.hpp"
@@ -69,8 +69,8 @@ MainWindow::MainWindow(QWidget *parent):
     connect(_actions->showAboutAction, &QAction::triggered, this, &MainWindow::handleShowAbout);
     connect(_actions->showAboutQtAction, &QAction::triggered, this, &MainWindow::handleShowAboutQt);
     connect(_actions->showColorsDialogAction, &QAction::triggered, this, &MainWindow::handleColorsDialogAction);
-    connect(_actions->fullScreenViewAction, SIGNAL(toggled(bool)), this, SLOT(handleFullScreenViewAction(bool)));
-    connect(_actions->reloadPluginsAction, SIGNAL(triggered(bool)), this, SLOT(handleReloadPlugins(void)));
+    connect(_actions->fullScreenViewAction, &QAction::toggled, this, &MainWindow::handleFullScreenViewAction);
+    connect(_actions->reloadPluginsAction, &QAction::triggered, this, &MainWindow::handleReloadPlugins);
 
     //create message window dock
     _splash->postMessage(tr("Creating message window..."));

@@ -45,7 +45,7 @@ PropertyEditWidget::PropertyEditWidget(const QString &initialValue, const QJsonO
     _modeButton->setFixedSize(QSize(20, 20));
     //focus color is distracting, dont enable focus
     _modeButton->setFocusPolicy(Qt::NoFocus);
-    connect(_modeButton, SIGNAL(clicked(void)), this, SLOT(handleModeButtonClicked(void)));
+    connect(_modeButton, &QToolButton::clicked, [=](void){this->handleModeButtonClicked();});
 
     //layout internal widgets
     _editLayout->setSpacing(0);
@@ -140,7 +140,7 @@ void PropertyEditWidget::reloadParamDesc(const QJsonObject &paramDesc_)
     //initialize value
     this->setValue(newValue);
 
-    //signals to internal handler
+    //signals to internal handler (opaque type, use runtime bindings for signals/slots)
     connect(_editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
     connect(_editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleEntryChanged(void)));
     connect(_editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommitRequested(void)));

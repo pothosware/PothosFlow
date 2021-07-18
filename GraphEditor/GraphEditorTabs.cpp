@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -32,17 +32,17 @@ GraphEditorTabs::GraphEditorTabs(QWidget *parent):
         QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
 
     auto actions = MainActions::global();
-    connect(actions->newAction, SIGNAL(triggered(void)), this, SLOT(handleNew(void)));
-    connect(actions->openAction, SIGNAL(triggered(void)), this, SLOT(handleOpen(void)));
-    connect(actions->saveAction, SIGNAL(triggered(void)), this, SLOT(handleSave(void)));
-    connect(actions->saveAsAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAs(void)));
-    connect(actions->saveAllAction, SIGNAL(triggered(void)), this, SLOT(handleSaveAll(void)));
-    connect(actions->reloadAction, SIGNAL(triggered(void)), this, SLOT(handleReload(void)));
-    connect(actions->closeAction, SIGNAL(triggered(void)), this, SLOT(handleClose(void)));
-    connect(actions->exportAction, SIGNAL(triggered(void)), this, SLOT(handleExport(void)));
-    connect(actions->exportAsAction, SIGNAL(triggered(void)), this, SLOT(handleExportAs(void)));
-    connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(handleClose(int)));
-    connect(this->tabBar(), SIGNAL(tabMoved(int, int)), this, SLOT(handleTabMoved(int, int)));
+    connect(actions->newAction, &QAction::triggered, [=](void){this->handleNew();});
+    connect(actions->openAction, &QAction::triggered, [=](void){this->handleOpen();});
+    connect(actions->saveAction, &QAction::triggered, [=](void){this->handleSave();});
+    connect(actions->saveAsAction, &QAction::triggered, [=](void){this->handleSaveAs();});
+    connect(actions->saveAllAction, &QAction::triggered, [=](void){this->handleSaveAll();});
+    connect(actions->reloadAction, &QAction::triggered, [=](void){this->handleReload();});
+    connect(actions->closeAction, &QAction::triggered, [=](void){this->handleClose();});
+    connect(actions->exportAction, &QAction::triggered, [=](void){this->handleExport();});
+    connect(actions->exportAsAction, &QAction::triggered, [=](void){this->handleExportAs();});
+    connect(this, &GraphEditorTabs::tabCloseRequested, [=](int i){this->handleCloseIndex(i);});
+    connect(this->tabBar(), &QTabBar::tabMoved, [=](int, int){this->saveState();});
 }
 
 GraphEditor *GraphEditorTabs::getGraphEditor(const int i) const
@@ -192,7 +192,7 @@ void GraphEditorTabs::handleClose(void)
     this->handleClose(editor);
 }
 
-void GraphEditorTabs::handleClose(int index)
+void GraphEditorTabs::handleCloseIndex(int index)
 {
     auto editor = qobject_cast<GraphEditor *>(this->widget(index));
     assert(editor != nullptr);
@@ -221,7 +221,7 @@ void GraphEditorTabs::handleClose(GraphEditor *editor)
 void GraphEditorTabs::handleExit(QCloseEvent *event)
 {
     //dont save state for any further tab selection changes
-    disconnect(this, SIGNAL(currentChanged(int)), this, SLOT(handleChanged(int)));
+    disconnect(this, &GraphEditorTabs::currentChanged, this, &GraphEditorTabs::handleChanged);
 
     //exit logic -- save changes dialogs
     for (int i = 0; i < this->count(); i++)
@@ -284,11 +284,6 @@ void GraphEditorTabs::handleExportAs(void)
 }
 
 void GraphEditorTabs::handleChanged(int)
-{
-    this->saveState();
-}
-
-void GraphEditorTabs::handleTabMoved(int, int)
 {
     this->saveState();
 }

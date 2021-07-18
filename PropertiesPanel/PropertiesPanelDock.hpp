@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2016 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -8,6 +8,7 @@
 
 class QScrollArea;
 class QPushButton;
+class GraphEditor;
 
 class PropertiesPanelDock : public QDockWidget
 {
@@ -34,6 +35,8 @@ private slots:
     void handleDeletePanel(void);
 
 private:
+    template <typename T>
+    void installNewPanel(T *panel, GraphEditor *editor);
     QPointer<QObject> _currentGraphObject;
     QPointer<QWidget> _propertiesPanel;
     QScrollArea *_scroll;
