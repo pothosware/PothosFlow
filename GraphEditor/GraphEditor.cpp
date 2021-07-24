@@ -12,6 +12,7 @@
 #include "GraphObjects/GraphWidget.hpp"
 #include "BlockTree/BlockTreeDock.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
+#include "AffinitySupport/AffinityZonesMenu.hpp"
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainMenu.hpp"
 #include "MainWindow/MainSplash.hpp"
@@ -23,7 +24,6 @@
 #include <QInputDialog>
 #include <QAction>
 #include <QMenu>
-#include <QSignalMapper>
 #include <QDockWidget>
 #include <QApplication>
 #include <QScreen>
@@ -46,8 +46,6 @@ GraphEditor::GraphEditor(QWidget *parent):
     DockingTabWidget(parent),
     _logger(Poco::Logger::get("PothosFlow.GraphEditor")),
     _parentTabWidget(qobject_cast<QTabWidget *>(parent)),
-    _moveGraphObjectsMapper(new QSignalMapper(this)),
-    _insertGraphWidgetsMapper(new QSignalMapper(this)),
     _stateManager(new GraphStateManager(this)),
     _evalEngine(new EvalEngine(this)),
     _isTopologyActive(false),
@@ -64,46 +62,47 @@ GraphEditor::GraphEditor(QWidget *parent):
     this->tabBar()->setStyleSheet("font-size:8pt;");
     auto actions = MainActions::global();
     auto mainMenu = MainMenu::global();
+    auto blockTreeDock = BlockTreeDock::global();
+    auto affinityZonesDock = AffinityZonesDock::global();
+    auto affinityZonesMenu = qobject_cast<AffinityZonesMenu *>(mainMenu->affinityZoneMenu);
 
     //connect handlers that work at the page-level of control
-    connect(QApplication::clipboard(), SIGNAL(dataChanged(void)), this, SLOT(handleClipboardDataChange(void)));
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &GraphEditor::handleClipboardDataChange);
     connect(_stateManager, &GraphStateManager::newStateSelected, this, &GraphEditor::handleResetState);
-    connect(actions->createGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleCreateGraphPage(void)));
-    connect(actions->renameGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleRenameGraphPage(void)));
-    connect(actions->deleteGraphPageAction, SIGNAL(triggered(void)), this, SLOT(handleDeleteGraphPage(void)));
-    connect(actions->inputBreakerAction, SIGNAL(triggered(void)), this, SLOT(handleCreateInputBreaker(void)));
-    connect(actions->outputBreakerAction, SIGNAL(triggered(void)), this, SLOT(handleCreateOutputBreaker(void)));
-    connect(actions->cutAction, SIGNAL(triggered(void)), this, SLOT(handleCut(void)));
-    connect(actions->copyAction, SIGNAL(triggered(void)), this, SLOT(handleCopy(void)));
-    connect(actions->pasteAction, SIGNAL(triggered(void)), this, SLOT(handlePaste(void)));
-    connect(BlockTreeDock::global(), SIGNAL(addBlockEvent(const QJsonObject &)), this, SLOT(handleAddBlock(const QJsonObject &)));
-    connect(actions->selectAllAction, SIGNAL(triggered(void)), this, SLOT(handleSelectAll(void)));
-    connect(actions->deleteAction, SIGNAL(triggered(void)), this, SLOT(handleDelete(void)));
-    connect(actions->rotateLeftAction, SIGNAL(triggered(void)), this, SLOT(handleRotateLeft(void)));
-    connect(actions->rotateRightAction, SIGNAL(triggered(void)), this, SLOT(handleRotateRight(void)));
-    connect(actions->objectPropertiesAction, SIGNAL(triggered(void)), this, SLOT(handleObjectProperties(void)));
-    connect(actions->graphPropertiesAction, SIGNAL(triggered(void)), this, SLOT(handleGraphProperties(void)));
-    connect(actions->zoomInAction, SIGNAL(triggered(void)), this, SLOT(handleZoomIn(void)));
-    connect(actions->zoomOutAction, SIGNAL(triggered(void)), this, SLOT(handleZoomOut(void)));
-    connect(actions->zoomOriginalAction, SIGNAL(triggered(void)), this, SLOT(handleZoomOriginal(void)));
-    connect(actions->undoAction, SIGNAL(triggered(void)), this, SLOT(handleUndo(void)));
-    connect(actions->redoAction, SIGNAL(triggered(void)), this, SLOT(handleRedo(void)));
-    connect(actions->enableAction, SIGNAL(triggered(void)), this, SLOT(handleEnable(void)));
-    connect(actions->disableAction, SIGNAL(triggered(void)), this, SLOT(handleDisable(void)));
-    connect(actions->reevalAction, SIGNAL(triggered(void)), this, SLOT(handleReeval(void)));
-    connect(mainMenu->affinityZoneMenu, SIGNAL(zoneClicked(const QString &)), this, SLOT(handleAffinityZoneClicked(const QString &)));
-    connect(AffinityZonesDock::global(), SIGNAL(zoneChanged(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
-    connect(actions->showRenderedGraphAction, SIGNAL(triggered(void)), this, SLOT(handleShowRenderedGraphDialog(void)));
-    connect(actions->showTopologyStatsAction, SIGNAL(triggered(void)), this, SLOT(handleShowTopologyStatsDialog(void)));
-    connect(actions->activateTopologyAction, SIGNAL(toggled(bool)), this, SLOT(handleToggleActivateTopology(bool)));
-    connect(actions->showPortNamesAction, SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
-    connect(actions->eventPortsInlineAction, SIGNAL(changed(void)), this, SLOT(handleBlockDisplayModeChange(void)));
-    connect(actions->incrementAction, SIGNAL(triggered(void)), this, SLOT(handleBlockIncrement(void)));
-    connect(actions->decrementAction, SIGNAL(triggered(void)), this, SLOT(handleBlockDecrement(void)));
-    connect(_moveGraphObjectsMapper, SIGNAL(mapped(int)), this, SLOT(handleMoveGraphObjects(int)));
-    connect(_insertGraphWidgetsMapper, SIGNAL(mapped(QObject *)), this, SLOT(handleInsertGraphWidget(QObject *)));
+    connect(actions->createGraphPageAction, &QAction::triggered, this, &GraphEditor::handleCreateGraphPage);
+    connect(actions->renameGraphPageAction, &QAction::triggered, this, &GraphEditor::handleRenameGraphPage);
+    connect(actions->deleteGraphPageAction, &QAction::triggered, this, &GraphEditor::handleDeleteGraphPage);
+    connect(actions->inputBreakerAction, &QAction::triggered, this, &GraphEditor::handleCreateInputBreaker);
+    connect(actions->outputBreakerAction, &QAction::triggered, this, &GraphEditor::handleCreateOutputBreaker);
+    connect(actions->cutAction, &QAction::triggered, this, &GraphEditor::handleCut);
+    connect(actions->copyAction, &QAction::triggered, this, &GraphEditor::handleCopy);
+    connect(actions->pasteAction, &QAction::triggered, this, &GraphEditor::handlePaste);
+    connect(blockTreeDock, &BlockTreeDock::addBlockEvent, this, &GraphEditor::handleAddBlockSlot);
+    connect(actions->selectAllAction, &QAction::triggered, this, &GraphEditor::handleSelectAll);
+    connect(actions->deleteAction, &QAction::triggered, this, &GraphEditor::handleDelete);
+    connect(actions->rotateLeftAction, &QAction::triggered, this, &GraphEditor::handleRotateLeft);
+    connect(actions->rotateRightAction, &QAction::triggered, this, &GraphEditor::handleRotateRight);
+    connect(actions->objectPropertiesAction, &QAction::triggered, this, &GraphEditor::handleObjectProperties);
+    connect(actions->graphPropertiesAction, &QAction::triggered, this, &GraphEditor::handleGraphProperties);
+    connect(actions->zoomInAction, &QAction::triggered, this, &GraphEditor::handleZoomIn);
+    connect(actions->zoomOutAction, &QAction::triggered, this, &GraphEditor::handleZoomOut);
+    connect(actions->zoomOriginalAction, &QAction::triggered, this, &GraphEditor::handleZoomOriginal);
+    connect(actions->undoAction, &QAction::triggered, this, &GraphEditor::handleUndo);
+    connect(actions->redoAction, &QAction::triggered, this, &GraphEditor::handleRedo);
+    connect(actions->enableAction, &QAction::triggered, this, &GraphEditor::handleEnable);
+    connect(actions->disableAction, &QAction::triggered, this, &GraphEditor::handleDisable);
+    connect(actions->reevalAction, &QAction::triggered, this, &GraphEditor::handleReeval);
+    connect(affinityZonesMenu, &AffinityZonesMenu::zoneClicked, this, &GraphEditor::handleAffinityZoneClicked);
+    connect(affinityZonesDock, &AffinityZonesDock::zoneChanged, this, &GraphEditor::handleAffinityZoneChanged);
+    connect(actions->showRenderedGraphAction, &QAction::triggered, this, &GraphEditor::handleShowRenderedGraphDialog);
+    connect(actions->showTopologyStatsAction, &QAction::triggered, this, &GraphEditor::handleShowTopologyStatsDialog);
+    connect(actions->activateTopologyAction, &QAction::toggled, this, &GraphEditor::handleToggleActivateTopology);
+    connect(actions->showPortNamesAction, &QAction::changed, this, &GraphEditor::handleBlockDisplayModeChange);
+    connect(actions->eventPortsInlineAction, &QAction::changed, this, &GraphEditor::handleBlockDisplayModeChange);
+    connect(actions->incrementAction, &QAction::triggered, this, &GraphEditor::handleBlockIncrement);
+    connect(actions->decrementAction, &QAction::triggered, this, &GraphEditor::handleBlockDecrement);
     connect(_pollWidgetTimer, &QTimer::timeout, this, &GraphEditor::handlePollWidgetTimer);
-    connect(MainMenu::global()->editMenu, &QMenu::aboutToShow, this, &GraphEditor::updateGraphEditorMenus);
+    connect(mainMenu->editMenu, &QMenu::aboutToShow, this, &GraphEditor::updateGraphEditorMenus);
     connect(this, &DockingTabWidget::activeChanged, this, &GraphEditor::updateEnabledActions);
     _pollWidgetTimer->start(POLL_WIDGET_CHANGES_MS);
 }
@@ -139,6 +138,7 @@ void GraphEditor::restartEvaluation(void)
     }
 
     _evalEngine = new EvalEngine(this);
+    connect(_evalEngine, &EvalEngine::deactivateDesign, this, &GraphEditor::handleEvalEngineDeactivate);
     _evalEngine->submitTopology(this->getGraphObjects());
     _evalEngine->submitActivateTopology(_isTopologyActive);
 }
@@ -439,7 +439,7 @@ void GraphEditor::handleMoveGraphObjects(const int index)
     handleStateChange(GraphState("transform-move", desc));
 }
 
-void GraphEditor::handleAddBlock(const QJsonObject &blockDesc)
+void GraphEditor::handleAddBlockSlot(const QJsonObject &blockDesc)
 {
     if (not this->isActive()) return;
     QPointF where(std::rand()%100, std::rand()%100);
@@ -1077,8 +1077,7 @@ void GraphEditor::updateGraphEditorMenus(void)
     {
         if (i == this->activeIndex()) continue;
         auto action = menu->addAction(QString("%1 (%2)").arg(this->tabText(i)).arg(i));
-        connect(action, SIGNAL(triggered(void)), _moveGraphObjectsMapper, SLOT(map(void)));
-        _moveGraphObjectsMapper->setMapping(action, i);
+        connect(action, &QAction::triggered, [=](void){this->handleMoveGraphObjects(i);});
     }
 
     menu = mainMenu->insertGraphWidgetsMenu;
@@ -1101,8 +1100,7 @@ void GraphEditor::updateGraphEditorMenus(void)
         //block is a display widget with no active displays:
         {
             auto action = menu->addAction(QString("%1 (%2)").arg(block->getTitle()).arg(block->getId()));
-            connect(action, SIGNAL(triggered(void)), _insertGraphWidgetsMapper, SLOT(map(void)));
-            _insertGraphWidgetsMapper->setMapping(action, block);
+            connect(action, &QAction::triggered, [=](void){this->handleInsertGraphWidget(block);});
             hasGraphWidgetsToInsert = true;
         }
 

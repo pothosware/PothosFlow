@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2014 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -20,7 +20,7 @@ signals:
     void stopLoad(void);
 
 public slots:
-    void handeInfoRequest(const std::string &uriStr);
+    void handleInfoRequest(const std::string &uriStr);
 
 private slots:
 

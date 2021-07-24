@@ -35,7 +35,7 @@ public:
         this->setCheckable(true);
         this->setFocusPolicy(Qt::StrongFocus);
         this->setCursor(Qt::PointingHandCursor);
-        connect(this, SIGNAL(toggled(bool)), this, SLOT(handleToggled(bool)));
+        connect(this, &QAbstractButton::toggled, this, &ToggleSwitch::handleToggled);
     }
 
     int offset(void) const

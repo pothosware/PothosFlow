@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2013 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -7,7 +7,6 @@
 #include <QStringList>
 
 class HostSelectionTable;
-class QSignalMapper;
 class QTabWidget;
 
 //! top level dock widget for dealing with hosts
@@ -33,6 +32,7 @@ private slots:
 private:
     HostSelectionTable *_table;
     QTabWidget *_tabs;
-    QSignalMapper *_startMapper;
-    QSignalMapper *_stopMapper;
+
+    template <typename T>
+    void addTabAndConnect(T *tabWidget, const QString &name);
 };

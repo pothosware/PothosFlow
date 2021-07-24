@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -14,7 +14,6 @@
 #include <QPushButton>
 #include <QLineEdit>
 #include <QTabWidget>
-#include <QSignalMapper>
 #include <QJsonDocument>
 #include <Poco/Logger.h>
 #include <cassert>
@@ -29,7 +28,6 @@ AffinityZonesDock *AffinityZonesDock::global(void)
 AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExplorer):
     QDockWidget(parent),
     _hostExplorerDock(hostExplorer),
-    _mapper(new QSignalMapper(this)),
     _zoneEntry(new QLineEdit(this)),
     _createButton(new QPushButton(makeIconFromTheme("list-add"), tr("Create zone"), this)),
     _editorsTabs(new QTabWidget(this))
@@ -55,7 +53,6 @@ AffinityZonesDock::AffinityZonesDock(QWidget *parent, HostExplorerDock *hostExpl
             QString("QTabBar::close-button {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-16.png"))+
             QString("QTabBar::close-button:hover {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-hover-16.png"))+
             QString("QTabBar::close-button:pressed {image: url(%1);}").arg(makeIconPath("standardbutton-closetab-down-16.png")));
-        connect(_mapper, SIGNAL(mapped(const QString &)), this, SIGNAL(zoneChanged(const QString &)));
     }
 
     //zone creation area
@@ -168,12 +165,11 @@ AffinityZoneEditor *AffinityZonesDock::createZoneFromName(const QString &zoneNam
     }
 
     //now connect the changed signal after initialization+restore changes
-    connect(editor, SIGNAL(settingsChanged(void)), this, SLOT(handleZoneEditorChanged(void)));
-    connect(editor, SIGNAL(settingsChanged(void)), _mapper, SLOT(map(void)));
-    _mapper->setMapping(editor, zoneName);
+    connect(editor, &AffinityZoneEditor::settingsChanged, [=](void){this->saveAffinityZoneEditorsState();});
+    connect(editor, &AffinityZoneEditor::settingsChanged, [=](void){emit this->zoneChanged(zoneName);});
 
     //when to update colors
-    connect(editor, SIGNAL(settingsChanged(void)), this, SLOT(updateTabColors(void)));
+    connect(editor, &AffinityZoneEditor::settingsChanged, this, &AffinityZonesDock::updateTabColors);
     this->updateTabColors();
 
     return editor;

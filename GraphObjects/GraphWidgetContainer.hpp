@@ -42,14 +42,14 @@ signals:
     //! emit when the resize operation completes
     void resized(void);
 
+public slots:
+    void handleLockedChanged(const bool locked);
+
 protected:
     void enterEvent(QEnterEventCompat *event) override;
     void leaveEvent(QEvent *event) override;
     void updateShowGrip(void);
     void paintEvent(QPaintEvent *event) override;
-
-private slots:
-    void handleLockedChanged(const bool locked);
 
 private:
     QStaticText _gripLabel;

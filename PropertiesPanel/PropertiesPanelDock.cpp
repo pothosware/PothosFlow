@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "MainWindow/IconUtils.hpp"
@@ -74,29 +74,35 @@ void PropertiesPanelDock::launchEditor(QObject *obj)
     auto connection = qobject_cast<GraphConnection *>(obj);
     auto widget = qobject_cast<GraphWidget *>(obj);
     auto graphObject = qobject_cast<GraphObject *>(obj);
+    auto editor = (graphObject != nullptr)? graphObject->draw()->getGraphEditor() : graph;
 
     if (widget != nullptr) block = widget->getGraphBlock();
-    if (graph != nullptr) _propertiesPanel = new GraphPropertiesPanel(graph, this);
-    else if (block != nullptr) _propertiesPanel = new BlockPropertiesPanel(block, this);
-    else if (breaker != nullptr) _propertiesPanel = new BreakerPropertiesPanel(breaker, this);
-    else if (connection != nullptr and connection->isSignalOrSlot()) _propertiesPanel = new ConnectionPropertiesPanel(connection, this);
+    if (graph != nullptr) installNewPanel(new GraphPropertiesPanel(graph, this), editor);
+    else if (block != nullptr) installNewPanel(new BlockPropertiesPanel(block, this), editor);
+    else if (breaker != nullptr) installNewPanel(new BreakerPropertiesPanel(breaker, this), editor);
+    else if (connection != nullptr and connection->isSignalOrSlot()) installNewPanel(new ConnectionPropertiesPanel(connection, this), editor);
     else return;
-
-    //connect panel signals and slots into dock events
-    connect(_propertiesPanel, SIGNAL(destroyed(QObject*)), this, SLOT(handlePanelDestroyed(QObject *)));
-    connect(this, SIGNAL(replacePanel(void)), _propertiesPanel, SLOT(handleCommit(void)));
-    connect(_commitButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCommit(void)));
-    connect(_cancelButton, SIGNAL(pressed(void)), _propertiesPanel, SLOT(handleCancel(void)));
-
-    //connect state change to the graph editor
-    auto editor = (graphObject != nullptr)? graphObject->draw()->getGraphEditor() : graph;
-    connect(_propertiesPanel, SIGNAL(stateChanged(const GraphState &)), editor, SLOT(handleStateChange(const GraphState &)));
 
     //set the widget and make the entire dock visible
     _currentGraphObject = obj;
     _scroll->setWidget(_propertiesPanel);
     this->show();
     this->raise();
+}
+
+template <typename T>
+void PropertiesPanelDock::installNewPanel(T *panel, GraphEditor *editor)
+{
+    _propertiesPanel = panel;
+
+    //connect panel signals and slots into dock events
+    connect(panel, &T::destroyed, this, &PropertiesPanelDock::handlePanelDestroyed);
+    connect(this, &PropertiesPanelDock::replacePanel, panel, &T::handleCommit);
+    connect(_commitButton, &QPushButton::pressed, panel, &T::handleCommit);
+    connect(_cancelButton, &QPushButton::pressed, panel, &T::handleCancel);
+
+    //connect state change to the graph editor
+    connect(panel, &T::stateChanged, editor, &GraphEditor::handleStateChange);
 }
 
 void PropertiesPanelDock::handlePanelDestroyed(QObject *)

@@ -10,7 +10,6 @@
 #include <QToolButton>
 #include <QTimer>
 #include <Poco/DateTimeFormatter.h>
-#include <iostream>
 
 static const long CHECK_MSGS_TIMEOUT_MS = 100;
 static const size_t MAX_MSGS_PER_TIMEOUT = 3;
@@ -31,8 +30,7 @@ LoggerDisplay::LoggerDisplay(QWidget *parent):
     _clearButton->hide();
     _clearButton->setIcon(makeIconFromTheme("edit-clear-list"));
     _clearButton->setToolTip(tr("Clear message history"));
-    connect(_clearButton, SIGNAL(clicked(void)), _text, SLOT(clear(void)));
-
+    connect(_clearButton, &QToolButton::clicked, _text, &QPlainTextEdit::clear);
     connect(_timer, &QTimer::timeout, this, &LoggerDisplay::handleCheckMsgs);
     _timer->start(CHECK_MSGS_TIMEOUT_MS);
 }

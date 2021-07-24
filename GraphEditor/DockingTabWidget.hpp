@@ -1,11 +1,9 @@
-// Copyright (c) 2018-2018 Josh Blum
+// Copyright (c) 2018-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
 #include <Pothos/Config.hpp>
 #include <QTabWidget>
-
-class QSignalMapper;
 
 /*!
  * A customized tab widget with detachable tabs that can become independent windows.
@@ -81,18 +79,15 @@ signals:
     //! Called when active window changes (dialog vs main window focus)
     void activeChanged(void);
 
-private slots:
-    void handleUndockButton(QWidget *);
-
 protected:
     void tabInserted(int index);
     void tabRemoved(int index);
     bool eventFilter(QObject *object, QEvent *event);
 
 private:
+    void handleUndockButton(QWidget *);
     class DockingPage;
     DockingPage *page(const int index) const;
     void internalUpdate(void);
-    QSignalMapper *_mapper;
     QString _dialogTitle;
 };

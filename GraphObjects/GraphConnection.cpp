@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2018 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphObjects/GraphConnection.hpp"
@@ -73,13 +73,13 @@ void GraphConnection::setupEndpoint(const GraphConnectionEndpoint &ep)
     }
 
     //connected deleted signal so the connection deletes with the endpoint's parent object
-    connect(ep.getObj(), SIGNAL(destroyed(QObject *)), this, SLOT(handleEndPointDestroyed(QObject *)));
+    connect(ep.getObj(), &GraphObject::destroyed, this, &GraphConnection::handleEndPointDestroyed);
 
     //connect eval signal to check if the endpoint exists and delete this connection
     auto graphBlock = qobject_cast<GraphBlock *>(ep.getObj().data());
     if (graphBlock != nullptr)
     {
-        connect(ep.getObj(), SIGNAL(evalDoneEvent(void)), this, SLOT(handleEndPointEventRecheck(void)));
+        connect(graphBlock, &GraphBlock::evalDoneEvent, this, &GraphConnection::handleEndPointEventRecheck);
         graphBlock->registerEndpoint(ep);
     }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2018 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "EvalEngine.hpp"
@@ -8,7 +8,6 @@
 #include "GraphEditor/GraphDraw.hpp"
 #include "GraphEditor/GraphEditor.hpp"
 #include "AffinitySupport/AffinityZonesDock.hpp"
-#include <QSignalMapper>
 #include <QThread>
 #include <QTimer>
 #include <cassert>
@@ -24,12 +23,10 @@ EvalEngine::EvalEngine(QObject *parent):
     _thread(new QThread(this)),
     _monitorTimer(new QTimer(this)),
     _impl(new EvalEngineImpl(*_tracer)),
-    _blockEvalMapper(new QSignalMapper(this)),
     _affinityDock(AffinityZonesDock::global())
 {
     assert(_affinityDock != nullptr);
     connect(_affinityDock, &AffinityZonesDock::zonesChanged, this, &EvalEngine::handleAffinityZonesChanged);
-    connect(_blockEvalMapper, SIGNAL(mapped(QObject *)), this, SLOT(submitBlock(QObject *)));
 
     _impl->moveToThread(_thread);
     _thread->start();
@@ -39,7 +36,7 @@ EvalEngine::EvalEngine(QObject *parent):
 
     connect(_monitorTimer, &QTimer::timeout, this, &EvalEngine::handleMonitorTimeout);
     connect(_impl, &EvalEngineImpl::monitorHeartBeat, this, &EvalEngine::handleEvalThreadHeartBeat);
-    connect(_impl, SIGNAL(deactivateDesign(void)), parent, SLOT(handleEvalEngineDeactivate(void)));
+    connect(_impl, &EvalEngineImpl::deactivateDesign, this, &EvalEngine::deactivateDesign);
 }
 
 EvalEngine::~EvalEngine(void)
@@ -88,8 +85,7 @@ void EvalEngine::submitTopology(const GraphObjectList &graphObjects)
     {
         auto block = qobject_cast<GraphBlock *>(obj);
         if (block == nullptr) continue;
-        _blockEvalMapper->setMapping(block, block);
-        connect(block, SIGNAL(triggerEvalEvent(void)), _blockEvalMapper, SLOT(map(void)));
+        connect(block, &GraphBlock::triggerEvalEvent, [=](void){this->submitBlock(block);});
         blockInfos[block->uid()] = blockToBlockInfo(block);
     }
 

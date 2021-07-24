@@ -3,7 +3,6 @@
 
 #include "DockingTabWidget.hpp"
 #include "MainWindow/IconUtils.hpp"
-#include <QSignalMapper>
 #include <QPushButton>
 #include <QTabBar>
 #include <QIcon>
@@ -16,7 +15,6 @@
 #include <QApplication>
 #include "MainWindow/MainActions.hpp"
 #include "MainWindow/MainWindow.hpp"
-#include <iostream>
 
 /***********************************************************************
  * The docking page holds the actual internal tab page widget
@@ -176,11 +174,9 @@ private:
  * Docking tab widget implementation
  **********************************************************************/
 DockingTabWidget::DockingTabWidget(QWidget *parent):
-    QTabWidget(parent),
-    _mapper(new QSignalMapper(this))
+    QTabWidget(parent)
 {
     MainWindow::global()->installEventFilter(this);
-    this->connect(_mapper, SIGNAL(mapped(QWidget *)), this, SLOT(handleUndockButton(QWidget *)));
 }
 
 DockingTabWidget::~DockingTabWidget(void)
@@ -363,8 +359,7 @@ void DockingTabWidget::tabInserted(int index)
         QString("QPushButton:checked:hover{border-image: url(%1);}").arg(makeIconPath("dockingtab-undock-hover.png"))+
         QString("QPushButton:checked:pressed{border-image: url(%1);}").arg(makeIconPath("dockingtab-undock-down.png"));
     button->setStyleSheet(buttonStyle);
-    _mapper->setMapping(button, QTabWidget::widget(index));
-    connect(button, SIGNAL(clicked()), _mapper, SLOT(map()));
+    connect(button, &QPushButton::clicked, [=](void){this->handleUndockButton(QTabWidget::widget(index));});
     this->tabBar()->setTabButton(index, QTabBar::RightSide, button);
     this->page(index)->internalUpdate();
 

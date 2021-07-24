@@ -84,11 +84,11 @@ GraphPropertiesPanel::GraphPropertiesPanel(GraphEditor *editor, QWidget *parent)
         _varsMoveDownButton->setToolTip(tr("Move selected global variable down"));
 
         //connect signals
-        connect(_varsAddButton, SIGNAL(clicked(void)), this, SLOT(handleCreateVariable(void)));
-        connect(_varNameEntry, &QLineEdit::returnPressed, this, &GraphPropertiesPanel::handleCreateVariable);
-        connect(_varsRemoveButton, SIGNAL(clicked(void)), this, SLOT(handleVariableRemoval(void)));
-        connect(_varsMoveUpButton, SIGNAL(clicked(void)), this, SLOT(handleVariableMoveUp(void)));
-        connect(_varsMoveDownButton, SIGNAL(clicked(void)), this, SLOT(handleVariableMoveDown(void)));
+        connect(_varsAddButton, &QToolButton::clicked, [=](void){this->handleCreateVariable();});
+        connect(_varNameEntry, &QLineEdit::returnPressed, [=](void){this->handleCreateVariable();});
+        connect(_varsRemoveButton, &QToolButton::clicked, [=](void){this->handleVariableRemoval();});
+        connect(_varsMoveUpButton, &QToolButton::clicked, [=](void){this->handleVariableMoveUp();});
+        connect(_varsMoveDownButton, &QToolButton::clicked, [=](void){this->handleVariableMoveDown();});
     }
 
     //graph config
@@ -398,7 +398,7 @@ void GraphPropertiesPanel::createVariableEditWidget(const QString &name)
 
     //selection button
     auto radioButton = new QRadioButton(this);
-    connect(radioButton, SIGNAL(clicked(void)), this, SLOT(updateAllVariableForms(void)));
+    connect(radioButton, &QRadioButton::clicked, this, &GraphPropertiesPanel::updateAllVariableForms);
     editLayout->addWidget(radioButton);
     _varsSelectionGroup->addButton(radioButton);
 

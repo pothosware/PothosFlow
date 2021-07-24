@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/PluginRegistryTree.hpp"
@@ -83,7 +83,7 @@ PluginRegistryTree::PluginRegistryTree(QWidget *parent):
         this, SLOT(handleWatcherDone(void)));
 }
 
-void PluginRegistryTree::handeInfoRequest(const std::string &uriStr)
+void PluginRegistryTree::handleInfoRequest(const std::string &uriStr)
 {
     if (_watcher->isRunning()) return;
     while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);

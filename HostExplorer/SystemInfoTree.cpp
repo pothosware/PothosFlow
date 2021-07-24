@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2017 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "HostExplorer/SystemInfoTree.hpp"
@@ -60,7 +60,7 @@ SystemInfoTree::SystemInfoTree(QWidget *parent):
         this, SLOT(handleWatcherDone(void)));
 }
 
-void SystemInfoTree::handeInfoRequest(const std::string &uriStr)
+void SystemInfoTree::handleInfoRequest(const std::string &uriStr)
 {
     if (_watcher->isRunning()) return;
     while (this->topLevelItemCount() > 0) delete this->topLevelItem(0);

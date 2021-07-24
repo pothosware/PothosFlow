@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -13,7 +13,6 @@ class QComboBox;
 class QLineEdit;
 class QPushButton;
 class QTabWidget;
-class QSignalMapper;
 class AffinityZoneEditor;
 class HostExplorerDock;
 
@@ -54,10 +53,6 @@ signals:
 private slots:
     void handleCreateZone(void);
     void handleTabCloseRequested(int);
-    void handleZoneEditorChanged(void)
-    {
-        this->saveAffinityZoneEditorsState();
-    }
     void handleTabSelectionChanged(int);
     void updateTabColors(void);
 
@@ -73,7 +68,6 @@ private:
     void handleErrorMessage(const QString &errMsg);
 
     HostExplorerDock *_hostExplorerDock;
-    QSignalMapper *_mapper;
     QLineEdit *_zoneEntry;
     QPushButton *_createButton;
     QTabWidget *_editorsTabs;

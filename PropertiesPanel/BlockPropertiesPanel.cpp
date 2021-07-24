@@ -94,10 +94,10 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
 
         //create editable widget
         auto editWidget = new PropertyEditWidget(_block->getPropertyValue(propKey), paramDesc, editMode, this);
-        connect(editWidget, SIGNAL(widgetChanged(void)), this, SLOT(handleWidgetChanged(void)));
+        connect(editWidget, &PropertyEditWidget::widgetChanged, this, &BlockPropertiesPanel::handleWidgetChanged);
         connect(editWidget, SIGNAL(widgetChanged(void)), _block, SIGNAL(triggerEvalEvent(void)));
-        connect(editWidget, SIGNAL(entryChanged(void)), this, SLOT(handleWidgetChanged(void)));
-        connect(editWidget, SIGNAL(commitRequested(void)), this, SLOT(handleCommit(void)));
+        connect(editWidget, &PropertyEditWidget::entryChanged, this, &BlockPropertiesPanel::handleWidgetChanged);
+        connect(editWidget, &PropertyEditWidget::commitRequested, this, &BlockPropertiesPanel::handleCommit);
         _propIdToEditWidget[propKey] = editWidget;
         editWidget->setToolTip(this->getParamDocString(propKey));
 
@@ -111,7 +111,7 @@ BlockPropertiesPanel::BlockPropertiesPanel(GraphBlock *block, QWidget *parent):
         _affinityZoneOriginal = _block->getAffinityZone();
         _affinityZoneBox = AffinityZonesDock::global()->makeComboBox(this);
         _formLayout->addRow(_affinityZoneLabel, _affinityZoneBox);
-        connect(_affinityZoneBox, SIGNAL(activated(const QString &)), this, SLOT(handleAffinityZoneChanged(const QString &)));
+        connect(_affinityZoneBox, QOverload<int>::of(&QComboBox::activated), [=](int){emit this->handleAffinityZoneChanged();});
     }
 
     //errors
@@ -272,7 +272,7 @@ void BlockPropertiesPanel::handleWidgetChanged(void)
     this->updateAllForms(); //quick update for labels
 }
 
-void BlockPropertiesPanel::handleAffinityZoneChanged(const QString &)
+void BlockPropertiesPanel::handleAffinityZoneChanged(void)
 {
     this->handleWidgetChanged();
     emit _block->triggerEvalEvent();

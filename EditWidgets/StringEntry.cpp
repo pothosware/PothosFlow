@@ -16,8 +16,8 @@ public:
     StringEntry(QWidget *parent):
         QLineEdit(parent)
     {
-        connect(this, SIGNAL(textEdited(const QString &)), this, SLOT(handleTextEdited(const QString &)));
-        connect(this, SIGNAL(returnPressed(void)), this, SIGNAL(commitRequested(void)));
+        connect(this, &QLineEdit::textEdited, [=](const QString &){emit this->entryChanged();});
+        connect(this, &QLineEdit::returnPressed, this, &StringEntry::commitRequested);
     }
 
 public slots:
@@ -41,12 +41,6 @@ signals:
     void commitRequested(void);
     void widgetChanged(void);
     void entryChanged(void);
-
-private slots:
-    void handleTextEdited(const QString &)
-    {
-        emit this->entryChanged();
-    }
 };
 
 /***********************************************************************

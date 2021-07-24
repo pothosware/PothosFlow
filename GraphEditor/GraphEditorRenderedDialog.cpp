@@ -1,4 +1,4 @@
-// Copyright (c) 2013-2019 Josh Blum
+// Copyright (c) 2013-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include "GraphEditor/GraphEditor.hpp"
@@ -53,9 +53,9 @@ public:
         portOptionsLayout->addRow(tr("Show ports"), _portOptions);
 
         //connect widget changed events
-        connect(_modeOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(handleChange(int)));
-        connect(_portOptions, SIGNAL(currentIndexChanged(int)), this, SLOT(handleChange(int)));
-        connect(_process, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(handleProcessDone(int, QProcess::ExitStatus)));
+        connect(_modeOptions, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &RenderedGraphDialog::handleChange);
+        connect(_portOptions, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &RenderedGraphDialog::handleChange);
+        connect(_process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &RenderedGraphDialog::handleProcessDone);
         connect(_graphEditor, &GraphEditor::windowTitleUpdated, this, &RenderedGraphDialog::handleWindowTitleUpdated);
 
         //initialize

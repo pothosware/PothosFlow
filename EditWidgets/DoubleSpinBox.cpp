@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #include <Pothos/Plugin.hpp>
@@ -17,8 +17,8 @@ public:
     DoubleSpinBox(QWidget *parent):
         QDoubleSpinBox(parent)
     {
-        connect(this, SIGNAL(editingFinished(void)), this, SIGNAL(widgetChanged(void)));
-        connect(this, SIGNAL(valueChanged(const QString &)), this, SLOT(handleWidgetChanged(const QString &)));
+        connect(this, &QDoubleSpinBox::editingFinished, this, &DoubleSpinBox::widgetChanged);
+        connect(this, QOverload<double>::of(&QDoubleSpinBox::valueChanged), [=](double){this->handleWidgetChanged();});
     }
 
 public slots:
@@ -39,7 +39,7 @@ signals:
     void entryChanged(void);
 
 private slots:
-    void handleWidgetChanged(const QString &)
+    void handleWidgetChanged(void)
     {
         //extract value as a string, in C locale format, preserving decimal points
         //this allows the QDoubleSpinBox to support the user's locale setting

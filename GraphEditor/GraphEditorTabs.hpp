@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -32,12 +32,11 @@ private slots:
     void handleSaveAll(void);
     void handleReload(void);
     void handleClose(void);
-    void handleClose(int);
+    void handleCloseIndex(int);
     void handleClose(GraphEditor *editor);
     void handleExport(void);
     void handleExportAs(void);
     void handleChanged(int);
-    void handleTabMoved(int, int);
 
 private:
     void doReloadDialog(GraphEditor *editor);
