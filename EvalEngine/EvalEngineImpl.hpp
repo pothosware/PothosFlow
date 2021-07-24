@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2017 Josh Blum
+// Copyright (c) 2014-2021 Josh Blum
 // SPDX-License-Identifier: BSL-1.0
 
 #pragma once
@@ -8,7 +8,9 @@
 #include "BlockEval.hpp"
 #include <QString>
 #include <QJsonObject>
+#include <QAtomicInt>
 #include <memory>
+#include <utility>
 #include <map>
 #include <set>
 
@@ -35,6 +37,19 @@ public:
     EvalEngineImpl(EvalTracer &tracer);
 
     ~EvalEngineImpl(void);
+
+    /*!
+     * Invoke a queued event on the evaluator thread:
+     * Wrap sending the event count into the queue to detect if more messages
+     * are en-queued and the evaluator should wait until the next message.
+     */
+    template <typename ...Args>
+    void invokeMethod(const char *methodName, const Qt::ConnectionType type, Args && ...args)
+    {
+        _invokeCount++;
+        QMetaObject::invokeMethod(this, "updateCurrentInvokeCount", Qt::QueuedConnection, Q_ARG(int, _invokeCount));
+        QMetaObject::invokeMethod(this, methodName, type, std::forward<Args>(args)...);
+    }
 
 signals:
 
@@ -76,9 +91,18 @@ public slots:
 private slots:
     void handleMonitorTimeout(void);
 
+    void updateCurrentInvokeCount(const int count)
+    {
+        _lastRxInvokeCount = count;
+    }
+
 private:
     void evaluate(void);
     bool _requireEval;
+
+    //queued event tracking
+    int _lastRxInvokeCount{0};
+    QAtomicInt _invokeCount;
 
     EvalTracer &_tracer;
     QTimer *_monitorTimer;
