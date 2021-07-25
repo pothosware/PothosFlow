@@ -1,6 +1,6 @@
 This this the changelog file for the Pothos Flow toolkit.
 
-Release 0.7.1 (pending)
+Release 0.7.1 (2021-07-25)
 ==========================
 
 - Switch signal/slots to newer Qt style
